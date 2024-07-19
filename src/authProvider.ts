@@ -4,7 +4,6 @@ import axios from "axios";
 const API_URL = 'http://localhost:8080';
 
 export const TOKEN_KEY = "refine-auth";
-export const USER_NAME = "user-name";
 
 export const authProvider: AuthProvider = {
   login: async ({ email, password }) => {
@@ -16,7 +15,6 @@ export const authProvider: AuthProvider = {
 
       if (data.token) {
         localStorage.setItem(TOKEN_KEY, data.token);
-        localStorage.setItem(USER_NAME, DATA)
         axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
         return {
           success: true,

@@ -17,7 +17,7 @@ import routerBindings, {
   UnsavedChangesNotifier,
 } from "@refinedev/react-router-v6";
 import dataProvider from "@refinedev/simple-rest";
-import { App as AntdApp } from "antd";
+import { App as AntdApp, ConfigProvider } from "antd";
 import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
 import { authProvider } from "./authProvider";
 import { Header } from "./components/header";
@@ -41,10 +41,11 @@ import { Register } from "./pages/register";
 function App() {
   return (
     <BrowserRouter>
+    
       <RefineKbarProvider>
         <ColorModeContextProvider>
           <AntdApp>
-            <DevtoolsProvider>
+            
               <Refine
                 dataProvider={dataProvider("https://api.fake-rest.refine.dev")}
                 notificationProvider={useNotificationProvider}
@@ -136,8 +137,8 @@ function App() {
                 <UnsavedChangesNotifier />
                 <DocumentTitleHandler />
               </Refine>
-              <DevtoolsPanel />
-            </DevtoolsProvider>
+              
+              
           </AntdApp>
         </ColorModeContextProvider>
       </RefineKbarProvider>
