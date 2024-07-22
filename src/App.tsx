@@ -1,6 +1,6 @@
-import { Authenticated, GitHubBanner, Refine } from "@refinedev/core";
-import { DevtoolsPanel, DevtoolsProvider } from "@refinedev/devtools";
+import { Authenticated, Refine } from "@refinedev/core";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
+
 
 import {
   ErrorComponent,
@@ -37,6 +37,7 @@ import {
 import { ForgotPassword } from "./pages/forgotPassword";
 import { Login } from "./pages/login";
 import { Register } from "./pages/register";
+import { DashboardOutlined, SettingOutlined } from "@ant-design/icons";
 
 function App() {
   return (
@@ -60,6 +61,7 @@ function App() {
                     show: "/blog-posts/show/:id",
                     meta: {
                       canDelete: true,
+                      icon: <DashboardOutlined />
                     },
                   },
                   {
@@ -71,7 +73,7 @@ function App() {
                     meta: {
                       canDelete: true,
                     },
-                  },
+                  }
                 ]}
                 options={{
                   syncWithLocation: true,
