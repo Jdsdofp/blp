@@ -3,6 +3,7 @@ import { useGetIdentity } from "@refinedev/core";
 import {
   Layout as AntdLayout,
   Avatar,
+  Button,
   Space,
   Switch,
   theme,
@@ -10,6 +11,7 @@ import {
 } from "antd";
 import React, { useContext } from "react";
 import { ColorModeContext } from "../../contexts/color-mode";
+import { CurentUser } from "../current-user";
 
 const { Text } = Typography;
 const { useToken } = theme;
@@ -52,8 +54,10 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
           defaultChecked={mode === "dark"}
         />
         <Space style={{ marginLeft: "8px" }} size="middle">
-          {user?.name && <Text strong>{user.name}</Text>}
-          {user?.avatar && <Avatar src={user?.avatar} alt={user?.name} />}
+          {/* {user?.name && <Text strong>{user.name}</Text>}
+          {user?.avatar && <Avatar src={user?.avatar} alt={user?.name} />}           */}
+
+          <CurentUser/>
         </Space>
       </Space>
     </AntdLayout.Header>

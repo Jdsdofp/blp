@@ -1,5 +1,4 @@
-import { Authenticated, GitHubBanner, Refine } from "@refinedev/core";
-import { DevtoolsPanel, DevtoolsProvider } from "@refinedev/devtools";
+import { Authenticated, Refine } from "@refinedev/core";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 
 import {
@@ -37,6 +36,7 @@ import {
 import { ForgotPassword } from "./pages/forgotPassword";
 import { Login } from "./pages/login";
 import { Register } from "./pages/register";
+import { resources } from "./config/resources";
 
 function App() {
   return (
@@ -51,29 +51,9 @@ function App() {
                 notificationProvider={useNotificationProvider}
                 routerProvider={routerBindings}
                 authProvider={authProvider}
-                resources={[
-                  {
-                    name: "blog_posts",
-                    list: "/blog-posts",
-                    create: "/blog-posts/create",
-                    edit: "/blog-posts/edit/:id",
-                    show: "/blog-posts/show/:id",
-                    meta: {
-                      canDelete: true,
-                    },
-                  },
-                  {
-                    name: "categories",
-                    list: "/categories",
-                    create: "/categories/create",
-                    edit: "/categories/edit/:id",
-                    show: "/categories/show/:id",
-                    meta: {
-                      canDelete: true,
-                    },
-                  },
-                ]}
+                resources={resources}
                 options={{
+                  liveMode: "auto",
                   syncWithLocation: true,
                   warnWhenUnsavedChanges: true,
                   useNewQueryKeys: true,
@@ -89,7 +69,18 @@ function App() {
                       >
                         <ThemedLayoutV2
                           Header={Header}
-                          Sider={(props) => <ThemedSiderV2 {...props} fixed />}
+                          Sider={(props) => 
+                          <ThemedSiderV2 
+                          {...props} 
+                          fixed 
+                          render={({items, collapsed})=>{ 
+                            return(
+                              <>
+                                {items}
+                              </>
+                            )
+                          }} />
+                        }
                         >
                           <Outlet />
                         </ThemedLayoutV2>

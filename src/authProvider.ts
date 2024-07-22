@@ -4,6 +4,7 @@ import axios from "axios";
 const API_URL = 'http://localhost:8080';
 
 export const TOKEN_KEY = "refine-auth";
+export const USER = "refine-user";
 
 export const authProvider: AuthProvider = {
   login: async ({ email, password }) => {
@@ -13,8 +14,10 @@ export const authProvider: AuthProvider = {
         u_senha: password,
       });
 
+
       if (data.token) {
         localStorage.setItem(TOKEN_KEY, data.token);
+        localStorage.setItem(USER, JSON.stringify(data.modelUser))
         axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
         return {
           success: true,
@@ -63,10 +66,13 @@ export const authProvider: AuthProvider = {
   getPermissions: async () => null,
   getIdentity: async () => {
     const token = localStorage.getItem(TOKEN_KEY);
+    const user = JSON.parse(localStorage.getItem(USER));
+    console.log(user.nome)
+
     if (token) {
       return {
-        id: 1,
-        name: "John Doe",
+        id: user.id,
+        name: user.nome,
         avatar: "https://i.pravatar.cc/300",
       };
     }
