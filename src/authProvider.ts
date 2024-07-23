@@ -36,7 +36,7 @@ export const authProvider: AuthProvider = {
       return {
         success: false,
         error: {
-          name: "Erro",
+          name: "Erro de autenticação",
           message: error.response?.data?.message || "Invalid username or password",
         },
       };
@@ -67,7 +67,6 @@ export const authProvider: AuthProvider = {
   getIdentity: async () => {
     const token = localStorage.getItem(TOKEN_KEY);
     const user = JSON.parse(localStorage.getItem(USER));
-    console.log(user.nome)
 
     if (token) {
       return {

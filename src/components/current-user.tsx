@@ -70,7 +70,6 @@ export const CurentUser: React.FC = () =>{
             overlayStyle={{ zIndex: 999 }}
           >
             <Avatar
-            
               name={user?.name}
               src={user?.avatarUrl}
               size="large"
