@@ -16,7 +16,7 @@ import routerBindings, {
   UnsavedChangesNotifier,
 } from "@refinedev/react-router-v6";
 import dataProvider from "@refinedev/simple-rest";
-import { App as AntdApp, ConfigProvider } from "antd";
+import { App as AntdApp, ConfigProvider, Typography } from "antd";
 import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
 import { authProvider } from "./authProvider";
 import { Header } from "./components/header";
@@ -51,7 +51,25 @@ function App() {
     
       <RefineKbarProvider>
         <ColorModeContextProvider>
-        <ConfigProvider locale={ptBR}>
+        <ConfigProvider 
+            locale={ptBR}
+            theme={{
+              components: {
+                Button: {
+                  borderRadius: 10,
+                },
+                Input: {
+                  borderRadius: 10
+                },
+                Typography: {
+                  colorTextHeading: "#AD8DF2",
+                },
+              },
+              token: {
+                colorPrimary: "#8B41F2", // Cor primária personalizada
+              },
+            }}
+            >
           <AntdApp>
             
               <Refine
