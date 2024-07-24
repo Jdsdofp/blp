@@ -33,10 +33,17 @@ import {
   CategoryList,
   CategoryShow,
 } from "./pages/categories";
+import ptBR from 'antd/es/locale/pt_BR';
+import 'dayjs/locale/pt-br'
 import { ForgotPassword } from "./pages/forgotPassword";
 import { Login } from "./pages/login";
 import { Register } from "./pages/register";
 import { resources } from "./config/resources";
+import { AdmShow } from "./pages/adm/company/show";
+
+
+
+
 
 function App() {
   return (
@@ -44,6 +51,7 @@ function App() {
     
       <RefineKbarProvider>
         <ColorModeContextProvider>
+        <ConfigProvider locale={ptBR}>
           <AntdApp>
             
               <Refine
@@ -53,6 +61,7 @@ function App() {
                 authProvider={authProvider}
                 resources={resources}
                 options={{
+                  title: { text: "Blp Doc"},
                   liveMode: "auto",
                   syncWithLocation: true,
                   warnWhenUnsavedChanges: true,
@@ -70,9 +79,12 @@ function App() {
                         <ThemedLayoutV2
                           Header={Header}
                           Sider={(props) => 
-                          <ThemedSiderV2 
+                          
+                          <ThemedSiderV2
+                           
                           {...props} 
-                          fixed 
+                          fixed
+                         
                           render={({items, collapsed})=>{ 
                             return(
                               <>
@@ -80,6 +92,7 @@ function App() {
                               </>
                             )
                           }} />
+                          
                         }
                         >
                           <Outlet />
@@ -103,6 +116,11 @@ function App() {
                       <Route path="edit/:id" element={<CategoryEdit />} />
                       <Route path="show/:id" element={<CategoryShow />} />
                     </Route>
+                    
+                    <Route path="/adm/company">
+                      <Route index element={<AdmShow />} />
+                    </Route>
+
                     <Route path="*" element={<ErrorComponent />} />
                   </Route>
                   <Route
@@ -131,6 +149,8 @@ function App() {
               
               
           </AntdApp>
+
+        </ConfigProvider>
         </ColorModeContextProvider>
       </RefineKbarProvider>
     </BrowserRouter>
