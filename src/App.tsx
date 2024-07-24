@@ -62,7 +62,7 @@ function App() {
                   borderRadius: 10
                 },
                 Typography: {
-                  colorTextHeading: "#AD8DF2",
+                  colorTextHeading: "#AD8DF2"
                 },
               },
               token: {
