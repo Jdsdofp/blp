@@ -1,4 +1,4 @@
-import type { AuthProvider } from "@refinedev/core";
+import { useUpdatePassword, type AuthProvider } from "@refinedev/core";
 import axios from "axios";
 
 const API_URL = 'http://localhost:8080';
@@ -14,6 +14,12 @@ export const authProvider: AuthProvider = {
         u_senha: password,
       });
 
+      if(data?.status){
+        return {
+          success: true,
+          redirectTo: "/forgot-password"
+        }
+      }
 
       if (data.token) {
         localStorage.setItem(TOKEN_KEY, data.token);
@@ -81,4 +87,24 @@ export const authProvider: AuthProvider = {
     console.error(error);
     return { error };
   },
+
+  updatePassword: async ({ password, confirmPassword }) => {
+    // Lógica para atualizar a senha do usuário aqui
+
+    // Se a atualização for bem-sucedida
+    return {
+      success: true,
+      redirectTo: "/forgot-password",
+    };
+
+    // Se a atualização não for bem-sucedida
+    return {
+      success: false,
+      error: {
+        name: "UpdatePasswordError",
+        message: "Failed to update password",
+      },
+    };
+  },
+
 };

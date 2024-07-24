@@ -1,7 +1,6 @@
 import React from "react";
 import { useLogin } from "@refinedev/core";
 import { Form, Input, Button, Typography, Row, Col, Card } from "antd";
-import { ColorModeContext, ColorModeContextProvider } from "../../contexts/color-mode";
 
 
 const { Title } = Typography;
