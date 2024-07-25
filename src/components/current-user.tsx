@@ -24,7 +24,7 @@ export const CurentUser: React.FC = () =>{
               padding: "12px 20px",
             }}
           >
-            {user?.name}
+            {user?.nome}
           </div>
           <div
             style={{
@@ -62,6 +62,7 @@ export const CurentUser: React.FC = () =>{
       
       return (
         <>
+          
           <Popover
             placement="bottomRight"
             content={content}
@@ -70,7 +71,7 @@ export const CurentUser: React.FC = () =>{
             overlayStyle={{ zIndex: 999 }}
           >
             <Avatar
-              name={user?.name}
+              nome={user?.nome}
               src={user?.avatarUrl}
               size="large"
               style={{ cursor: "pointer" }}

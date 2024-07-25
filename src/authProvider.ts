@@ -69,10 +69,11 @@ export const authProvider: AuthProvider = {
   getPermissions: async () => null,
   getIdentity: async () => {
     const token = localStorage.getItem(TOKEN_KEY);
+    const user = JSON.parse(localStorage.getItem(USER))
     if (token) {
       return {
-        id: 1,
-        name: "John Doe",
+        id: user?.id,
+        nome: user?.nome,
         avatar: "https://i.pravatar.cc/300",
       };
     }
