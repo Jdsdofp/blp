@@ -1,6 +1,7 @@
 import { Authenticated, Refine } from "@refinedev/core";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 
+
 import {
   ErrorComponent,
   ThemedLayoutV2,
@@ -79,7 +80,6 @@ function App() {
                 authProvider={authProvider}
                 resources={resources}
                 options={{
-                  title: { text: "Blp Doc"},
                   liveMode: "auto",
                   syncWithLocation: true,
                   warnWhenUnsavedChanges: true,

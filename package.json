@@ -4,11 +4,15 @@
   "private": true,
   "type": "module",
   "dependencies": {
+<<<<<<< HEAD
+    "@ant-design/icons": "^5.3.7",
+=======
     "@ant-design/icons": "^5.0.1",
     "@emotion/react": "^11.13.0",
     "@emotion/styled": "^11.13.0",
     "@mui/icons-material": "^5.16.4",
     "@mui/material": "^5.16.4",
+>>>>>>> 2b043ce0c7ce5de5c901f8a03fdd8c17c93b1bad
     "@refinedev/antd": "^5.42.0",
     "@refinedev/cli": "^2.16.21",
     "@refinedev/core": "^4.53.0",
