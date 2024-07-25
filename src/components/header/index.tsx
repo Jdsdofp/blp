@@ -12,6 +12,7 @@ import {
 import React, { useContext } from "react";
 import { ColorModeContext } from "../../contexts/color-mode";
 import { CurentUser } from "../current-user";
+import NotificationsHeader from "./notifications";
 
 const { Text } = Typography;
 const { useToken } = theme;
@@ -48,6 +49,8 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
     <AntdLayout.Header style={headerStyles}>
 
       <Space>
+        <NotificationsHeader/>
+
         <Switch
           checkedChildren="🌛"
           unCheckedChildren="🔆"
