@@ -35,7 +35,7 @@ import {
 } from "./pages/categories";
 import ptBR from 'antd/es/locale/pt_BR';
 import 'dayjs/locale/pt-br'
-import { ForgotPassword } from "./pages/forgotPassword";
+import { UpdatePassword } from "./pages/updatePassword";
 import { Login } from "./pages/login";
 import { Register } from "./pages/register";
 import { resources } from "./config/resources";
@@ -154,8 +154,8 @@ function App() {
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
                     <Route
-                      path="/forgot-password"
-                      element={<ForgotPassword />}
+                      path="/update-password"
+                      element={<UpdatePassword />}
                     />
                   </Route>
                 </Routes>

@@ -1,10 +1,14 @@
 import { useUpdatePassword, type AuthProvider } from "@refinedev/core";
+import { Alert, MessageArgsProps } from "antd";
 import axios from "axios";
+import { useId, useState } from "react";
 
 const API_URL = 'http://localhost:8080';
 
 export const TOKEN_KEY = "refine-auth";
 export const USER = "refine-user";
+export const FRIST_LOGIN = "refine-FRIST-LOG";
+
 
 export const authProvider: AuthProvider = {
   login: async ({ email, password }) => {
@@ -13,11 +17,13 @@ export const authProvider: AuthProvider = {
         u_email: email,
         u_senha: password,
       });
-
+      
       if(data?.status){
+        localStorage.setItem(FRIST_LOGIN, JSON.stringify(data))
         return {
           success: true,
-          redirectTo: "/forgot-password"
+          redirectTo: "/update-password",
+          successNotification: {message: `${data?.message}`, description: "Sucesso!"},
         }
       }
 
@@ -43,7 +49,7 @@ export const authProvider: AuthProvider = {
         success: false,
         error: {
           name: "Erro de autenticação",
-          message: error.response?.data?.message || "Invalid username or password",
+          message: error.response?.data?.message || `Erro interno: ${error.message}`,
         },
       };
     }
@@ -88,23 +94,40 @@ export const authProvider: AuthProvider = {
     return { error };
   },
 
-  updatePassword: async ({ password, confirmPassword }) => {
-    // Lógica para atualizar a senha do usuário aqui
+  
+  updatePassword: async ({ password}) => {
+    try {
+      const { userId, token } = JSON.parse(localStorage.getItem(FRIST_LOGIN));
+  
+      const response = await axios.post(
+        `${API_URL}/user/reset-senha-inicial`,
+        {
+          userId: userId,
+          u_senha: password,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-    // Se a atualização for bem-sucedida
-    return {
-      success: true,
-      redirectTo: "/forgot-password",
-    };
-
-    // Se a atualização não for bem-sucedida
-    return {
-      success: false,
-      error: {
-        name: "UpdatePasswordError",
-        message: "Failed to update password",
-      },
-    };
-  },
-
+      
+      console.log(response)
+      return {
+        success: true,
+        successNotification: {message: 'Sucesso', description: 'Efetue o login'},
+        redirectTo: '/login'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        redirectTo: '/login',
+        error: {
+          name: `${error?.response?.data?.message}` || 'Não é possivel alterar senha',
+          message: 'Erro',
+        },
+      };
+    }
+  }
 };
