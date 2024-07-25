@@ -46,6 +46,7 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
 
   return (
     <AntdLayout.Header style={headerStyles}>
+
       <Space>
         <Switch
           checkedChildren="🌛"
@@ -53,9 +54,10 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
           onChange={() => setMode(mode === "light" ? "dark" : "light")}
           defaultChecked={mode === "dark"}
         />
-        <Space style={{ marginLeft: "8px" }} size="middle">
-          {/* {user?.name && <Text strong>{user.name}</Text>}
-          {user?.avatar && <Avatar src={user?.avatar} alt={user?.name} />}           */}
+        <Space style={{ marginLeft: "8px"}} size="small" >
+          {user?.name && <Text strong style={{font: 'small-caption'}}>{user.name}</Text>}
+          
+          {/*{user?.avatar && <Avatar src={user?.avatar} alt={user?.name} />}           */}
 
           <CurentUser/>
         </Space>
