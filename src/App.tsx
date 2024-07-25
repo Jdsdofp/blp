@@ -37,7 +37,7 @@ import {
 import { ForgotPassword } from "./pages/forgotPassword";
 import { Login } from "./pages/login";
 import { Register } from "./pages/register";
-import { DashboardOutlined, SettingOutlined } from "@ant-design/icons";
+import { resources } from "./config/resources";
 
 function App() {
   return (
@@ -52,35 +52,7 @@ function App() {
                 notificationProvider={useNotificationProvider}
                 routerProvider={routerBindings}
                 authProvider={authProvider}
-                resources={[
-                  {
-                    name: "blog_posts",
-                    list: "/blog-posts",
-                    create: "/blog-posts/create",
-                    edit: "/blog-posts/edit/:id",
-                    show: "/blog-posts/show/:id",
-                    meta: {
-                      canDelete: true,
-                      icon: <DashboardOutlined />
-                    },
-                  },
-                  {
-                    name: "categories",
-                    list: "/categories",
-                    create: "/categories/create",
-                    edit: "/categories/edit/:id",
-                    show: "/categories/show/:id",
-                    meta: {
-                      canDelete: true,
-                    },
-                  }
-                ]}
-                options={{
-                  syncWithLocation: true,
-                  warnWhenUnsavedChanges: true,
-                  useNewQueryKeys: true,
-                  projectId: "YlYRK1-rzMtIe-TQIzAq",
-                }}
+                resources={resources}
               >
                 <Routes>
                   <Route
@@ -91,7 +63,18 @@ function App() {
                       >
                         <ThemedLayoutV2
                           Header={Header}
-                          Sider={(props) => <ThemedSiderV2 {...props} fixed />}
+                          Sider={(props) => 
+                          <ThemedSiderV2 
+                          {...props} 
+                          fixed 
+                          render={({items, collapsed})=>{ 
+                            return(
+                              <>
+                                {items}
+                              </>
+                            )
+                          }} />
+                        }
                         >
                           <Outlet />
                         </ThemedLayoutV2>

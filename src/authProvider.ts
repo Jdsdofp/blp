@@ -13,10 +13,9 @@ export const authProvider: AuthProvider = {
         u_email: email,
         u_senha: password,
       });
-      console.log(data.modelUser)
+
       if (data.token) {
         localStorage.setItem(TOKEN_KEY, data.token);
-        localStorage.setItem(USER, JSON.stringify(data.modelUser));
         axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
         return {
           success: true,
@@ -32,10 +31,11 @@ export const authProvider: AuthProvider = {
         },
       };
     } catch (error) {
+      
       return {
         success: false,
         error: {
-          name: "Erro",
+          name: "Erro de autenticação",
           message: error.response?.data?.message || "Invalid username or password",
         },
       };
@@ -65,13 +65,11 @@ export const authProvider: AuthProvider = {
   getPermissions: async () => null,
   getIdentity: async () => {
     const token = localStorage.getItem(TOKEN_KEY);
-    const user = JSON.parse(localStorage.getItem(USER))
-    
     if (token) {
       return {
-        id: user.id,
-        name: user.nome,
-        avatar: `https://i.pravatar.cc/150?img=${user.id}`,
+        id: 1,
+        name: "John Doe",
+        avatar: "https://i.pravatar.cc/300",
       };
     }
     return null;
