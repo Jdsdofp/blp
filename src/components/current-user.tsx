@@ -5,12 +5,14 @@ import { useGetIdentity, useLogout } from "@refinedev/core";
 import { LogoutOutlined, SettingOutlined } from "@ant-design/icons";
 import { Button, Popover } from "antd/lib";
 import { Avatar } from "antd";
+import { AccountSettings } from "./header/account-settings";
 
 
 
 export const CurentUser: React.FC = () =>{
     const { data: user } = useGetIdentity<IUser>();
     const {mutate: logout} = useLogout();
+    const [ openModalUser, setOpenModalUser] = useState(false);
 
     const content = (
         <div
@@ -37,7 +39,7 @@ export const CurentUser: React.FC = () =>{
           >
             <Button
               style={{ textAlign: "left" }}
-              
+              onClick={()=>setOpenModalUser(true)}
               icon={<SettingOutlined />}
               type="text"
               block
@@ -47,7 +49,6 @@ export const CurentUser: React.FC = () =>{
             </Button>
             <Button
               style={{ textAlign: "left" }}
-              
               icon={<LogoutOutlined />}
               type="text"
               danger
@@ -77,6 +78,17 @@ export const CurentUser: React.FC = () =>{
               style={{ cursor: "pointer" }}
             />
           </Popover>
+
+
+          {
+            user && (
+              <AccountSettings
+                openModalUser={openModalUser}
+                setOpenModalUser={setOpenModalUser}
+                userName={user?.nome}
+              />
+            )
+          }
         </>
       );
 }

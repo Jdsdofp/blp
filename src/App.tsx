@@ -80,6 +80,7 @@ function App() {
                 authProvider={authProvider}
                 resources={resources}
                 options={{
+                  title: {text: "BLP"},
                   liveMode: "auto",
                   syncWithLocation: true,
                   warnWhenUnsavedChanges: true,
