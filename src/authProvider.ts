@@ -18,8 +18,23 @@ export const authProvider: AuthProvider = {
         u_senha: password,
       });
 
+      if(data.status) {
+        localStorage.setItem(FRIST_LOGIN, JSON.stringify(data))
+        return {
+          success: true,
+          redirectTo: '/update-password',
+          successNotification: {
+            message: 'Sucesso!',
+            description: 'Atualize sua senha e faça o login!!'
+          }
+        }
+      }
+
+
       if (data.token) {
         localStorage.setItem(TOKEN_KEY, data.token);
+        localStorage.setItem(USER, JSON.stringify(data.modelUser))
+
         axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
         return {
           success: true,
@@ -56,20 +71,48 @@ export const authProvider: AuthProvider = {
     const token = localStorage.getItem(TOKEN_KEY);
     if (token) {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      
+      try {
+        const response = await axios.get(`${API_URL}/user/auth`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        
+        if (response.status === 200) {
+          return {
+            authenticated: true,
+          };
+        } else {
+          return {
+            authenticated: false,
+            redirectTo: '/login',
+            error: {name: 'Erro', message: 'Acesso negago ou sessão expirada'},
+            logout: true,
+          };
+        }
+      } catch (error) {
+        return {
+          authenticated: false,
+          redirectTo: '/login',
+          error: {name: 'Erro', message: 'Acesso negago ou sessão expirada'},
+          logout: true,
+        };
+      }
+    } else {
       return {
-        authenticated: true,
+        authenticated: false,
+        redirectTo: '/login',
+        error: {name: 'Erro', message: 'Acesso negago ou sessão expirada'},
+        logout: true,
       };
     }
-
-    return {
-      authenticated: false,
-      redirectTo: "/login",
-    };
   },
   getPermissions: async () => null,
   getIdentity: async () => {
     const token = localStorage.getItem(TOKEN_KEY);
     const user = JSON.parse(localStorage.getItem(USER))
+    
     if (token) {
       return {
         id: user?.id,
@@ -88,7 +131,7 @@ export const authProvider: AuthProvider = {
   updatePassword: async ({ password}) => {
     try {
       const { userId, token } = JSON.parse(localStorage.getItem(FRIST_LOGIN));
-  
+      
       const response = await axios.post(
         `${API_URL}/user/reset-senha-inicial`,
         {
@@ -102,8 +145,7 @@ export const authProvider: AuthProvider = {
         }
       );
 
-      
-      console.log(response)
+      localStorage.removeItem(FRIST_LOGIN)      
       return {
         success: true,
         successNotification: {message: 'Sucesso', description: 'Efetue o login'},
@@ -120,4 +162,5 @@ export const authProvider: AuthProvider = {
       };
     }
   }
+
 };

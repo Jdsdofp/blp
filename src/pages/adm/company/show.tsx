@@ -6,6 +6,7 @@ const { Title } = Typography;
 
 
 export const AdmShow = () =>{
+    
     return (
     <>
         <Title>{"Empresa"}</Title>

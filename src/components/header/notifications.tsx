@@ -59,21 +59,3 @@ const NotificationsHeader: React.FC = () => {
         );
       };
 export default NotificationsHeader;
-
-{/* <Flex gap="small" vertical>
-<Flex wrap gap="small">
-    
-    <Dropdown menu={{ items }} trigger={['click']} placement="topRight">
-
-    <a onClick={(e) => e.preventDefault()}>
-    <Space>
-    <Tooltip title="Notificações" placement='left'>
-        <Button type="primary" shape="circle"  icon={<NotificationOutlined />} />
-    </Tooltip>
-    </Space>
-    </a>
-</Dropdown>
-
-
-</Flex>
-</Flex> */}
