@@ -1,9 +1,10 @@
-import { ApartmentOutlined, BranchesOutlined, UserSwitchOutlined } from "@ant-design/icons";
+import { ApartmentOutlined, BranchesOutlined, DashboardFilled, DashboardTwoTone, DashOutlined, FileSyncOutlined, SafetyCertificateOutlined, UserSwitchOutlined } from "@ant-design/icons";
+import { Dashboard, DashboardCustomizeOutlined, DashboardCustomizeSharp, DashboardOutlined, DocumentScannerTwoTone, FolderCopyOutlined, TypeSpecimen } from "@mui/icons-material";
 import AddBusinessIcon from '@mui/icons-material/AddBusiness';
-import AvTimerIcon from '@mui/icons-material/AvTimer';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import NewReleasesOutlinedIcon from '@mui/icons-material/NewReleasesOutlined';
+import MoreOutlinedIcon from '@mui/icons-material/MoreOutlined';
 import type { IResourceItem } from "@refinedev/core";
-
 export const resources: IResourceItem[] = [
   {
     name: "blog_posts",
@@ -14,7 +15,7 @@ export const resources: IResourceItem[] = [
     meta: {
       canDelete: true,
       label: 'Painel',
-      icon: <AvTimerIcon/>
+      icon: <DashboardFilled/>
     },
   },
   {
@@ -57,12 +58,43 @@ export const resources: IResourceItem[] = [
     }
   },
   {
-    name: "users",
+    name: "Usuarios",
     list: "/adm/users",
     meta: {
       parent: "administrations",
-      label: "Ususarios",
+      label: "Usuários",
       icon: <UserSwitchOutlined/>
     }
+  },
+  {
+    name: "documents",
+    show: "/documents",
+    list: "/documents",
+    meta: {
+      label: "Documentação",
+      icon: <FolderCopyOutlined />
+    }
+  },
+  {
+    name: "/type-documents",
+    show: "/documents/type-documents",
+    list: "/documents/type-documents",
+    meta: {
+      parent: "documents",
+      label: "Tipo Documento",
+      icon: <FileSyncOutlined />
+    }
+  },
+  {
+    name: "/coditionals",
+    show: "/documents/conditionals",
+    list: "/documents/conditionals",
+    meta: {
+      parent: "documents",
+      label: "Condição",
+      icon: <SafetyCertificateOutlined />
+    }
   }
+
+
 ]

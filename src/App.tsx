@@ -1,4 +1,4 @@
-import { Authenticated, Refine } from "@refinedev/core";
+import { Authenticated, Refine, useTitle } from "@refinedev/core";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 
 
@@ -44,17 +44,33 @@ import { resources } from "./config/resources";
 import { AdmCompanyShow } from "./pages/adm/company/show";
 import { AdmBranchShow } from "./pages/adm/branch/show";
 import { AdmUserShow } from "./pages/adm/user/show";
-
-
-
+import { DocTypeDoc } from "./pages/documents/typeDocument/show";
+import { DocConditionalsDoc } from "./pages/documents/conditinals/show";
 
 
 function App() {
+  const customTitleHandler = ({ resource, action, params }) => {
+    let title = "Custom default"; // Título padrão
+  
+    if (resource && action) {
+      // Verifique e formate as propriedades para garantir que sejam strings
+      const resourceString = resource ? String(resource.name || resource) : "";
+      const actionString = action ? String(action) : "";
+      const idString = params && params.id ? String(params.id) : "";
+  
+      title = `${resourceString} ${actionString} ${idString}`.trim(); // Gera o título dinamicamente
+    }
+  
+    return title;
+  };
   moment.tz.setDefault("America/Sao_Paulo");
+  
+
+
   return (
     <BrowserRouter>
-    
       <RefineKbarProvider>
+        
         <ColorModeContextProvider>
         <ConfigProvider 
             locale={ptBR}
@@ -76,7 +92,7 @@ function App() {
             }}
             >
           <AntdApp>
-            
+
               <Refine
                 dataProvider={dataProvider("https://api.fake-rest.refine.dev")}
                 notificationProvider={useNotificationProvider}
@@ -152,6 +168,13 @@ function App() {
                       <Route index element={<AdmUserShow/>}></Route>
                     </Route>
 
+                    <Route path="/documents/type-documents">
+                      <Route index element={<DocTypeDoc/>}></Route>
+                    </Route>
+                    
+                    <Route path="/documents/conditionals">
+                      <Route index element={<DocConditionalsDoc/>}></Route>
+                    </Route>
                     <Route path="*" element={<ErrorComponent />} />
                   </Route>
                   <Route
@@ -172,10 +195,11 @@ function App() {
                     />
                   </Route>
                 </Routes>
+                  
 
                 <RefineKbar />
                 <UnsavedChangesNotifier />
-                <DocumentTitleHandler />
+                <DocumentTitleHandler handler={customTitleHandler} />
               </Refine>
               
               
