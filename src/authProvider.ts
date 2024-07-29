@@ -118,6 +118,7 @@ export const authProvider: AuthProvider = {
         id: user?.id,
         nome: user?.nome,
         avatar: "https://i.pravatar.cc/300",
+        session: user?.sessaoExp
       };
     }
     return null;

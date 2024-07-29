@@ -1,4 +1,4 @@
-import { ApartmentOutlined } from "@ant-design/icons";
+import { ApartmentOutlined, BranchesOutlined, UserSwitchOutlined } from "@ant-design/icons";
 import AddBusinessIcon from '@mui/icons-material/AddBusiness';
 import AvTimerIcon from '@mui/icons-material/AvTimer';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
@@ -46,5 +46,23 @@ export const resources: IResourceItem[] = [
           label: "Empresa",
           icon: <AddBusinessIcon/>
       },
+  },
+  {
+    name: "bracnhs",
+    list: "/adm/branch",
+    meta: {
+      parent: "administrations",
+      label: "Filial",
+      icon: <BranchesOutlined/>
+    }
+  },
+  {
+    name: "users",
+    list: "/adm/users",
+    meta: {
+      parent: "administrations",
+      label: "Ususarios",
+      icon: <UserSwitchOutlined/>
+    }
   }
-  ]
+]

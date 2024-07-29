@@ -19,6 +19,7 @@ import routerBindings, {
 import dataProvider from "@refinedev/simple-rest";
 import { App as AntdApp, ConfigProvider, Typography } from "antd";
 import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
+import moment from "moment-timezone";
 import { authProvider } from "./authProvider";
 import { Header } from "./components/header";
 import { ColorModeContextProvider } from "./contexts/color-mode";
@@ -40,13 +41,16 @@ import { UpdatePassword } from "./pages/updatePassword";
 import { Login } from "./pages/login";
 import { Register } from "./pages/register";
 import { resources } from "./config/resources";
-import { AdmShow } from "./pages/adm/company/show";
+import { AdmCompanyShow } from "./pages/adm/company/show";
+import { AdmBranchShow } from "./pages/adm/branch/show";
+import { AdmUserShow } from "./pages/adm/user/show";
 
 
 
 
 
 function App() {
+  moment.tz.setDefault("America/Sao_Paulo");
   return (
     <BrowserRouter>
     
@@ -137,7 +141,15 @@ function App() {
                     </Route>
                     
                     <Route path="/adm/company">
-                      <Route index element={<AdmShow />} />
+                      <Route index element={<AdmCompanyShow />} />
+                    </Route>
+
+                    <Route path="/adm/branch">
+                      <Route index element={<AdmBranchShow/>}></Route>
+                    </Route>
+
+                    <Route path="/adm/users">
+                      <Route index element={<AdmUserShow/>}></Route>
                     </Route>
 
                     <Route path="*" element={<ErrorComponent />} />

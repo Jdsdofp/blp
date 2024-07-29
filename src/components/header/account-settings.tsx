@@ -1,24 +1,31 @@
-import { Button, Drawer } from 'antd';
+import { DateField } from '@refinedev/antd';
+import { useGetIdentity, useIsAuthenticated } from '@refinedev/core';
+import { Drawer, Typography } from 'antd';
 
+
+
+const {Title, Text} = Typography;
 
 type Props = {
     openModalUser: boolean; 
     setOpenModalUser: (openModalUser: boolean) => void;
-    userName: String;
 }
 
-export const AccountSettings = ({openModalUser, setOpenModalUser, userName}: Props) => {
+
+export const AccountSettings = ({openModalUser, setOpenModalUser}: Props) => {
+const { data: identify } = useGetIdentity()
+
 
   const onClose = () => {
     setOpenModalUser(false);
   };
-
+  
   return (
     <>
       <Drawer title="Configurações da Conta" onClose={onClose} open={openModalUser}>
-        <h2>{String(userName).toUpperCase()}</h2>
+        <Title level={5}>{String(identify?.nome).toUpperCase()}</Title>
         <p>Configurações da conta:</p>
-        <p>Perfil de Usuario:</p>
+        <p>Tempo de Sessão: <span style={{'fontSize': 10, fontFamily: 'inherit'}}>{identify?.session}</span></p>
       </Drawer>
     </>
   );
