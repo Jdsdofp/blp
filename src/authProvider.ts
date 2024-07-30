@@ -14,16 +14,6 @@ export const authProvider: AuthProvider = {
         u_senha: password,
       });
 
-<<<<<<< HEAD
-=======
-      if(data?.status){
-        return {
-          success: true,
-          redirectTo: "/forgot-password"
-        }
-      }
-
->>>>>>> 2b043ce0c7ce5de5c901f8a03fdd8c17c93b1bad
       if (data.token) {
         localStorage.setItem(TOKEN_KEY, data.token);
         axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
@@ -75,11 +65,6 @@ export const authProvider: AuthProvider = {
   getPermissions: async () => null,
   getIdentity: async () => {
     const token = localStorage.getItem(TOKEN_KEY);
-<<<<<<< HEAD
-=======
-    const user = JSON.parse(localStorage.getItem(USER));
-
->>>>>>> 2b043ce0c7ce5de5c901f8a03fdd8c17c93b1bad
     if (token) {
       return {
         id: 1,
