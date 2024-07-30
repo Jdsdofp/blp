@@ -1,0 +1,6 @@
+/* global.css */
+::selection {
+    background: #976DF2; /* cor de fundo para o texto selecionado */
+    color: #000000;      /* cor do texto selecionado */
+  }
+  

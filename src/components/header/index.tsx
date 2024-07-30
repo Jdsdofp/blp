@@ -12,13 +12,14 @@ import {
 import React, { useContext } from "react";
 import { ColorModeContext } from "../../contexts/color-mode";
 import { CurentUser } from "../current-user";
+import NotificationsHeader from "./notifications";
 
 const { Text } = Typography;
 const { useToken } = theme;
 
 type IUser = {
   id: number;
-  name: string;
+  nome: string;
   avatar: string;
 };
 
@@ -48,6 +49,8 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
     <AntdLayout.Header style={headerStyles}>
 
       <Space>
+        <NotificationsHeader/>
+
         <Switch
           checkedChildren="🌛"
           unCheckedChildren="🔆"
@@ -55,10 +58,8 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
           defaultChecked={mode === "dark"}
         />
         <Space style={{ marginLeft: "8px"}} size="small" >
-          {user?.name && <Text strong style={{font: 'small-caption'}}>{user.name}</Text>}
+          {user?.nome && <Text strong style={{font: 'small-caption'}}>{user.nome}</Text>}
           
-          {/*{user?.avatar && <Avatar src={user?.avatar} alt={user?.name} />}           */}
-
           <CurentUser/>
         </Space>
       </Space>
