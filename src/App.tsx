@@ -50,15 +50,17 @@ import { DocConditionalsDoc } from "./pages/documents/conditinals/show";
 
 function App() {
   const customTitleHandler = ({ resource, action, params }) => {
-    let title = "Custom default"; // Título padrão
+    let title = "BLP"; // Título padrão
   
     if (resource && action) {
       // Verifique e formate as propriedades para garantir que sejam strings
       const resourceString = resource ? String(resource.name || resource) : "";
       const actionString = action ? String(action) : "";
       const idString = params && params.id ? String(params.id) : "";
-  
-      title = `${resourceString} ${actionString} ${idString}`.trim(); // Gera o título dinamicamente
+      const num = idString.length > 0 ? idString : "";
+      const bar = idString.length > 0 ? "/" : "";
+      
+      title = `${title} | ${resource.meta.label }${bar}${num}`.trim(); // Gera o título dinamicamente
     }
   
     return title;
