@@ -1,7 +1,8 @@
 import { useUpdatePassword, type AuthProvider } from "@refinedev/core";
 import { Alert, MessageArgsProps } from "antd";
 import axios from "axios";
-import { useId, useState } from "react";
+import { useState } from "react";
+import { useParams } from "react-router-dom";
 
 const API_URL = 'http://localhost:8080';
 
@@ -18,10 +19,24 @@ export const authProvider: AuthProvider = {
         u_senha: password,
       });
 
+      if(data.status){
+        localStorage.setItem(FRIST_LOGIN, JSON.stringify(data))
+        const {refreshToken, userId} = JSON.parse(localStorage.getItem(FRIST_LOGIN))
+        return {
+          success: true,
+          successNotification: {
+            message: data?.message,
+            description: 'Sucesso'
+          },
+          redirectTo: `/update-password/${refreshToken}/${userId}`
+        }
+      }
+
+    
       if (data.token) {
         localStorage.setItem(TOKEN_KEY, data.token);
         localStorage.setItem(USER, JSON.stringify(data.modelUser))
-
+        
         axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
         return {
           success: true,
@@ -42,13 +57,14 @@ export const authProvider: AuthProvider = {
         success: false,
         error: {
           name: "Erro de autenticação",
-          message: error.response?.data?.message || `Erro interno: ${error.message}`,
+          message: error?.response?.data?.message || `Erro interno: ${error.message}`,
         },
       };
     }
   },
   logout: async () => {
     localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER);
     return {
       success: true,
       redirectTo: "/login",
@@ -56,6 +72,7 @@ export const authProvider: AuthProvider = {
   },
   check: async () => {
     const token = localStorage.getItem(TOKEN_KEY);
+    
     if (token) {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       
@@ -78,6 +95,8 @@ export const authProvider: AuthProvider = {
             logout: true,
           };
         }
+
+
       } catch (error) {
         return {
           authenticated: false,
@@ -115,23 +134,28 @@ export const authProvider: AuthProvider = {
   },
 
   
-  updatePassword: async ({ password}) => {
+  updatePassword: async ({ password, refreshToken, id}) => {
+    const {token} = JSON.parse(localStorage.getItem(FRIST_LOGIN))
+    
     try {
-      const { userId, token } = JSON.parse(localStorage.getItem(FRIST_LOGIN));
       
       const response = await axios.post(
         `${API_URL}/user/reset-senha-inicial`,
         {
-          userId: userId,
-          u_senha: password,
+            userId: id,
+            u_senha: password,
         },
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+            headers: {
+                Authorization: `Bearer ${token}`, // Access token
+                'x-refresh-token': refreshToken // Refresh token
+            },
         }
-      );
+    );
+    
 
+      console.log(response)
+      
       localStorage.removeItem(FRIST_LOGIN)      
       return {
         success: true,
@@ -139,11 +163,12 @@ export const authProvider: AuthProvider = {
         redirectTo: '/login'
       };
     } catch (error) {
+      
       return {
         success: false,
         redirectTo: '/login',
         error: {
-          name: `${error?.response?.data?.message}` || 'Não é possivel alterar senha',
+          name: `${error}` || 'Não é possivel alterar senha',
           message: 'Erro',
         },
       };

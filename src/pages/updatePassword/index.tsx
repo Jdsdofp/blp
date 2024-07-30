@@ -2,11 +2,13 @@ import React from "react";
 import { useUpdatePassword } from "@refinedev/core";
 import { Form, Input, Button, Typography, Row, Col, Card } from "antd";
 import { CircularProgress } from "@mui/material";
+import { useParams } from "react-router-dom";
 
 const { Title } = Typography;
 
 export const UpdatePassword = () => {
   const { mutate: updatePassword, isLoading } = useUpdatePassword();
+  const { refreshToken, id } = useParams()
 
   return (
     <div className="auth-page">
@@ -19,7 +21,7 @@ export const UpdatePassword = () => {
               <Form
                 layout="vertical"
                 onFinish={(values) => {
-                  updatePassword(values);
+                  updatePassword({...values, refreshToken, id});
                 }}
                 requiredMark={false}
               >

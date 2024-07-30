@@ -1,5 +1,6 @@
 import { Authenticated, Refine, useTitle } from "@refinedev/core";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
+import { name } from '../package.json'
 
 
 import {
@@ -48,19 +49,23 @@ import { DocTypeDoc } from "./pages/documents/typeDocument/show";
 import { DocConditionalsDoc } from "./pages/documents/conditinals/show";
 
 
+type Props = {
+  resource: String;
+  action: String;
+  params: Number;
+}
+
 function App() {
-  const customTitleHandler = ({ resource, action, params }) => {
-    let title = "BLP"; // Título padrão
+  const customTitleHandler = ({ resource, action, params }: Props) => {
+    let title = String(name).toUpperCase(); // Título padrão
   
     if (resource && action) {
       // Verifique e formate as propriedades para garantir que sejam strings
-      const resourceString = resource ? String(resource.name || resource) : "";
-      const actionString = action ? String(action) : "";
-      const idString = params && params.id ? String(params.id) : "";
+      const idString = params && params?.id ? String(params.id) : "";
       const num = idString.length > 0 ? idString : "";
       const bar = idString.length > 0 ? "/" : "";
-      
-      title = `${title} | ${resource.meta.label }${bar}${num}`.trim(); // Gera o título dinamicamente
+
+      title = `${title} | ${resource?.meta?.label }${bar}${num}`.trim(); // Gera o título dinamicamente
     }
   
     return title;
@@ -192,7 +197,7 @@ function App() {
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
                     <Route
-                      path="/update-password"
+                      path="/update-password/:refreshToken/:id"
                       element={<UpdatePassword />}
                     />
                   </Route>
