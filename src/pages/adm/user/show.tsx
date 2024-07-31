@@ -1,4 +1,5 @@
-import { Space, Typography } from "antd"
+import { Show } from "@refinedev/antd";
+import { Typography } from "antd"
 
 
 const { Title } = Typography;
@@ -6,8 +7,9 @@ const { Title } = Typography;
 export const AdmUserShow = () =>{
     
     return(
-            <Space>
+            <Show>
+                
                 <Title level={4}>Gestao Usuarios</Title>
-            </Space>
+            </Show>
     )
 }

@@ -47,6 +47,7 @@ import { AdmBranchShow } from "./pages/adm/branch/show";
 import { AdmUserShow } from "./pages/adm/user/show";
 import { DocTypeDoc } from "./pages/documents/typeDocument/show";
 import { DocConditionalsDoc } from "./pages/documents/conditinals/show";
+import { AdmUserlist } from "./pages/adm/user/list";
 
 
 type Props = {
@@ -172,7 +173,8 @@ function App() {
                     </Route>
 
                     <Route path="/adm/users">
-                      <Route index element={<AdmUserShow/>}></Route>
+                      <Route index element={<AdmUserShow/>}/>
+                      <Route path="/adm/users/list" element={<AdmUserlist />}/>
                     </Route>
 
                     <Route path="/documents/type-documents">
