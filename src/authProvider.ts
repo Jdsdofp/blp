@@ -70,9 +70,26 @@ export const authProvider: AuthProvider = {
       redirectTo: "/login",
     };
   },
+
+
+  checkRefreshToken: async ({refreshToken}: any) => {
+    try {
+      const response = await axios.get(`${API_URL}/user/verify-refresh-token`, {
+        headers: {
+          'x-refresh-token': refreshToken
+        }
+      });
+      
+      return response.status === 200;
+    } catch (error) {
+      window.location.href = "/login"
+    }
+  },
+
+
   check: async () => {
     const token = localStorage.getItem(TOKEN_KEY);
-    
+
     if (token) {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       
