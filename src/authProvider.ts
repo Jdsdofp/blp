@@ -2,7 +2,6 @@ import { useUpdatePassword, type AuthProvider } from "@refinedev/core";
 import { Alert, MessageArgsProps } from "antd";
 import axios from "axios";
 import { useState } from "react";
-import { useParams } from "react-router-dom";
 
 const API_URL = 'http://localhost:8080';
 
@@ -22,6 +21,7 @@ export const authProvider: AuthProvider = {
       if(data.status){
         localStorage.setItem(FRIST_LOGIN, JSON.stringify(data))
         const {refreshToken, userId} = JSON.parse(localStorage.getItem(FRIST_LOGIN))
+
         return {
           success: true,
           successNotification: {
@@ -139,10 +139,10 @@ export const authProvider: AuthProvider = {
     
     try {
       
-      const response = await axios.post(
+      const {data} = await axios.post(
         `${API_URL}/user/reset-senha-inicial`,
         {
-            userId: id,
+            u_userId: Number(id),
             u_senha: password,
         },
         {
@@ -153,15 +153,20 @@ export const authProvider: AuthProvider = {
         }
     );
     
-
-      console.log(response)
+    localStorage.setItem(TOKEN_KEY, data?.token);
+    localStorage.setItem(USER, JSON.stringify(data?.modelUser))
+   
+    if (data?.token) {
       
       localStorage.removeItem(FRIST_LOGIN)      
+      axios.defaults.headers.common["Authorization"] = `Bearer ${data?.token}`;
       return {
         success: true,
-        successNotification: {message: 'Sucesso', description: 'Efetue o login'},
-        redirectTo: '/login'
+        redirectTo: "/",
       };
+    }
+      
+      
     } catch (error) {
       
       return {

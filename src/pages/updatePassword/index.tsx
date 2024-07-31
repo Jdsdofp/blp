@@ -6,9 +6,11 @@ import { useParams } from "react-router-dom";
 
 const { Title } = Typography;
 
+
 export const UpdatePassword = () => {
   const { mutate: updatePassword, isLoading } = useUpdatePassword();
   const { refreshToken, id } = useParams()
+  
 
   return (
     <div className="auth-page">
