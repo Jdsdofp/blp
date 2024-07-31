@@ -62,6 +62,8 @@ export const authProvider: AuthProvider = {
       };
     }
   },
+
+
   logout: async () => {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER);
@@ -131,7 +133,11 @@ export const authProvider: AuthProvider = {
       };
     }
   },
+
+
   getPermissions: async () => null,
+
+
   getIdentity: async () => {
     const token = localStorage.getItem(TOKEN_KEY);
     const user = JSON.parse(localStorage.getItem(USER));
@@ -145,6 +151,8 @@ export const authProvider: AuthProvider = {
     }
     return null;
   },
+
+  
   onError: async (error) => {
     console.error(error);
     return { error };
@@ -184,13 +192,11 @@ export const authProvider: AuthProvider = {
     }
       
       
-    } catch (error) {
-      
+    } catch (error: any) {
       return {
         success: false,
-        redirectTo: '/login',
         error: {
-          name: `${error}` || 'Não é possivel alterar senha',
+          name: `${error?.response?.data.message}` || 'Não é possivel alterar senha',
           message: 'Erro',
         },
       };
