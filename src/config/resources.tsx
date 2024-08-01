@@ -61,6 +61,7 @@ export const resources: IResourceItem[] = [
     name: "Usuarios",
     show: "/adm/users",
     list: "/adm/users/list",
+    create: "/adm/users/create",
     meta: {
       parent: "administrations",
       label: "Usuários",

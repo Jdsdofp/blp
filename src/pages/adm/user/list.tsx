@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Children } from 'react';
 import { Space, Table, Tag, Typography } from 'antd';
 import type { TableProps } from 'antd';
 import { List } from '@refinedev/antd';
@@ -8,6 +8,7 @@ interface DataType {
   name: string;
   email: string;
   criado_em: string;
+  status: boolean;
   tags: string[];
 }
 
@@ -35,6 +36,18 @@ const columns: TableProps<DataType>['columns'] = [
     title: 'Criado',
     dataIndex: 'criado_em',
     key: 'criado_em',
+  },
+  {
+    title: 'Status',
+    dataIndex: 'status',
+    key: 'status',
+    render: (_, {status})=>(
+      <>
+        {
+          <Tag color={status ? "blue" : "error"}>{status ? "Ativado" : "Desativado"}</Tag>
+        }
+      </>
+    )
   },
   {
     title: 'Tags',
@@ -74,6 +87,7 @@ const data: DataType[] = [
     name: 'John Brown',
     email: 'email@email.com',
     criado_em: 'New York No. 1 Lake Park',
+    status: true,
     tags: ['nice', 'developer'],
   },
   {
@@ -81,6 +95,7 @@ const data: DataType[] = [
     name: 'Jim Green',
     email: 'email@email.com',
     criado_em: 'London No. 1 Lake Park',
+    status: true,
     tags: ['loser'],
   },
   {
@@ -88,6 +103,7 @@ const data: DataType[] = [
     name: 'Joe Black',
     email: 'email@email.com',
     criado_em: 'Sydney No. 1 Lake Park',
+    status: false,
     tags: ['cool', 'teacher'],
   },
 ];
@@ -95,7 +111,7 @@ const data: DataType[] = [
 export const AdmUserlist = () => {
 
     return (
-        <List>
+        <List breadcrumb createButtonProps={{children: "Novo Usuário"}}>
             <Table columns={columns} dataSource={data} />
         </List>
     )
