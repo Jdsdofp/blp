@@ -2,6 +2,8 @@ import React, { Children } from 'react';
 import { Space, Table, Tag, Typography } from 'antd';
 import type { TableProps } from 'antd';
 import { List } from '@refinedev/antd';
+import { DashOutlined, UserAddOutlined } from '@ant-design/icons';
+import { AdUnitsOutlined } from '@mui/icons-material';
 
 interface DataType {
   key: number;
@@ -111,7 +113,7 @@ const data: DataType[] = [
 export const AdmUserlist = () => {
 
     return (
-        <List breadcrumb createButtonProps={{children: "Novo Usuário"}}>
+        <List breadcrumb createButtonProps={{children: "Novo Usuário", icon: <UserAddOutlined/>}}>
             <Table columns={columns} dataSource={data} />
         </List>
     )
