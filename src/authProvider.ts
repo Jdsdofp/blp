@@ -3,8 +3,8 @@ import { Alert, MessageArgsProps } from "antd";
 import axios from "axios";
 import { useState } from "react";
 
-const API_URL = 'http://localhost:8080';
 
+export const API_URL = 'http://localhost:8080';
 export const TOKEN_KEY = "refine-auth";
 export const USER = "refine-user";
 export const FRIST_LOGIN = "refine-FRIST-LOG";

@@ -1,17 +1,17 @@
 import React, { Children } from 'react';
 import { Space, Table, Tag, Typography } from 'antd';
 import type { TableProps } from 'antd';
-import { List } from '@refinedev/antd';
-import { DashOutlined, UserAddOutlined } from '@ant-design/icons';
-import { AdUnitsOutlined } from '@mui/icons-material';
+import { DeleteButton, EditButton, List, ShowButton } from '@refinedev/antd';
+import { UserAddOutlined } from '@ant-design/icons';
+import { BaseRecord, useTable } from '@refinedev/core';
 
 interface DataType {
   key: number;
   name: string;
   email: string;
-  criado_em: string;
+  criado_em: Date;
   status: boolean;
-  tags: string[];
+  acoes: [string]
 }
 
 const {Title} = Typography;
@@ -35,7 +35,7 @@ const columns: TableProps<DataType>['columns'] = [
     key: 'email',
   },
   {
-    title: 'Criado',
+    title: 'Data criação',
     dataIndex: 'criado_em',
     key: 'criado_em',
   },
@@ -52,66 +52,37 @@ const columns: TableProps<DataType>['columns'] = [
     )
   },
   {
-    title: 'Tags',
-    key: 'tags',
-    dataIndex: 'tags',
-    render: (_, { tags }) => (
-      <>
-        {tags.map((tag) => {
-          let color = tag.length > 5 ? 'geekblue' : 'green';
-          if (tag === 'loser') {
-            color = 'volcano';
-          }
-          return (
-            <Tag color={color} key={tag}>
-              {tag.toUpperCase()}
-            </Tag>
-          );
-        })}
-      </>
-    ),
-  },
-  {
-    title: 'Action',
-    key: 'action',
-    render: (_, record) => (
-      <Space size="middle">
-        <a>Invite {record.name}</a>
-        <a>Delete</a>
+    title: 'Ações',
+    dataIndex: 'acoes',
+    key: 'acoes',
+    render: (_, record: BaseRecord)=>(
+      <Space>
+        <EditButton hideText size='small'  />
+        <ShowButton hideText size='small'/>
+        <DeleteButton hideText size='small' confirmTitle='Deseja realmente excluir?' confirmCancelText='Não' confirmOkText='Sim'/>
       </Space>
-    ),
-  },
+    )
+  }
 ];
 
-const data: DataType[] = [
-  {
-    key: 1,
-    name: 'John Brown',
-    email: 'email@email.com',
-    criado_em: 'New York No. 1 Lake Park',
-    status: true,
-    tags: ['nice', 'developer'],
-  },
-  {
-    key: 2,
-    name: 'Jim Green',
-    email: 'email@email.com',
-    criado_em: 'London No. 1 Lake Park',
-    status: true,
-    tags: ['loser'],
-  },
-  {
-    key: 3,
+
+
+const users = [];
+
+for (let i = 1; i <= 100; i++) {
+  users.push({
+    key: i,
     name: 'Joe Black',
     email: 'email@email.com',
-    criado_em: 'Sydney No. 1 Lake Park',
-    status: false,
-    tags: ['cool', 'teacher'],
-  },
-];
+    criado_em: Date(), // Gera a data e hora atual
+    status: true
+  });
+}
+
+const data: DataType[] = users;
 
 export const AdmUserlist = () => {
-
+  
     return (
         <List breadcrumb createButtonProps={{children: "Novo Usuário", icon: <UserAddOutlined/>}}>
             <Table columns={columns} dataSource={data} />

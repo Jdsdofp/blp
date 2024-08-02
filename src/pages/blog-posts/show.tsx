@@ -1,6 +1,8 @@
 import { DateField, MarkdownField, Show, TextField } from "@refinedev/antd";
 import { useOne, useShow } from "@refinedev/core";
 import { Typography } from "antd";
+import { dataProvider } from "../../contexts/providerData";
+
 
 const { Title } = Typography;
 
@@ -17,7 +19,7 @@ export const BlogPostShow = () => {
       enabled: !!record,
     },
   });
-
+  
   return (
     <Show isLoading={isLoading}>
       <Title level={5}>{"ID"}</Title>
