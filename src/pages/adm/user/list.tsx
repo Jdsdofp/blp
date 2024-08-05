@@ -1,52 +1,59 @@
-import React, { Children } from 'react';
+import React, { Children, useEffect, useState } from 'react';
 import { Space, Table, Tag, Typography } from 'antd';
 import type { TableProps } from 'antd';
-import { DeleteButton, EditButton, List, ShowButton } from '@refinedev/antd';
+import { DateField, DeleteButton, EditButton, List, ShowButton } from '@refinedev/antd';
 import { UserAddOutlined } from '@ant-design/icons';
 import { BaseRecord, useTable } from '@refinedev/core';
+import Link from 'antd/es/typography/Link';
 
 interface DataType {
   key: number;
   name: string;
   email: string;
   criado_em: Date;
-  status: boolean;
-  acoes: [string]
+  u_ativo: boolean;
+  acoes: [string];
+  empresa: number[];
 }
 
-const {Title} = Typography;
+const { Title } = Typography;
 
 const columns: TableProps<DataType>['columns'] = [
     {
         title: 'ID',
-        dataIndex: 'key',
+        dataIndex: 'u_id',
         key: 'key',
         render: (text) => <a>{text}</a>,
       },
     {
     title: 'Nome',
-    dataIndex: 'name',
+    dataIndex: 'u_nome',
     key: 'name',
     render: (text) => <a>{text}</a>,
   },
   {
     title: 'Email',
-    dataIndex: 'email',
+    dataIndex: 'u_email',
     key: 'email',
   },
   {
     title: 'Data criação',
     dataIndex: 'criado_em',
     key: 'criado_em',
+    render: (_, {criado_em})=>(
+      <>
+          <DateField type='secondary' value={criado_em} format='DD/MM/YYYY HH:mm:ss' />
+      </>
+    )
   },
   {
     title: 'Status',
-    dataIndex: 'status',
+    dataIndex: 'u_ativo',
     key: 'status',
-    render: (_, {status})=>(
+    render: (_, {u_ativo})=>(
       <>
         {
-          <Tag color={status ? "blue" : "error"}>{status ? "Ativado" : "Desativado"}</Tag>
+          <Tag color={u_ativo ? "blue" : "error"}>{u_ativo ? "Ativado" : "Desativado"}</Tag>
         }
       </>
     )
@@ -56,36 +63,39 @@ const columns: TableProps<DataType>['columns'] = [
     dataIndex: 'acoes',
     key: 'acoes',
     render: (_, record: BaseRecord)=>(
+      
       <Space>
         <EditButton hideText size='small'  />
         <ShowButton hideText size='small'/>
         <DeleteButton hideText size='small' confirmTitle='Deseja realmente excluir?' confirmCancelText='Não' confirmOkText='Sim'/>
       </Space>
     )
+  },
+  {
+    title: 'Empresa',
+    dataIndex: 'u_empresas_ids',
+    key: 'empresa',
+    render: (empresas)=>(
+      <span>
+        {empresas.slice(0, 4).map((id: any)=>(
+             <Tag key={id} color='geekblue'><Link type='secondary'>{id}</Link></Tag>
+        ))}
+
+        {empresas.length > 4 && <Tag key="more">...</Tag>}
+      </span>
+    )
   }
 ];
 
 
 
-const users = [];
-
-for (let i = 1; i <= 100; i++) {
-  users.push({
-    key: i,
-    name: 'Joe Black',
-    email: 'email@email.com',
-    criado_em: Date(), // Gera a data e hora atual
-    status: true
-  });
-}
-
-const data: DataType[] = users;
-
 export const AdmUserlist = () => {
+
+  const { tableQueryResult } = useTable({ resource: "users", syncWithLocation: true })
   
     return (
         <List breadcrumb createButtonProps={{children: "Novo Usuário", icon: <UserAddOutlined/>}}>
-            <Table columns={columns} dataSource={data} />
+            <Table dataSource={tableQueryResult.data?.data} columns={columns} scroll={{x: 'max-content'}}/>
         </List>
     )
 

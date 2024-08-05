@@ -17,11 +17,10 @@ import routerBindings, {
   NavigateToResource,
   UnsavedChangesNotifier,
 } from "@refinedev/react-router-v6";
-import dataProvider from "@refinedev/simple-rest";
 import { App as AntdApp, ConfigProvider, Typography } from "antd";
 import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
 import moment from "moment-timezone";
-import { authProvider } from "./authProvider";
+import { API_URL, authProvider } from "./authProvider";
 import { Header } from "./components/header";
 import { ColorModeContextProvider } from "./contexts/color-mode";
 import {
@@ -48,6 +47,7 @@ import { AdmUserShow } from "./pages/adm/user/show";
 import { DocTypeDoc } from "./pages/documents/typeDocument/show";
 import { DocConditionalsDoc } from "./pages/documents/conditinals/show";
 import { AdmUserlist } from "./pages/adm/user/list";
+import { dataProvider } from "./contexts/providerData";
 
 
 type Props = {
@@ -102,7 +102,7 @@ function App() {
           <AntdApp>
 
               <Refine
-                dataProvider={dataProvider("https://api.fake-rest.refine.dev")}
+                dataProvider={dataProvider}
                 notificationProvider={useNotificationProvider}
                 routerProvider={routerBindings}
                 authProvider={authProvider}
