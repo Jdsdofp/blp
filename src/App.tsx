@@ -66,7 +66,7 @@ function App() {
       const num = idString.length > 0 ? idString : "";
       const bar = idString.length > 0 ? "/" : "";
 
-      title = `${resource?.meta?.label }${bar}${num} ${title}`.trim(); // Gera o título dinamicamente
+      title = `${resource?.meta?.label }${bar}${num} | ${title}`.trim(); // Gera o título dinamicamente
     }
   
     return title;

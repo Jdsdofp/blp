@@ -4,14 +4,15 @@ import axios from "axios";
 import { API_URL, TOKEN_KEY } from "../../authProvider";
 
 
-const token = localStorage.getItem(TOKEN_KEY)
 
 export const dataProvider: DataProvider = {
     getList: async () => {
+        const token = localStorage.getItem(TOKEN_KEY)
         try {
+            axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
             const { data } = await axios.get(`${API_URL}/user/listar-usuarios`, {
                 headers: {
-                    Authorization: `Bearer ${token}`,
+                    'Authorization': `Bearer ${token}`,
                 },
             });
 
