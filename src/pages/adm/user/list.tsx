@@ -1,5 +1,5 @@
 import React, { Children, useEffect, useState } from 'react';
-import { Space, Table, Tag, Typography } from 'antd';
+import { Space, Spin, Table, Tag, Typography } from 'antd';
 import type { TableProps } from 'antd';
 import { DateField, DeleteButton, EditButton, List, ShowButton } from '@refinedev/antd';
 import { UserAddOutlined } from '@ant-design/icons';
@@ -92,6 +92,18 @@ const columns: TableProps<DataType>['columns'] = [
 export const AdmUserlist = () => {
 
   const { tableQueryResult } = useTable({ resource: "users", syncWithLocation: true })
+
+  useEffect(()=>{
+    tableQueryResult.refetch();
+  },[])
+  
+  if (tableQueryResult.isLoading) {
+    return (
+      <div style={{ paddingTop: 50, paddingBottom: 50, textAlign: 'center' }}>
+        <Spin />
+      </div>
+    );
+  }
   
     return (
         <List breadcrumb createButtonProps={{children: "Novo Usuário", icon: <UserAddOutlined/>}}>
