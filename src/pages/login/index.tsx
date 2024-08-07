@@ -2,6 +2,7 @@ import React from "react";
 import { useLogin } from "@refinedev/core";
 import { Form, Input, Button, Typography, Row, Col, Card } from "antd";
 import { CircularProgress } from "@mui/material";
+import { LockOutlined, UserOutlined } from "@ant-design/icons";
 
 
 const { Title } = Typography;
@@ -28,12 +29,13 @@ export const Login = () => {
                 >
 
                 <Form.Item
+                  
                   name="email"
                   label="Email"
                   rules={[{ required: true, type: "email", message: "E-mail invalido" }]}
                 >
 
-                <Input placeholder="E-mail" disabled={isLoading}/>
+                <Input prefix={<UserOutlined/>} placeholder="E-mail" disabled={isLoading}/>
                 
                 </Form.Item>
                 <Form.Item
@@ -41,7 +43,7 @@ export const Login = () => {
                   label="Senha"
                   rules={[{ required: true, message: "Senha invalida" }]}
                 >
-                  <Input.Password  placeholder="********" disabled={isLoading}/>
+                  <Input.Password prefix={<LockOutlined />}  placeholder="********" disabled={isLoading}/>
                 
                 </Form.Item>
                 <Form.Item>

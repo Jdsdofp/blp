@@ -48,6 +48,7 @@ import { DocTypeDoc } from "./pages/documents/typeDocument/show";
 import { DocConditionalsDoc } from "./pages/documents/conditinals/show";
 import { AdmUserlist } from "./pages/adm/user/list";
 import { dataProvider } from "./contexts/providerData";
+import { AdmUserCreate } from "./pages/adm/user";
 
 
 type Props = {
@@ -175,6 +176,7 @@ function App() {
                     <Route path="/adm/users">
                       <Route index element={<AdmUserShow/>}/>
                       <Route path="/adm/users/list" element={<AdmUserlist />}/>
+                      <Route  path="create" element={<AdmUserCreate />} />
                     </Route>
 
                     <Route path="/documents/type-documents">

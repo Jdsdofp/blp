@@ -5,6 +5,7 @@ import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import NewReleasesOutlinedIcon from '@mui/icons-material/NewReleasesOutlined';
 import MoreOutlinedIcon from '@mui/icons-material/MoreOutlined';
 import type { IResourceItem } from "@refinedev/core";
+
 export const resources: IResourceItem[] = [
   {
     name: "blog_posts",

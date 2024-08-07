@@ -97,18 +97,13 @@ export const AdmUserlist = () => {
     tableQueryResult.refetch();
   },[])
   
-  if (tableQueryResult.isLoading) {
-    return (
-      <div style={{ paddingTop: 50, paddingBottom: 50, textAlign: 'center' }}>
-        <Spin />
-      </div>
-    );
-  }
   
     return (
-        <List breadcrumb createButtonProps={{children: "Novo Usuário", icon: <UserAddOutlined/>}}>
-            <Table dataSource={tableQueryResult.data?.data} columns={columns} scroll={{x: 'max-content'}}/>
-        </List>
+      <List breadcrumb createButtonProps={{ children: "Novo Usuário", icon: <UserAddOutlined /> }}>
+        
+          <Table dataSource={tableQueryResult.data?.data} columns={columns} scroll={{ x: 'max-content' }}  loading={tableQueryResult.isLoading}/>
+        
+      </List>
     )
 
 };
