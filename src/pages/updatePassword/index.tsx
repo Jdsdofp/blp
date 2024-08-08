@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useUpdatePassword } from "@refinedev/core";
 import { Form, Input, Button, Typography, Row, Col, Card } from "antd";
 import { CircularProgress } from "@mui/material";
-import { useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { authProvider } from "../../authProvider";
 
 const { Title } = Typography;
