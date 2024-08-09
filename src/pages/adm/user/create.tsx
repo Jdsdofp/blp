@@ -1,4 +1,5 @@
 import { Create } from "@refinedev/antd"
+import { useTable } from "@refinedev/core";
 import { Form, Input, Select } from "antd"
 import { SelectProps } from "antd/lib";
 
@@ -6,9 +7,10 @@ import { SelectProps } from "antd/lib";
 
 
 export const AdmUserCreate = () =>{
-
+    const { tableQueryResult } = useTable({resource: 'companies', syncWithLocation: true})
     const options: SelectProps['options'] = [];
 
+    console.log(tableQueryResult.data?.data)
         for (let i = 10; i < 35; i++) {
         options.push({
             value: i.toString(35) + i,
