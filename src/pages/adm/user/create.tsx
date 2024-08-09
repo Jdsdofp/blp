@@ -1,30 +1,39 @@
-import { Create } from "@refinedev/antd"
-import { useTable } from "@refinedev/core";
+import { Create, useForm } from "@refinedev/antd"
+import { useMany, useTable } from "@refinedev/core";
 import { Form, Input, Select } from "antd"
-import { SelectProps } from "antd/lib";
+import { useState } from "react";
 
 
 
 
 export const AdmUserCreate = () =>{
-    const { tableQueryResult } = useTable({resource: 'companies', syncWithLocation: true})
-    const options: SelectProps['options'] = [];
+    const { tableQueryResult: companiesResult } = useTable({ resource: 'companies', syncWithLocation: true });
+    const [valueID, setValueID] = useState()
+    const { data: branchesResult } = useMany({resource: 'branches', ids: valueID ? [valueID] : []});
+    
+    
+    const options = companiesResult.data?.data?.map((company) => ({
+        label: company.e_nome,
+        value: company.e_id,
+    }));
+    
+    const branchs = branchesResult?.data?.map((branch) => ({
+        label: branch.f_nome,
+        value: branch.f_id,
+    })) || [];
+  
 
-    console.log(tableQueryResult.data?.data)
-        for (let i = 10; i < 35; i++) {
-        options.push({
-            value: i.toString(35) + i,
-            label: i.toString(35) + i,
-        });
-        }
+    const handleChange = (e_id: number[])=>{
+        e_id.map((id: number)=>{
+            setValueID(id)
+        })
+    }
 
-        const handleChange = (value: string) => {
-            console.log(`selected ${value}`);
-          };
-
+    
+    
     return (
         <Create title="Criar Usuário" breadcrumb saveButtonProps={{children: "Salvar" }}>
-            <Form  style={{maxWidth: '100vh'}}  labelAlign="left" >
+            <Form style={{maxWidth: '100vh'}}  labelAlign="left" >
                 <Form.Item >
                     <Input placeholder="Nome Completo"/>
                 </Form.Item>
@@ -36,6 +45,7 @@ export const AdmUserCreate = () =>{
                 <Form.Item>
                 <Select
                 mode="multiple"
+                loading={companiesResult.isLoading}
                 style={{ width: '100%' }}
                 placeholder="Empresa"
                 onChange={handleChange}
@@ -48,10 +58,10 @@ export const AdmUserCreate = () =>{
                 mode="multiple"
                 style={{ width: '100%' }}
                 placeholder="Filial"
-                onChange={handleChange}
-                options={options}
                 />
                 </Form.Item>
+            
+            <h2>{[valueID]}</h2>
             </Form>
         </Create>
     )
