@@ -15,12 +15,23 @@ export const AdmUserCreate = () => {
     const [nome, setNome] = useState<string>("")
 
 
+    interface IUser {
+        u_nome: string;
+        u_email: string;
+        u_senha: string;
+        u_senhatemporaria?: boolean;
+        u_empresas_ids: [number];
+        u_filiais_ids: [number];
+        u_avatar: string;
+    }
+
+
     const companyOptions = companiesResult.data?.data?.map((company) => ({
         label: company.e_nome,
         value: company.e_id,
     }));
 
-    
+    const {formProps, saveButtonProps} = useForm<IUser>({})
     
     useEffect(() => {
         if (valueID) {
@@ -55,6 +66,8 @@ export const AdmUserCreate = () => {
         return initials.toUpperCase();
     }
 
+    console.log(formProps)
+
     return (
         <Create title="Criar Usuário" breadcrumb saveButtonProps={{ children: "Salvar" }}>
             <Show breadcrumb goBack title>
@@ -79,6 +92,8 @@ export const AdmUserCreate = () => {
                     <span style={{color: "#976DF2", fontSize: "10px"}}> {pswTemp ? "" : "Senha temporaria?"}</span>
                     </Form.Item>
                 </Form.Item>
+
+
 
                 <Form.Item>
                     <Select

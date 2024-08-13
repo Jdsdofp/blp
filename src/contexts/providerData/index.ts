@@ -6,6 +6,7 @@ import { API_URL, TOKEN_KEY } from "../../authProvider";
 const getResourceUrl = (resource: string, ids: number): string => {
     const resourceMap: { [key: string]: string } = {
         users: `${API_URL}/user/listar-usuarios`,
+        userCreate: `${API_URL}/user/registrar-usuario`,
         companies: `${API_URL}/company/listar-empresas`,
         branches: `${API_URL}/branch/${ids}/listar-filial`
     };
@@ -72,4 +73,31 @@ export const dataProvider: DataProvider = {
             };
         }
     },
+
+    create: async ({ resource, variables, meta }) => {
+        const token = localStorage.getItem(TOKEN_KEY);
+        const url = getResourceUrl(resource);
+
+        if (!url) {
+            throw new Error("Recurso não suportado");
+        }
+
+        try {
+            axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+            const { data } = await axios.post(url, variables, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            return {
+                data: data,
+            };
+        } catch (error) {
+            console.log("Houve um erro ao criar o registro");
+            return {
+                data: null,
+            };
+        }
+    }
 };
