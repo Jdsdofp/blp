@@ -31,7 +31,7 @@ export const AdmUserCreate = () => {
         value: company.e_id,
     }));
 
-    const {formProps, saveButtonProps, queryResult} = useForm<IUser>({})
+    const {formProps, saveButtonProps } = useForm<IUser>({action: "create", resource: "userCreate", redirect: "list"})
     
     useEffect(() => {
         if (valueID) {
@@ -66,7 +66,7 @@ export const AdmUserCreate = () => {
         return initials.toUpperCase();
     }
 
-    console.log("resultado", queryResult)
+    console.log("resultado", FormItem.name)
 
     return (
         <Create title="Criar Usuário" breadcrumb saveButtonProps={{...saveButtonProps, children: "Salvar" }}>
@@ -75,23 +75,22 @@ export const AdmUserCreate = () => {
             </Show>
             <Form {...formProps} style={{ maxWidth: '100vh' }} labelAlign="left">
             
-                <Form.Item rules={[{ required: true, type: "string", message: "Obrigatorio "}]}>
-                    <Input placeholder="Nome Completo" onChange={(e)=>setNome(e.target.value)} name="u_nome"/>
+                <Form.Item name="u_nome" rules={[{ required: true, type: "string", message: "Obrigatorio "}]} >
+                    <Input placeholder="Nome Completo" onChange={(e)=>setNome(e.target.value)}/>
                 </Form.Item>
 
-                <Form.Item rules={[{ required: true, type: "email", message: "E-mail inválido" }]}>
-                    <Input placeholder="E-mail" name="u_email"/>
+                <Form.Item name="u_email" rules={[{ required: true, type: "email", message: "E-mail inválido" }]}>
+                    <Input placeholder="E-mail"/>
                 </Form.Item>
                 
 
-                <Form.Item rules={[{ required: true, type: "string", message: "Obrigatorio "}]}>
-                    <Input.Password placeholder="Senha temporaria" disabled={!pswTemp} name="u_senha"/>
-                    
+                <Form.Item name="u_senha" rules={[{ required: true, type: "string", message: "Obrigatorio "}]} >
+                    <Input.Password  placeholder="Senha temporaria" disabled={!pswTemp} />                    
+                </Form.Item>
                     <Form.Item style={{marginBottom: 0}}>
                     <Switch onChange={(e)=>handleSwitchPsw(e)} checked={pswTemp} size="small" checkedChildren={<CheckOutlined/>} unCheckedChildren={<CloseOutlined/> }/>
                     <span style={{color: "#976DF2", fontSize: "10px"}}> {pswTemp ? "" : "Senha temporaria?"}</span>
                     </Form.Item>
-                </Form.Item>
 
 
 
