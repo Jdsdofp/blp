@@ -15,14 +15,14 @@ export const AdmUserCreate = () => {
     const [nome, setNome] = useState<string>("")
 
 
+
+
+    const { Item: FormItem } = Form;
+
     interface IUser {
         u_nome: string;
         u_email: string;
         u_senha: string;
-        u_senhatemporaria?: boolean;
-        u_empresas_ids: [number];
-        u_filiais_ids: [number];
-        u_avatar: string;
     }
 
 
@@ -31,7 +31,7 @@ export const AdmUserCreate = () => {
         value: company.e_id,
     }));
 
-    const {formProps, saveButtonProps} = useForm<IUser>({})
+    const {formProps, saveButtonProps, queryResult} = useForm<IUser>({})
     
     useEffect(() => {
         if (valueID) {
@@ -66,26 +66,26 @@ export const AdmUserCreate = () => {
         return initials.toUpperCase();
     }
 
-    console.log(formProps)
+    console.log("resultado", queryResult)
 
     return (
-        <Create title="Criar Usuário" breadcrumb saveButtonProps={{ children: "Salvar" }}>
+        <Create title="Criar Usuário" breadcrumb saveButtonProps={{...saveButtonProps, children: "Salvar" }}>
             <Show breadcrumb goBack title>
                 <Avatar size={60}>{getInitialsAvatar(nome) ? getInitialsAvatar(nome) : <UserAddOutlined/> }</Avatar>
             </Show>
-            <Form style={{ maxWidth: '100vh' }} labelAlign="left">
+            <Form {...formProps} style={{ maxWidth: '100vh' }} labelAlign="left">
             
                 <Form.Item rules={[{ required: true, type: "string", message: "Obrigatorio "}]}>
-                    <Input placeholder="Nome Completo" onChange={(e)=>setNome(e.target.value)} />
+                    <Input placeholder="Nome Completo" onChange={(e)=>setNome(e.target.value)} name="u_nome"/>
                 </Form.Item>
 
                 <Form.Item rules={[{ required: true, type: "email", message: "E-mail inválido" }]}>
-                    <Input placeholder="E-mail" />
+                    <Input placeholder="E-mail" name="u_email"/>
                 </Form.Item>
                 
 
                 <Form.Item rules={[{ required: true, type: "string", message: "Obrigatorio "}]}>
-                    <Input.Password placeholder="Senha temporaria" disabled={!pswTemp}/>
+                    <Input.Password placeholder="Senha temporaria" disabled={!pswTemp} name="u_senha"/>
                     
                     <Form.Item style={{marginBottom: 0}}>
                     <Switch onChange={(e)=>handleSwitchPsw(e)} checked={pswTemp} size="small" checkedChildren={<CheckOutlined/>} unCheckedChildren={<CloseOutlined/> }/>
