@@ -14,6 +14,12 @@ export const CurentUser: React.FC = () =>{
     const {mutate: logout} = useLogout();
     const [ openModalUser, setOpenModalUser] = useState(false);
 
+    const getInitialsAvatar = (e: string) =>{
+      const nomeArrays = e.split(" ");
+      const initials = nomeArrays.map((n)=>n[0]).join("");
+      return initials.toUpperCase();
+  }
+
     const content = (
         <div
           style={{
@@ -76,7 +82,7 @@ export const CurentUser: React.FC = () =>{
               src={user?.avatarUrl}
               size="large"
               style={{ cursor: "pointer" }}
-            />
+            ></Avatar>
           </Popover>
 
 

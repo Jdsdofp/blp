@@ -10,7 +10,7 @@ const getResourceUrl = (resource: string, ids: number): string => {
         companies: `${API_URL}/company/listar-empresas`,
         branches: `${API_URL}/branch/${ids}/listar-filial`
     };
-
+    
     return resourceMap[resource] || '';
 };
 
@@ -89,9 +89,9 @@ export const dataProvider: DataProvider = {
                     'Authorization': `Bearer ${token}`,
                 },
             });
-
+            
             return {
-                data: data,
+                data: data
             };
         } catch (error) {
             console.log("Houve um erro ao criar o recurso");

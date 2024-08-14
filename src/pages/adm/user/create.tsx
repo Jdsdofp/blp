@@ -1,7 +1,7 @@
 import { CheckOutlined, CloseOutlined, UserAddOutlined } from "@ant-design/icons";
 import { Create, Show, useForm } from "@refinedev/antd";
 import { useMany, useTable } from "@refinedev/core";
-import { Avatar, Checkbox, Form, Input, Select, Space, Switch, Typography } from "antd";
+import { Avatar, Checkbox, Form, Input, message, Select, Space, Switch, Typography } from "antd";
 import { useEffect, useState } from "react";
 
 
@@ -12,26 +12,43 @@ export const AdmUserCreate = () => {
     const [selectedBranches, setSelectedBranches] = useState([]);
     const { data: branchesResult } = useMany({ resource: 'branches', ids: valueID ? [valueID] : [] });
     const [pswTemp, setPswTemp] = useState<boolean>(true);
-    const [nome, setNome] = useState<string>("")
-
-
-
-
+    const [nome, setNome] = useState<string>("");
+    
+    
+    
+    
     const { Item: FormItem } = Form;
-
+    
     interface IUser {
         u_nome: string;
         u_email: string;
         u_senha: string;
+        u_empresas_ids: number[];
+        u_filiais_ids: number[];
+        u_senhatemporaria: boolean;
     }
-
+    
 
     const companyOptions = companiesResult.data?.data?.map((company) => ({
         label: company.e_nome,
         value: company.e_id,
     }));
 
-    const {formProps, saveButtonProps } = useForm<IUser>({action: "create", resource: "userCreate", redirect: "list"})
+    const {formProps, saveButtonProps, formLoading } = useForm<IUser>({
+        action: "create", 
+        resource: "userCreate", 
+        successNotification(data, values, resource) {
+        return{
+            message: `${data?.data?.message}`,
+            type: "success"
+        }},
+        errorNotification(error, values, resource) {
+            return{
+                message: `${error?.response.data.message}`,
+                type: 'error'
+            }
+        },
+    })
     
     useEffect(() => {
         if (valueID) {
@@ -48,7 +65,9 @@ export const AdmUserCreate = () => {
   
     const handleSwitchPsw = (e: boolean) =>{
         setPswTemp(e)
+        formProps.form.setFieldsValue({ u_senhatemporaria: e });
     }
+
 
 
     const handleCompanyChange = (selectedCompanyIDs) => {
@@ -66,13 +85,14 @@ export const AdmUserCreate = () => {
         return initials.toUpperCase();
     }
 
-    console.log("resultado", FormItem.name)
+
 
     return (
-        <Create title="Criar Usuário" breadcrumb saveButtonProps={{...saveButtonProps, children: "Salvar" }}>
-            <Show breadcrumb goBack title>
+        <Create title="Criar Usuário" breadcrumb saveButtonProps={{...saveButtonProps, children: "Salvar", loading: formLoading}}>
+            <div style={{margin: 10}}>
                 <Avatar size={60}>{getInitialsAvatar(nome) ? getInitialsAvatar(nome) : <UserAddOutlined/> }</Avatar>
-            </Show>
+            </div>
+           
             <Form {...formProps} style={{ maxWidth: '100vh' }} labelAlign="left">
             
                 <Form.Item name="u_nome" rules={[{ required: true, type: "string", message: "Obrigatorio "}]} >
@@ -82,19 +102,13 @@ export const AdmUserCreate = () => {
                 <Form.Item name="u_email" rules={[{ required: true, type: "email", message: "E-mail inválido" }]}>
                     <Input placeholder="E-mail"/>
                 </Form.Item>
+
+                <Form.Item name="u_senha">
+                    <Input.Password  placeholder="Senha" disabled={!pswTemp} />                    
+                </Form.Item>
                 
 
-                <Form.Item name="u_senha" rules={[{ required: true, type: "string", message: "Obrigatorio "}]} >
-                    <Input.Password  placeholder="Senha temporaria" disabled={!pswTemp} />                    
-                </Form.Item>
-                    <Form.Item style={{marginBottom: 0}}>
-                    <Switch onChange={(e)=>handleSwitchPsw(e)} checked={pswTemp} size="small" checkedChildren={<CheckOutlined/>} unCheckedChildren={<CloseOutlined/> }/>
-                    <span style={{color: "#976DF2", fontSize: "10px"}}> {pswTemp ? "" : "Senha temporaria?"}</span>
-                    </Form.Item>
-
-
-
-                <Form.Item>
+                <Form.Item name="u_empresas_ids">
                     <Select
                         mode="multiple"
                         loading={companiesResult.isLoading}
@@ -105,7 +119,7 @@ export const AdmUserCreate = () => {
                     />
                 </Form.Item>
 
-                <Form.Item>
+                <Form.Item name="u_filiais_ids">
                     <Select
                         mode="multiple"
                         showSearch
@@ -118,6 +132,10 @@ export const AdmUserCreate = () => {
                             option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
                         }
                     />
+                </Form.Item>
+                <Form.Item name="u_senhatemporaria" style={{marginBottom: 0}}>
+                    <Switch onChange={(e)=>handleSwitchPsw(e)} checked={pswTemp} size="small" checkedChildren={<CheckOutlined/>} unCheckedChildren={<CloseOutlined/> }/>
+                    <span style={{color: pswTemp ? "#976DF2" : "#8C8C8C", fontSize: "10px"}}> Senha temporaria?</span>
                 </Form.Item>
             </Form>
         </Create>
