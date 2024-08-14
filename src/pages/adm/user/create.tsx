@@ -1,7 +1,7 @@
 import { CheckOutlined, CloseOutlined, UserAddOutlined } from "@ant-design/icons";
-import { Create, Show, useForm } from "@refinedev/antd";
+import { Create, Show, useForm, useModalForm } from "@refinedev/antd";
 import { useMany, useTable } from "@refinedev/core";
-import { Avatar, Checkbox, Form, Input, message, Select, Space, Switch, Typography } from "antd";
+import { Avatar, Form, Input, Select, Switch } from "antd";
 import { useEffect, useState } from "react";
 
 
@@ -34,9 +34,10 @@ export const AdmUserCreate = () => {
         value: company.e_id,
     }));
 
-    const {formProps, saveButtonProps, formLoading } = useForm<IUser>({
+    
+    const {formProps, saveButtonProps, formLoading, queryResult } = useForm<IUser>({
         action: "create", 
-        resource: "userCreate", 
+        resource: "userCreate",
         successNotification(data, values, resource) {
         return{
             message: `${data?.data?.message}`,
@@ -45,11 +46,12 @@ export const AdmUserCreate = () => {
         errorNotification(error, values, resource) {
             return{
                 message: `${error?.response.data.message}`,
-                type: 'error'
+                type: "error",
             }
         },
     })
-    
+
+
     useEffect(() => {
         if (valueID) {
             const branchs = branchesResult?.data?.map((branch) => ({
