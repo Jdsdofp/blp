@@ -66,7 +66,7 @@ const columns: TableProps<DataType>['columns'] = [
     render: (_, record: BaseRecord)=>(
       
       <Space>
-        <EditButton hideText size='small' recordItemId={record.id}/>
+        <EditButton hideText size='small' recordItemId={record.u_id}/>
         <ShowButton hideText size='small'/>
         <DeleteButton hideText size='small' confirmTitle='Deseja realmente excluir?' confirmCancelText='Não' confirmOkText='Sim'/>
       </Space>
