@@ -6,11 +6,11 @@ import { useEffect, useState } from "react";
 
 
 export const AdmUserCreate = () => {
-    const { tableQueryResult: companiesResult } = useTable({ resource: 'companies', syncWithLocation: true });
+    const { tableQueryResult: companiesResult } = useTable({ resource: 'companies', syncWithLocation: false});
     const [valueID, setValueID] = useState(null);
     const [branchOptions, setBranchOptions] = useState([]);
     const [selectedBranches, setSelectedBranches] = useState([]);
-    const { data: branchesResult } = useMany({ resource: 'branches', ids: valueID ? [valueID] : [] });
+    const { data: branchesResult } = useMany({ resource: 'branches', ids: valueID ? [valueID] : []});
     const [pswTemp, setPswTemp] = useState<boolean>(true);
     const [nome, setNome] = useState<string>("");
     
@@ -35,13 +35,13 @@ export const AdmUserCreate = () => {
     }));
 
     
-    const {formProps, saveButtonProps, formLoading, queryResult } = useForm<IUser>({
-        action: "create", 
-        resource: "userCreate",
+    const {formProps, saveButtonProps, formLoading, form } = useForm<IUser>({ 
+        resource: "userCreate",  
         successNotification(data, values, resource) {
-        return{
-            message: `${data?.data?.message}`,
-            type: "success"
+            form.resetFields();
+            return{
+            message: `${data?.data?.message}\n Usuário: #${data?.data?.usuario?.u_id}`,
+            type: "success",
         }},
         errorNotification(error, values, resource) {
             return{
@@ -86,7 +86,6 @@ export const AdmUserCreate = () => {
         const initials = nomeArrays.map((n)=>n[0]).join("");
         return initials.toUpperCase();
     }
-
 
 
     return (

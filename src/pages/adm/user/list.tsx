@@ -16,14 +16,15 @@ interface DataType {
   empresa: number[];
 }
 
-const { Title } = Typography;
+
+
 
 const columns: TableProps<DataType>['columns'] = [
     {
         title: 'ID',
         dataIndex: 'u_id',
         key: 'key',
-        render: (text) => <a>{text}</a>,
+        render: (text) => <a>#{text}</a>,
       },
     {
     title: 'Nome',
@@ -42,7 +43,7 @@ const columns: TableProps<DataType>['columns'] = [
     key: 'criado_em',
     render: (_, {criado_em})=>(
       <>
-          <DateField type='secondary' value={criado_em} format='DD/MM/YYYY HH:mm:ss' />
+          <DateField style={{fontSize: 11}} type='secondary' value={criado_em} format='DD/MM/YYYY HH:mm:ss' />
       </>
     )
   },
@@ -65,10 +66,11 @@ const columns: TableProps<DataType>['columns'] = [
     render: (_, record: BaseRecord)=>(
       
       <Space>
-        <EditButton hideText size='small'  />
+        <EditButton hideText size='small' recordItemId={record.id}/>
         <ShowButton hideText size='small'/>
         <DeleteButton hideText size='small' confirmTitle='Deseja realmente excluir?' confirmCancelText='Não' confirmOkText='Sim'/>
       </Space>
+    
     )
   },
   {
@@ -97,6 +99,7 @@ export const AdmUserlist = () => {
     tableQueryResult.refetch();
   },[])
   
+
   
     return (
       <List breadcrumb createButtonProps={{ children: "Novo Usuário", icon: <UserAddOutlined /> }}>

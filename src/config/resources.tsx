@@ -2,8 +2,6 @@ import { ApartmentOutlined, BranchesOutlined, DashboardFilled, DashboardTwoTone,
 import { Dashboard, DashboardCustomizeOutlined, DashboardCustomizeSharp, DashboardOutlined, DocumentScannerTwoTone, FolderCopyOutlined, TypeSpecimen } from "@mui/icons-material";
 import AddBusinessIcon from '@mui/icons-material/AddBusiness';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
-import NewReleasesOutlinedIcon from '@mui/icons-material/NewReleasesOutlined';
-import MoreOutlinedIcon from '@mui/icons-material/MoreOutlined';
 import type { IResourceItem } from "@refinedev/core";
 
 export const resources: IResourceItem[] = [
@@ -63,6 +61,7 @@ export const resources: IResourceItem[] = [
     show: "/adm/users",
     list: "/adm/users/list",
     create: "/adm/users/create",
+    edit: "/adm/users/edit/:id",
     meta: {
       parent: "administrations",
       label: "Usuários",
