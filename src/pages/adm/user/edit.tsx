@@ -19,12 +19,12 @@ export const AdmUserEdit = () =>{
         form.setFieldsValue(data.data);
     }
 
-    console.log(data?.data[0]?.u_id)
+    
     return (
         <Edit title="Editar Usuário" breadcrumb>
             <Form >
                 <Form.Item > 
-                    <Input defaultValue={'#'+data?.data[0].u_id} disabled/>
+                    <Input defaultValue={data?.data[0].u_id} disabled/>
                 </Form.Item>
 
                 <Form.Item > 
