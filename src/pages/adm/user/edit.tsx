@@ -8,36 +8,25 @@ import { useParams } from "react-router-dom";
 export const AdmUserEdit = () =>{
     const { id } = useParams();
     const { data, isLoading } = useOne({
-        resource: "users",
+        resource: "userOne",
         id,
     });
-
-    const [form] = Form.useForm();
-
-    // Preenche o formulário com os dados do usuário quando os dados são carregados
-    if (data) {
-        form.setFieldsValue(data.data);
-    }
-
     
     return (
-        <Edit title="Editar Usuário" breadcrumb>
+        <Edit title="Editar Usuário" breadcrumb isLoading={isLoading}>
             <Form >
-                <Form.Item > 
-                    <Input defaultValue={data?.data[0].u_id} disabled/>
+                <Form.Item name="u_id"> 
+                    <Input defaultValue={data?.data.u_id} disabled/>
                 </Form.Item>
 
-                <Form.Item > 
-                    <Input defaultValue={data?.data[0].u_nome}/>
+                <Form.Item name="u_nome"> 
+                    <Input defaultValue={data?.data.u_nome}/>
                 </Form.Item>
 
-                <Form.Item > 
-                    <Input defaultValue={data?.data[0].u_email}/>
+                <Form.Item name="u_email"> 
+                    <Input defaultValue={data?.data.u_email}/>
                 </Form.Item>
 
-                <Form.Item > 
-                    <Input defaultValue={data?.data[0].u_email}/>
-                </Form.Item>
             </Form>
         </Edit>
     )

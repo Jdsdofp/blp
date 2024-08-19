@@ -3,7 +3,7 @@ import axios from "axios";
 import { API_URL, TOKEN_KEY } from "../../authProvider";
 
 // Função auxiliar para mapear recursos para URLs
-const getResourceUrl = (resource: string, ids: number, id: any): string => {
+const getResourceUrl = (resource: string, ids: number, id: number): string => {
     const resourceMap: { [key: string]: string } = {
         users: `${API_URL}/user/listar-usuarios`,
         userCreate: `${API_URL}/user/registrar-usuario`,
@@ -11,7 +11,7 @@ const getResourceUrl = (resource: string, ids: number, id: any): string => {
         branches: `${API_URL}/branch/${ids}/listar-filial`,
         userOne: `${API_URL}/user/${id}/listar-usuario`
     };
-    console.log("o id que ta vindo", id)
+    
     return resourceMap[resource] || '';
 };
 
@@ -47,7 +47,7 @@ export const dataProvider: DataProvider = {
 
     async getOne({resource, id}) {
         const token = localStorage.getItem(TOKEN_KEY);
-        const url = getResourceUrl(resource, id);
+        const url = getResourceUrl(resource, id, id);
         if (!url) {
             throw new Error("Recurso não suportado");
         }
@@ -59,7 +59,6 @@ export const dataProvider: DataProvider = {
                     'Authorization': `Bearer ${token}`,
                 },
             });
-            console.log("data no provider", data)
             
             return {
                 data: data,
