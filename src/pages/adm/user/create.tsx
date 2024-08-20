@@ -6,7 +6,10 @@ import { useEffect, useState } from "react";
 
 
 export const AdmUserCreate = () => {
-    const { tableQueryResult: companiesResult } = useTable({ resource: 'companies', syncWithLocation: false});
+    const { tableQueryResult: companiesResult } = useTable({ resource: 'company', meta: {
+        endpoint: 'listar-empresas'
+    },
+    syncWithLocation: false});
     const [valueID, setValueID] = useState(null);
     const [branchOptions, setBranchOptions] = useState([]);
     const [selectedBranches, setSelectedBranches] = useState([]);
