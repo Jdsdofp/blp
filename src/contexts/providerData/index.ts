@@ -16,17 +16,13 @@ const getResourceUrl = (resource: string, ids: number, id: number): string => {
 };
 
 export const dataProvider: DataProvider = {
-    getList: async ({resource}) => {
+    getList: async ({resource, meta}) => {
+        
+        const endpoint = meta?.endpoint;
         const token = localStorage.getItem(TOKEN_KEY);
-        const url = getResourceUrl(resource);
-
-        if (!url) {
-            throw new Error("Recurso não suportado");
-        }
-
         try {
             axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-            const { data } = await axios.get(url, {
+            const { data } = await axios.get(`${API_URL}/${resource}/${endpoint}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
@@ -45,24 +41,23 @@ export const dataProvider: DataProvider = {
         }
     },
 
-    async getOne({resource, id}) {
+    getOne: async ({ id, meta }) => {
         const token = localStorage.getItem(TOKEN_KEY);
-        const url = getResourceUrl(resource, id, id);
-        if (!url) {
-            throw new Error("Recurso não suportado");
-        }
+        const endpoint = meta?.variables?.endpoint;
+        const pat = meta?.variables?.pat;
         
         try {
+    
+
             axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-            const { data } = await axios.get(url, {
+            const { data } = await axios.get(`${API_URL}/${pat}/${id}/${endpoint}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
             });
-            
+
             return {
-                data: data,
-                total: data.length,
+                data
             };
         } catch (error) {
             console.log("Houve um erro ao buscar dados");

@@ -93,7 +93,9 @@ const columns: TableProps<DataType>['columns'] = [
 
 export const AdmUserlist = () => {
 
-  const { tableQueryResult } = useTable({ resource: "users", syncWithLocation: true, liveMode: "auto" })
+  const { tableQueryResult } = useTable({ resource: "user", syncWithLocation: true, liveMode: "auto", meta: {
+    endpoint: "listar-usuarios"
+  } })
 
   useEffect(()=>{
     tableQueryResult.refetch();
