@@ -65,8 +65,8 @@ function App() {
     if (resource && action) {
       // Verifique e formate as propriedades para garantir que sejam strings
       const idString = params && params?.id ? String(params.id) : "";
-      const num = idString.length > 0 ? idString : "";
-      const bar = idString.length > 0 ? "/" : "";
+      const num = idString.length > 0 ? `(${idString})` : "";
+      const bar = idString.length > 0 ? " " : "";
 
       title = `${resource?.meta?.label }${bar}${num} | ${title}`.trim(); // Gera o título dinamicamente
     }

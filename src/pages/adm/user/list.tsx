@@ -1,9 +1,9 @@
 import React, { Children, useEffect, useState } from 'react';
-import { Space, Spin, Table, Tag, Typography } from 'antd';
+import { Space, Spin, Switch, Table, Tag, Typography } from 'antd';
 import type { TableProps } from 'antd';
 import { DateField, DeleteButton, EditButton, List, ShowButton } from '@refinedev/antd';
 import { UserAddOutlined } from '@ant-design/icons';
-import { BaseRecord, useTable } from '@refinedev/core';
+import { BaseRecord, CanAccess, useTable } from '@refinedev/core';
 import Link from 'antd/es/typography/Link';
 
 interface DataType {
