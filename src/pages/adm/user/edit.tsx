@@ -1,6 +1,6 @@
-import { DateField, Edit, useForm } from "@refinedev/antd";
+import { DateField, Edit, SaveButton, useForm } from "@refinedev/antd";
 import { useMany, useOne, useTable, useUpdate } from "@refinedev/core";
-import { Form, Input, Select, Switch } from "antd";
+import { Button, Form, Input, Select, Switch } from "antd";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -15,17 +15,18 @@ interface IUserOne {
 }
 
 export const AdmUserEdit = () => {
+    const { formProps, formLoading, saveButtonProps, form } = useForm<IUserOne>({
+        action: "edit"
+    });
 
     const [valueID, setValueID] = useState(null);
     const { tableQueryResult: companiesResult } = useTable({ resource: 'company', meta: {
         endpoint: 'listar-empresas'
     },
     syncWithLocation: false});
-
     const { data: branchesResult } = useMany({ resource: 'branches', ids: valueID ? [valueID] : []});
-    const [form] = Form.useForm();
+    
     const { id } = useParams();
-    const { formProps, formLoading, saveButtonProps } = useForm<IUserOne>({action: "edit"});
 
 
     const { data } = useOne<IUserOne>({
@@ -35,7 +36,7 @@ export const AdmUserEdit = () => {
                 pat: "user",
                 endpoint: "listar-usuario",
             }
-        },
+        }
     });
 
     const companiesOptions = companiesResult?.data?.data.map((empresa)=>({
@@ -49,7 +50,7 @@ export const AdmUserEdit = () => {
     }))
 
     
-    const { mutate } = useUpdate();
+    const { mutate, isLoading } = useUpdate();
 
     const onFinish = (values) => {
         mutate({
@@ -57,10 +58,11 @@ export const AdmUserEdit = () => {
             values,
             meta: {
                 variables: {
-                    endpoint: "user",
-                    pat: "editar-usuarios",
+                    endpoint: "editar-usuarios",
+                    pat: "user",
+                    values
                 },
-            },
+            }
         });
     };
     
@@ -82,10 +84,10 @@ export const AdmUserEdit = () => {
         setValueID(lastSelectedID);
     };
     
-
     return (
-        <Edit title="Editar Usuário" breadcrumb isLoading={formLoading} saveButtonProps={saveButtonProps}>
+        <Edit title="Editar Usuário" breadcrumb isLoading={formLoading} saveButtonProps={{...saveButtonProps, children: 'Salvar', loading: isLoading}}>
             <Form {...formProps} form={form} initialValues={data?.data} onFinish={onFinish}>
+            
                 <Form.Item
                     name="u_nome"
                     label="Nome"
@@ -108,7 +110,7 @@ export const AdmUserEdit = () => {
                     </Select>
                 </Form.Item>
 
-                <Form.Item name="filiais" label="Empresa" required>
+                <Form.Item name="filiais" label="Filial" required>
                     <Select mode="multiple" defaultValue={branchs} options={branchs}>
                     </Select>
                 </Form.Item>
@@ -120,7 +122,6 @@ export const AdmUserEdit = () => {
                 <Form.Item name="u_ativo" label="Status" valuePropName="checked">
                     <Switch checkedChildren="Ativo" unCheckedChildren="Desativado" />
                 </Form.Item>
-
             </Form>
         </Edit>
     );

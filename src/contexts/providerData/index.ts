@@ -126,15 +126,25 @@ export const dataProvider: DataProvider = {
         const token = localStorage.getItem(TOKEN_KEY);
         const endpoint = meta?.variables?.endpoint;
         const pat = meta?.variables?.pat;
-        console.log(endpoint)
+        const { u_nome, u_email, u_ativo, empresas, filiais } = meta?.variables.values;
+        const u_empresas_ids = empresas.map((e)=>e.value ? e.value : e)
+        const u_filiais_ids = filiais.map((f)=>f.value ? f.value : f) 
+        
         try {
-    
+            
 
             axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
             const { data } = await axios.put (`${API_URL}/${pat}/${id}/${endpoint}`, {
+                u_nome: u_nome,
+                u_email: u_email,
+                u_ativo: u_ativo,
+                u_empresas_ids: u_empresas_ids,
+                u_filiais_ids: u_filiais_ids
+                }, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
+                
             });
 
             return {
