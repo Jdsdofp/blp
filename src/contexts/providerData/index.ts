@@ -113,7 +113,7 @@ export const dataProvider: DataProvider = {
                     'Authorization': `Bearer ${token}`,
                 },
             });
-            
+
             return {
                 data: data
             };
@@ -121,5 +121,33 @@ export const dataProvider: DataProvider = {
             console.log("Houve um erro ao criar o recurso");
             throw error;
         }
+    },
+    update: async ({id,meta})=>{
+        const token = localStorage.getItem(TOKEN_KEY);
+        const endpoint = meta?.variables?.endpoint;
+        const pat = meta?.variables?.pat;
+        console.log(endpoint)
+        try {
+    
+
+            axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+            const { data } = await axios.put (`${API_URL}/${pat}/${id}/${endpoint}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            return {
+                data
+            };
+        } catch (error) {
+            console.log("Houve um erro ao buscar dados");
+            return {
+                data: [],
+                total: 0,
+            };
+        }
     }
+
+    
 };

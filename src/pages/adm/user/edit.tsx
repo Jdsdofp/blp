@@ -1,5 +1,5 @@
 import { DateField, Edit, useForm } from "@refinedev/antd";
-import { useMany, useOne, useTable } from "@refinedev/core";
+import { useMany, useOne, useTable, useUpdate } from "@refinedev/core";
 import { Form, Input, Select, Switch } from "antd";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -15,6 +15,7 @@ interface IUserOne {
 }
 
 export const AdmUserEdit = () => {
+
     const [valueID, setValueID] = useState(null);
     const { tableQueryResult: companiesResult } = useTable({ resource: 'company', meta: {
         endpoint: 'listar-empresas'
@@ -24,7 +25,8 @@ export const AdmUserEdit = () => {
     const { data: branchesResult } = useMany({ resource: 'branches', ids: valueID ? [valueID] : []});
     const [form] = Form.useForm();
     const { id } = useParams();
-    const { formProps, formLoading } = useForm<IUserOne>();
+    const { formProps, formLoading, saveButtonProps } = useForm<IUserOne>({action: "edit"});
+
 
     const { data } = useOne<IUserOne>({
         id,
@@ -46,6 +48,23 @@ export const AdmUserEdit = () => {
         value: filial.f_id
     }))
 
+    
+    const { mutate } = useUpdate();
+
+    const onFinish = (values) => {
+        mutate({
+            id: data?.data?.u_id,
+            values,
+            meta: {
+                variables: {
+                    endpoint: "user",
+                    pat: "editar-usuarios",
+                },
+            },
+        });
+    };
+    
+
     useEffect(() => {
         if (data) {
             form.setFieldsValue({
@@ -65,8 +84,8 @@ export const AdmUserEdit = () => {
     
 
     return (
-        <Edit title="Editar Usuário" breadcrumb isLoading={formLoading}>
-            <Form {...formProps} form={form} initialValues={data?.data}>
+        <Edit title="Editar Usuário" breadcrumb isLoading={formLoading} saveButtonProps={saveButtonProps}>
+            <Form {...formProps} form={form} initialValues={data?.data} onFinish={onFinish}>
                 <Form.Item
                     name="u_nome"
                     label="Nome"
