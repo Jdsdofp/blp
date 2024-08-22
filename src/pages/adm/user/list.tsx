@@ -1,9 +1,9 @@
-import React, { Children, useEffect, useState } from 'react';
-import { Space, Spin, Switch, Table, Tag, Typography } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Space, Table, Tag } from 'antd';
 import type { TableProps } from 'antd';
 import { DateField, DeleteButton, EditButton, List, ShowButton } from '@refinedev/antd';
 import { UserAddOutlined } from '@ant-design/icons';
-import { BaseRecord, CanAccess, useTable } from '@refinedev/core';
+import { BaseRecord, useDelete, useTable } from '@refinedev/core';
 import Link from 'antd/es/typography/Link';
 
 interface DataType {
@@ -68,7 +68,7 @@ const columns: TableProps<DataType>['columns'] = [
       <Space>
         <EditButton hideText size='small' recordItemId={record.u_id}/>
         <ShowButton hideText size='small'/>
-        <DeleteButton hideText size='small' confirmTitle='Deseja realmente excluir?' confirmCancelText='Não' confirmOkText='Sim'/>
+        <DeleteButton hideText size='small' confirmTitle='Deseja realmente excluir?' confirmCancelText='Não' confirmOkText='Sim' recordItemId={record.u_id} onSuccess={()=>hendleDelete(record.u_id)}/>
       </Space>
     
     )
@@ -91,8 +91,14 @@ const columns: TableProps<DataType>['columns'] = [
 
 
 
-export const AdmUserlist = () => {
+const hendleDelete = (record)=>{
+  
+  const { mutate }=useDelete()
 
+  mutate({id: record, values: 'teste'})
+}
+export const AdmUserlist = () => {
+  
   const { tableQueryResult } = useTable({ resource: "user", syncWithLocation: true, liveMode: "auto", meta: {
     endpoint: "listar-usuarios"
   } })
