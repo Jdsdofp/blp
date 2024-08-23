@@ -158,30 +158,26 @@ export const dataProvider: DataProvider = {
             };
         }
     },
-    deleteOne: async ({id, meta})=> {
+    deleteOne: async ({id, resource})=> {
         const token = localStorage.getItem(TOKEN_KEY);
-        const endpoint = meta?.variables
-
-        console.log(meta)
+        const u_id = id;
         try {
             
 
             axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-            const { data } = await axios.delete (`${API_URL}/${pat}/${id}/${endpoint}`,{
+            const {data} = await axios.delete(`${API_URL}/user/${u_id}/deletar-usuario`,{
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
                 
             });
-
+            //console.log(response)
             return {
                 data
             };
             } catch (error) {
-                console.log("Houve um erro ao buscar dados");
                 return {
-                    data: [],
-                    total: 0,
+                    error: error?.response?.data
                 };
             }
         },

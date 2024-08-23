@@ -3,7 +3,7 @@ import { Space, Table, Tag } from 'antd';
 import type { TableProps } from 'antd';
 import { DateField, DeleteButton, EditButton, List, ShowButton } from '@refinedev/antd';
 import { UserAddOutlined } from '@ant-design/icons';
-import { BaseRecord, useDelete, useTable } from '@refinedev/core';
+import { BaseRecord, useTable } from '@refinedev/core';
 import Link from 'antd/es/typography/Link';
 
 interface DataType {
@@ -17,9 +17,24 @@ interface DataType {
 }
 
 
+export const AdmUserlist = () => {
 
+  const hendleDelete = (record)=>{
+    if(record){
+      tableQueryResult.refetch()
+    }
 
-const columns: TableProps<DataType>['columns'] = [
+  } 
+
+  const { tableQueryResult } = useTable({ resource: "user", syncWithLocation: true, liveMode: "auto", meta: {
+    endpoint: "listar-usuarios"
+  } })
+  
+  useEffect(()=>{
+    tableQueryResult.refetch();
+  },[])
+  
+  const columns: TableProps<DataType>['columns'] = [
     {
         title: 'ID',
         dataIndex: 'u_id',
@@ -68,7 +83,7 @@ const columns: TableProps<DataType>['columns'] = [
       <Space>
         <EditButton hideText size='small' recordItemId={record.u_id}/>
         <ShowButton hideText size='small'/>
-        <DeleteButton hideText size='small' confirmTitle='Deseja realmente excluir?' confirmCancelText='Não' confirmOkText='Sim' recordItemId={record.u_id} onSuccess={()=>hendleDelete(record.u_id)}/>
+        <DeleteButton hideText size='small' confirmTitle='Deseja realmente excluir?' confirmCancelText='Não' confirmOkText='Sim' recordItemId={record.u_id} onSuccess={()=>hendleDelete(record)} successNotification={false}/>
       </Space>
     
     )
@@ -90,29 +105,10 @@ const columns: TableProps<DataType>['columns'] = [
 ];
 
 
-
-const hendleDelete = (record)=>{
-  
-  const { mutate }=useDelete()
-
-  mutate({id: record, values: 'teste'})
-}
-export const AdmUserlist = () => {
-  
-  const { tableQueryResult } = useTable({ resource: "user", syncWithLocation: true, liveMode: "auto", meta: {
-    endpoint: "listar-usuarios"
-  } })
-
-  useEffect(()=>{
-    tableQueryResult.refetch();
-  },[])
-  
-
-  
     return (
       <List breadcrumb createButtonProps={{ children: "Novo Usuário", icon: <UserAddOutlined /> }}>
         
-          <Table dataSource={tableQueryResult.data?.data} columns={columns} scroll={{ x: 'max-content' }}  loading={tableQueryResult.isLoading}/>
+          <Table dataSource={tableQueryResult.data?.data} columns={columns} scroll={{ x: 'max-content' }} loading={tableQueryResult.isLoading}/>
         
       </List>
     )
