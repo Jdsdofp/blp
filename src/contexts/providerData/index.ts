@@ -7,6 +7,7 @@ const getResourceUrl = (resource: string, ids: number, id: number): string => {
     const resourceMap: { [key: string]: string } = {
         users: `${API_URL}/user/listar-usuarios`,
         userCreate: `${API_URL}/user/registrar-usuario`,
+        companyCreate: `${API_URL}/company/registrar-empresa`,
         companies: `${API_URL}/company/listar-empresas`,
         branches: `${API_URL}/branch/${ids}/listar-filial`,
         userOne: `${API_URL}/user/${id}/listar-usuario`

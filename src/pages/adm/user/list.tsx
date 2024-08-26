@@ -69,7 +69,7 @@ export const AdmUserlist = () => {
     render: (_, {u_ativo})=>(
       <>
         {
-          <Tag color={u_ativo ? "blue" : "error"}>{u_ativo ? "Ativado" : "Desativado"}</Tag>
+          <Tag color={u_ativo ? "success" : "error"}>{u_ativo ? "Ativado" : "Desativado"}</Tag>
         }
       </>
     )
@@ -82,8 +82,9 @@ export const AdmUserlist = () => {
       
       <Space>
         <EditButton hideText size='small' recordItemId={record.u_id}/>
-        <ShowButton hideText size='small'/>
-        <DeleteButton hideText size='small' confirmTitle='Deseja realmente excluir?' confirmCancelText='Não' confirmOkText='Sim' recordItemId={record.u_id} onSuccess={()=>hendleDelete(record)} successNotification={false}/>
+        { record.u_empresas_ids.length || record.u_filiais_ids.length ? null : (
+          <DeleteButton hideText size='small' confirmTitle='Deseja realmente excluir?' confirmCancelText='Não' confirmOkText='Sim' recordItemId={record.u_id} onSuccess={()=>hendleDelete(record)} successNotification={false}/>
+        )}
       </Space>
     
     )
@@ -98,7 +99,7 @@ export const AdmUserlist = () => {
              <Tag key={id} color='geekblue'><Link type='secondary'>{id}</Link></Tag>
         ))}
 
-        {empresas.length > 4 && <Tag key="more">...</Tag>}
+        {empresas.length > 4 && <Tag key="Mais">...</Tag>}
       </span>
     )
   }
