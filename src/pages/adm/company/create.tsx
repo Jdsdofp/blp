@@ -19,12 +19,12 @@ interface ICompanies {
     e_criador_id: number;
 }
 
-const formatCNPJ = (cnpj: number) => {
+const formatCNPJ = (cnpj: any) => {
     return cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
 };
 
 export const AdmCompanyCreate = () => {
-
+  
     const { tableQueryResult: companiesResult } = useTable({ resource: 'company', liveMode: 'auto', meta: {
         endpoint: 'listar-empresas'
     },
@@ -32,7 +32,7 @@ export const AdmCompanyCreate = () => {
     
     
     const invalid = useInvalidate();
-    const {formProps, saveButtonProps, form} = useForm<ICompanies>({
+    const {formProps, saveButtonProps, form, formLoading} = useForm<ICompanies>({
         resource: 'companyCreate',
         action: 'create',
         successNotification(data) {
@@ -114,7 +114,7 @@ export const AdmCompanyCreate = () => {
             ),
         }
     ]
-
+    
   return (
     <Row gutter={[16, 16]} justify="center">
       <Col xs={{ span: 24 }} sm={{ span: 16 }} md={{ span: 12 }} lg={{ span: 8 }} xl={{ span: 7 }}>
@@ -142,7 +142,7 @@ export const AdmCompanyCreate = () => {
                 >
 
                 <InputMask mask="99.999.999/9999-99">
-                    {(inputProps: any) => <Input {...inputProps} />}
+                    {(inputProps: any) => <Input {...inputProps} placeholder="00.000.000/0000-00"/>}
                 </InputMask>
 
             </Form.Item>
@@ -158,7 +158,7 @@ export const AdmCompanyCreate = () => {
                 </Select>
             </Form.Item>
             <Form.Item>
-                <Button type="primary" icon={<AppRegistrationRoundedIcon />} {...saveButtonProps} block>
+                <Button type="primary" icon={<AppRegistrationRoundedIcon />} {...saveButtonProps} loading={formLoading} block>
                 Cadastrar
                 </Button>
             </Form.Item>
