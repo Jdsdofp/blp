@@ -51,6 +51,7 @@ import { dataProvider } from "./contexts/providerData";
 import { AdmUserCreate } from "./pages/adm/user";
 import { AdmUserEdit } from "./pages/adm/user/edit";
 import { AdmCompanyCreate } from "./pages/adm/company/create";
+import { AdmBranchlist } from "./pages/adm/branch/list";
 
 
 type Props = {
@@ -172,7 +173,7 @@ function App() {
                     </Route>
 
                     <Route path="/adm/branch">
-                      <Route index element={<AdmBranchShow/>}></Route>
+                      <Route index element={<AdmBranchlist/>}></Route>
                     </Route>
 
                     <Route path="/adm/users" >
