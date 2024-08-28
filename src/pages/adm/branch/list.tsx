@@ -1,34 +1,90 @@
 import React, { useEffect, useState } from 'react';
-import { Badge, Form, Input, Modal, Select, Space, Table, Tag } from 'antd';
+import { Badge, Col, Form, Input, Modal, Row, Select, Table, Tag } from 'antd';
 import type { TableProps } from 'antd';
-import { DateField, DeleteButton, EditButton, List, ShowButton } from '@refinedev/antd';
-import { BranchesOutlined, ClearOutlined, UserAddOutlined } from '@ant-design/icons';
-import { BaseRecord, useList, useTable } from '@refinedev/core';
-import Link from 'antd/es/typography/Link';
+import { List } from '@refinedev/antd';
+import { BranchesOutlined, ClearOutlined } from '@ant-design/icons';
+import { useTable } from '@refinedev/core';
 import InputMask from 'react-input-mask';
 
 interface IBranchs {
-  f_id: number;
-  f_nome: string;
-  f_cnpj: number;
-  f_cidade: string;
-  f_uf: string;
-  f_endereco: string;
-  empresa: object;
-  responsavel: object;
-  f_criado_em: Date;
-  f_ativo: boolean;
-}
+    f_id: number;
+    f_nome: string;
+    f_cnpj: number;
+    f_cidade: string;
+    f_uf: string;
+    f_endereco: string;
+    f_latitude: number;
+    f_longitude: number;
+    empresa: object;
+    responsavel: object;
+    f_criado_em: Date;
+    f_ativo: boolean;
+  }
 
 const formatCNPJ = (cnpj: any) => {
     return cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
 };
 
 export const AdmBranchlist = () => {
+    const [municipios, setMunicipios] = useState([]);
+    const [uf, setUf] = useState("");
+    const [ufs, setUfs] = useState([])
+    const [selectedUf, setSelectedUf] = useState("");
     const [isModal, setIsModal] = useState(false)
+    const { tableQueryResult: companiesResult } = useTable({ resource: 'company', meta: {endpoint: 'listar-empresas'},syncWithLocation: false});
     const {tableQueryResult: branchsResult} = useTable<IBranchs>({resource: 'branch', meta: {endpoint: 'listar-filiais'}, syncWithLocation: false, liveMode: 'auto'})
 
+    const companiesOptions = companiesResult.data?.data.map((company)=>({
+        label: company.e_nome,
+        value: company.e_id
+    }))
 
+    useEffect(() => {
+            fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados`)
+                .then(response => response.json())
+                .then(data => {
+                    const estadosFormatados = data.map((estado: any) => ({
+                        unidade: estado.sigla,
+                        nome: estado.nome
+                    }));
+                    setUfs(estadosFormatados);
+                })
+                .catch(error => console.error('Erro ao buscar municípios:', error));
+        
+    }, []);
+
+
+    useEffect(() => {
+        if (uf) {
+            fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`)
+                .then(response => response.json())
+                .then(data => {
+                    const municipiosFormatados = data.map((municipio: any) => ({
+                        codigo: municipio.id,
+                        nome: municipio.nome
+                    }));
+                    setMunicipios(municipiosFormatados);
+                })
+                .catch(error => console.error('Erro ao buscar municípios:', error));
+        }
+    }, [uf]);
+    
+    useEffect(() => {
+        if (selectedUf) {
+          fetch(`https://servicodados.ibge.gov.br/api/v2/localidades/estados/${selectedUf}/municipios`)
+            .then(response => response.json())
+            .then(data => {
+              const municipiosFormatted = data.map((municipio: any) => ({
+                codigo: municipio.id,
+                nome: municipio.nome
+              }));
+              setMunicipios(municipiosFormatted);
+            })
+            .catch(error => console.error('Erro ao buscar municípios:', error));
+        }
+      }, [selectedUf]);
+    
+      
     const columns: TableProps<IBranchs>['columns'] = [
         {
             key: 'f_id',
@@ -40,7 +96,7 @@ export const AdmBranchlist = () => {
         {
             key: 'empresa',
             title: 'Empresa',
-            render: (_, record)=>(
+            render: (_, record: any)=>(
                 <span>
                     {record?.empresa?.e_nome}
                 </span>
@@ -72,7 +128,7 @@ export const AdmBranchlist = () => {
         {
             key: 'f_responsavel',
             title: 'Responsavel',
-            render: (_, record)=>(
+            render: (_, record: any)=>(
                 record?.responsavel?.u_nome
             )
         },
@@ -90,6 +146,11 @@ export const AdmBranchlist = () => {
     const hadleCancel = () =>{
         setIsModal(false)
     }
+    
+    const unidades = ufs.map((e: any)=>({
+        label: e.unidade,
+        value: e.unidade
+    }))
 
     return (
         <>
@@ -97,45 +158,71 @@ export const AdmBranchlist = () => {
                 <Table columns={columns} dataSource={branchsResult.data?.data} scroll={{ x: 'max-content' }} size='small'/>
             </List>
 
-            <Modal title="Cadastrar Filial" open={isModal} onCancel={hadleCancel} centered>
-                    <Form labelCol={{ span: 8 }} wrapperCol={{ span: 20 }} layout="vertical" style={{ width: '100%' }}>
-
-                    <Form.Item label="Empresa" name="f_empresa_id" rules={[{required: true, message: 'Empresa Obrigatoria'}]}>
-                        <Select >
-                        <Select.Option value="PI">PI</Select.Option>
-                        </Select>
-                    </Form.Item>
-
-                    <Form.Item label="Nome" name="f_nome" rules={[{required: true, type: 'string', message: 'Nome da filial é obrigatorio'}]}>
-                        <Input />
-                    </Form.Item>
- 
-                    <Form.Item label="Codigo" name="e_nome">
-                        <Input type='number' allowClear={{clearIcon: <ClearOutlined />}}/>
-                    </Form.Item>
-
-                    <Form.Item label="CNPJ" name="e_cnpj" rules={[{ required: true, message: "Cnpj empresa obrigatorio" }]}>
-                        <InputMask mask="99.999.999/9999-99">
-                            {(inputProps: any) => <Input {...inputProps} placeholder="00.000.000/0000-00" allowClear={{clearIcon: <ClearOutlined />}}/>}
-                        </InputMask>
-                    </Form.Item>
-
-
-                    <Form.Item label="Cidade" name="e_cidade" rules={[{required: true, message: 'Cidade empresa obrigatorio'}]}>
-                        <Select>
-                        <Select.Option value="Teresina">Teresina</Select.Option>
-                        </Select>
-                    </Form.Item>
-                    <Form.Item>
-                    </Form.Item>
-                    </Form>
+            <Modal title='Cadastrar Filial' open={isModal} onCancel={hadleCancel} centered>
+                <Form layout="vertical" style={{ width: '100%' }}>
+                    <Row gutter={16}>
+                        <Col xs={24} sm={12}>
+                            <Form.Item label="Empresa" name="f_empresa_id" rules={[{ required: true, message: 'Empresa Obrigatória' }]}>
+                                <Select options={companiesOptions} />
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} sm={12}>
+                            <Form.Item label="Nome" name="f_nome" rules={[{ required: true, type: 'string', message: 'Nome da filial é obrigatório' }]}>
+                                <Input />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                    <Row gutter={16}>
+                        <Col xs={24} sm={12}>
+                            <Form.Item label="Código" name="e_nome">
+                                <Input type='number' allowClear={{ clearIcon: <ClearOutlined /> }} />
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} sm={12}>
+                            <Form.Item label="CNPJ" name="e_cnpj" rules={[{ required: true, message: "CNPJ da empresa é obrigatório" }]}>
+                                <InputMask mask="99.999.999/9999-99">
+                                    {(inputProps: any) => <Input {...inputProps} placeholder="00.000.000/0000-00" allowClear={{ clearIcon: <ClearOutlined /> }} />}
+                                </InputMask>
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                    <Row gutter={16}>
+                        <Col xs={24} sm={12}>
+                            <Form.Item label="UF" name="f_uf" rules={[{ required: true, message: "UF é obrigatória" }]}>
+                                <Select showSearch allowClear onChange={(value) => setUf(value)} options={unidades} />
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} sm={12}>
+                            <Form.Item label="Cidade" name="f_cidade" rules={[{ required: true, message: "Cidade da empresa é obrigatória" }]}>
+                                <Select showSearch allowClear>
+                                    {municipios.map((municipio: any) => (
+                                        <Select.Option key={municipio.codigo} value={municipio.nome}>
+                                            {municipio.nome}
+                                        </Select.Option>
+                                    ))}
+                                </Select>
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                    <Row gutter={16}>
+                        <Col xs={24} sm={12}>
+                            <Form.Item label="Latitude" name="latitude" rules={[{ required: true, message: "Latitude é obrigatória" }]}>
+                                <InputMask mask="-99.999999">
+                                    {(inputProps: any) => <Input {...inputProps} placeholder="00.000000" allowClear={{ clearIcon: <ClearOutlined /> }} />}
+                                </InputMask>
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} sm={12}>
+                            <Form.Item label="Longitude" name="longitude" rules={[{ required: true, message: "Longitude é obrigatória" }]}>
+                                <InputMask mask="-99.999999">
+                                    {(inputProps: any) => <Input {...inputProps} placeholder="00.000000" allowClear={{ clearIcon: <ClearOutlined /> }} />}
+                                </InputMask>
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                </Form>
             </Modal>
-        
+
         </>
-
-
-
-
     )
-
 };

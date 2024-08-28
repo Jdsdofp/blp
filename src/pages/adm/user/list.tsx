@@ -38,19 +38,19 @@ export const AdmUserlist = () => {
     {
         title: 'ID',
         dataIndex: 'u_id',
-        key: 'key',
+        key: 'u_id',
         render: (text) => <a>#{text}</a>,
       },
     {
     title: 'Nome',
     dataIndex: 'u_nome',
-    key: 'name',
+    key: 'u_nome',
     render: (text) => <a>{text}</a>,
   },
   {
     title: 'Email',
     dataIndex: 'u_email',
-    key: 'email',
+    key: 'u_email',
   },
   {
     title: 'Data criação',
@@ -65,7 +65,7 @@ export const AdmUserlist = () => {
   {
     title: 'Status',
     dataIndex: 'u_ativo',
-    key: 'status',
+    key: 'u_ativo',
     render: (_, {u_ativo})=>(
       <>
         {
@@ -92,7 +92,7 @@ export const AdmUserlist = () => {
   {
     title: 'Empresa',
     dataIndex: 'u_empresas_ids',
-    key: 'empresa',
+    key: 'u_empresas_ids',
     render: (empresas)=>(
       <span>
         {empresas.slice(0, 4).map((id: any)=>(

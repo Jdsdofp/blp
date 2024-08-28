@@ -1,7 +1,8 @@
 import { CheckOutlined, CloseOutlined, UserAddOutlined } from "@ant-design/icons";
 import { Create, Show, useForm, useModalForm } from "@refinedev/antd";
-import { useMany, useTable } from "@refinedev/core";
+import { useInvalidate, useMany, useTable } from "@refinedev/core";
 import { Avatar, Form, Input, Select, Switch } from "antd";
+import { invalid } from "moment-timezone";
 import { useEffect, useState } from "react";
 
 
@@ -37,10 +38,10 @@ export const AdmUserCreate = () => {
         value: company.e_id,
     }));
 
-    
+    const invalid = useInvalidate();
     const {formProps, saveButtonProps, formLoading, form } = useForm<IUser>({ 
         resource: "userCreate",  
-        successNotification(data, values, resource) {
+        successNotification(data: any, values, resource) {
             form.resetFields();
             return{
             message: `${data?.data?.message}\n Usuário: #${data?.data?.usuario?.u_id}`,
@@ -52,12 +53,19 @@ export const AdmUserCreate = () => {
                 type: "error",
             }
         },
+
+        onMutationSuccess: ()=>{
+            invalid({
+                resource: 'user',
+                invalidates: ['all']
+            })
+        }
     })
 
 
     useEffect(() => {
         if (valueID) {
-            const branchs = branchesResult?.data?.map((branch) => ({
+            const branchs: any = branchesResult?.data?.map((branch) => ({
                 label: branch.f_nome,
                 value: branch.f_id,
             })) || [];
@@ -75,12 +83,12 @@ export const AdmUserCreate = () => {
 
 
 
-    const handleCompanyChange = (selectedCompanyIDs) => {
+    const handleCompanyChange = (selectedCompanyIDs: any) => {
         const lastSelectedID = selectedCompanyIDs[selectedCompanyIDs.length - 1];
         setValueID(lastSelectedID);
     };
 
-    const handleBranchChange = (selectedBranchIDs) => {
+    const handleBranchChange = (selectedBranchIDs: any) => {
         setSelectedBranches(selectedBranchIDs);
     };
 
@@ -132,7 +140,7 @@ export const AdmUserCreate = () => {
                         options={branchOptions}
                         value={selectedBranches}
                         onChange={handleBranchChange}
-                        filterOption={(input, option) =>
+                        filterOption={(input, option: any) =>
                             option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
                         }
                     />
