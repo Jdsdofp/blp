@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Badge, Form, Input, Modal, Select, Space, Table, Tag } from 'antd';
 import type { TableProps } from 'antd';
 import { DateField, DeleteButton, EditButton, List, ShowButton } from '@refinedev/antd';
-import { BranchesOutlined, UserAddOutlined } from '@ant-design/icons';
+import { BranchesOutlined, ClearOutlined, UserAddOutlined } from '@ant-design/icons';
 import { BaseRecord, useList, useTable } from '@refinedev/core';
 import Link from 'antd/es/typography/Link';
+import InputMask from 'react-input-mask';
 
 interface IBranchs {
   f_id: number;
@@ -90,54 +91,44 @@ export const AdmBranchlist = () => {
         setIsModal(false)
     }
 
-    const showModal = () =>{
-        setIsModal(true)
-    }
-
     return (
         <>
             <List breadcrumb createButtonProps={{ children: "Nova Filial", onClick: ()=>{setIsModal(true)}, icon: <BranchesOutlined /> }}>
                 <Table columns={columns} dataSource={branchsResult.data?.data} scroll={{ x: 'max-content' }} size='small'/>
             </List>
 
-            <Modal title="Basic Modal" open={isModal} onCancel={hadleCancel}>
-            <Form
-            labelCol={{ span: 8 }}
-            wrapperCol={{ span: 20 }}
-            layout="vertical"
-            style={{ width: '100%' }}
-            
-            >
-            <Form.Item label="Razão" name="e_razao" rules={[{required: true, type: 'string', message: 'Razão social empresa obrigatorio'}]}>
-                <Input />
-            </Form.Item>
+            <Modal title="Cadastrar Filial" open={isModal} onCancel={hadleCancel} centered>
+                    <Form labelCol={{ span: 8 }} wrapperCol={{ span: 20 }} layout="vertical" style={{ width: '100%' }}>
 
-            <Form.Item label="Nome" name="e_nome" rules={[{required: true, type: 'string', message: 'Nome da empresa obrigatorio'}]}>
-                <Input />
-            </Form.Item>
+                    <Form.Item label="Empresa" name="f_empresa_id" rules={[{required: true, message: 'Empresa Obrigatoria'}]}>
+                        <Select >
+                        <Select.Option value="PI">PI</Select.Option>
+                        </Select>
+                    </Form.Item>
 
-            <Form.Item
-                label="CNPJ"
-                name="e_cnpj"
-                rules={[{ required: true, message: "Cnpj empresa obrigatorio" }]}
-                >
+                    <Form.Item label="Nome" name="f_nome" rules={[{required: true, type: 'string', message: 'Nome da filial é obrigatorio'}]}>
+                        <Input />
+                    </Form.Item>
+ 
+                    <Form.Item label="Codigo" name="e_nome">
+                        <Input type='number' allowClear={{clearIcon: <ClearOutlined />}}/>
+                    </Form.Item>
+
+                    <Form.Item label="CNPJ" name="e_cnpj" rules={[{ required: true, message: "Cnpj empresa obrigatorio" }]}>
+                        <InputMask mask="99.999.999/9999-99">
+                            {(inputProps: any) => <Input {...inputProps} placeholder="00.000.000/0000-00" allowClear={{clearIcon: <ClearOutlined />}}/>}
+                        </InputMask>
+                    </Form.Item>
 
 
-            </Form.Item>
-
-            <Form.Item label="UF" name="e_uf" rules={[{required: true, message: 'UF empresa obrigatorio'}]}>
-                <Select >
-                <Select.Option value="PI">PI</Select.Option>
-                </Select>
-            </Form.Item>
-            <Form.Item label="Cidade" name="e_cidade" rules={[{required: true, message: 'Cidade empresa obrigatorio'}]}>
-                <Select>
-                <Select.Option value="Teresina">Teresina</Select.Option>
-                </Select>
-            </Form.Item>
-            <Form.Item>
-            </Form.Item>
-            </Form>
+                    <Form.Item label="Cidade" name="e_cidade" rules={[{required: true, message: 'Cidade empresa obrigatorio'}]}>
+                        <Select>
+                        <Select.Option value="Teresina">Teresina</Select.Option>
+                        </Select>
+                    </Form.Item>
+                    <Form.Item>
+                    </Form.Item>
+                    </Form>
             </Modal>
         
         </>
