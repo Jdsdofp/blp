@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Badge, Col, Form, Input, Modal, Row, Select, Table, Tag } from 'antd';
 import type { TableProps } from 'antd';
-import { List } from '@refinedev/antd';
+import { List, useForm } from '@refinedev/antd';
 import { BranchesOutlined, ClearOutlined } from '@ant-design/icons';
 import { useTable } from '@refinedev/core';
 import InputMask from 'react-input-mask';
@@ -13,8 +13,8 @@ interface IBranchs {
     f_cidade: string;
     f_uf: string;
     f_endereco: string;
-    f_latitude: number;
-    f_longitude: number;
+    f_latitude: string;
+    f_longitude: string;
     empresa: object;
     responsavel: object;
     f_criado_em: Date;
@@ -33,6 +33,9 @@ export const AdmBranchlist = () => {
     const [isModal, setIsModal] = useState(false)
     const { tableQueryResult: companiesResult } = useTable({ resource: 'company', meta: {endpoint: 'listar-empresas'},syncWithLocation: false});
     const {tableQueryResult: branchsResult} = useTable<IBranchs>({resource: 'branch', meta: {endpoint: 'listar-filiais'}, syncWithLocation: false, liveMode: 'auto'})
+    const {formProps, form, saveButtonProps} = useForm<IBranchs>({
+        resource: 'branchsCreate', 
+        action: 'create'})
 
     const companiesOptions = companiesResult.data?.data.map((company)=>({
         label: company.e_nome,
@@ -90,7 +93,8 @@ export const AdmBranchlist = () => {
             key: 'f_id',
             title: 'ID',
             dataIndex: 'f_id',
-            render: (f_id)=><a>#{f_id}</a>
+            render: (f_id)=><a>#{f_id}</a>,
+            width: 30
         },
 
         {
@@ -145,6 +149,7 @@ export const AdmBranchlist = () => {
 
     const hadleCancel = () =>{
         setIsModal(false)
+    
     }
     
     const unidades = ufs.map((e: any)=>({
@@ -158,8 +163,8 @@ export const AdmBranchlist = () => {
                 <Table columns={columns} dataSource={branchsResult.data?.data} scroll={{ x: 'max-content' }} size='small'/>
             </List>
 
-            <Modal title='Cadastrar Filial' open={isModal} onCancel={hadleCancel} centered>
-                <Form layout="vertical" style={{ width: '100%' }}>
+            <Modal title='Cadastrar Filial' open={isModal} onCancel={hadleCancel} centered okButtonProps={saveButtonProps}>
+                <Form  {...formProps} form={form} layout="vertical" style={{ width: '100%' }}>
                     <Row gutter={16}>
                         <Col xs={24} sm={12}>
                             <Form.Item label="Empresa" name="f_empresa_id" rules={[{ required: true, message: 'Empresa Obrigatória' }]}>
@@ -174,15 +179,25 @@ export const AdmBranchlist = () => {
                     </Row>
                     <Row gutter={16}>
                         <Col xs={24} sm={12}>
-                            <Form.Item label="Código" name="e_nome">
+                            <Form.Item label="Código" name="f_codigo">
                                 <Input type='number' allowClear={{ clearIcon: <ClearOutlined /> }} />
                             </Form.Item>
                         </Col>
                         <Col xs={24} sm={12}>
-                            <Form.Item label="CNPJ" name="e_cnpj" rules={[{ required: true, message: "CNPJ da empresa é obrigatório" }]}>
+                            <Form.Item label="CNPJ" name="f_cnpj" rules={[{ required: true, message: "CNPJ da empresa é obrigatório" }]}>
                                 <InputMask mask="99.999.999/9999-99">
                                     {(inputProps: any) => <Input {...inputProps} placeholder="00.000.000/0000-00" allowClear={{ clearIcon: <ClearOutlined /> }} />}
                                 </InputMask>
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} sm={12}>
+                            <Form.Item label="Insc. Municiapal" name="f_insc_municipal">
+                                <Input type='number' allowClear={{ clearIcon: <ClearOutlined /> }} />
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} sm={12}>
+                            <Form.Item label="Insc. Estadual" name="f_insc_estadual">
+                                <Input type='number' allowClear={{ clearIcon: <ClearOutlined /> }} />
                             </Form.Item>
                         </Col>
                     </Row>
@@ -206,14 +221,14 @@ export const AdmBranchlist = () => {
                     </Row>
                     <Row gutter={16}>
                         <Col xs={24} sm={12}>
-                            <Form.Item label="Latitude" name="latitude" rules={[{ required: true, message: "Latitude é obrigatória" }]}>
+                            <Form.Item label="Latitude" name="f_latitude">
                                 <InputMask mask="-99.999999">
                                     {(inputProps: any) => <Input {...inputProps} placeholder="00.000000" allowClear={{ clearIcon: <ClearOutlined /> }} />}
                                 </InputMask>
                             </Form.Item>
                         </Col>
                         <Col xs={24} sm={12}>
-                            <Form.Item label="Longitude" name="longitude" rules={[{ required: true, message: "Longitude é obrigatória" }]}>
+                            <Form.Item label="Longitude" name="f_longitude">
                                 <InputMask mask="-99.999999">
                                     {(inputProps: any) => <Input {...inputProps} placeholder="00.000000" allowClear={{ clearIcon: <ClearOutlined /> }} />}
                                 </InputMask>

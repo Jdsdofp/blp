@@ -10,7 +10,8 @@ const getResourceUrl = (resource: string, ids: number, id: number): string => {
         companyCreate: `${API_URL}/company/registrar-empresa`,
         companies: `${API_URL}/company/listar-empresas`,
         branches: `${API_URL}/branch/${ids}/listar-filial`,
-        userOne: `${API_URL}/user/${id}/listar-usuario`
+        userOne: `${API_URL}/user/${id}/listar-usuario`,
+        branchsCreate: `${API_URL}/branch/registrar-filial`
     };
     
     return resourceMap[resource] || '';
@@ -102,7 +103,7 @@ export const dataProvider: DataProvider = {
     create: async ({ resource, variables, meta }) => {
         const token = localStorage.getItem(TOKEN_KEY);
         const url = getResourceUrl(resource);
-
+        
         if (!url) {
             throw new Error("Recurso não suportado");
         }
@@ -114,7 +115,7 @@ export const dataProvider: DataProvider = {
                     'Authorization': `Bearer ${token}`,
                 },
             });
-
+            console.log(data)
             return {
                 data: data
             };
@@ -123,7 +124,7 @@ export const dataProvider: DataProvider = {
             throw error;
         }
     },
-    update: async ({id,meta})=>{
+    update: async ({id,meta}) =>{
         const token = localStorage.getItem(TOKEN_KEY);
         const endpoint = meta?.variables?.endpoint;
         const pat = meta?.variables?.pat;
