@@ -120,7 +120,7 @@ export const dataProvider: DataProvider = {
                 data: data
             };
         } catch (error) {
-            console.log("Houve um erro ao criar o recurso");
+            console.log(error);
             throw error;
         }
     },

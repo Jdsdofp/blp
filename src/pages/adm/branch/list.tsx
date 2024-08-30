@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Badge, Button, Col, Form, Input, Modal, Popover, Row, Select, Table, Tag } from 'antd';
+import { Badge, Button, Col, Form, Input, Modal, Popover, Row, Select, Table, Tabs, Tag } from 'antd';
 import type { TableProps } from 'antd';
 import { List, useForm } from '@refinedev/antd';
 import { ArrowRightOutlined, BranchesOutlined, ClearOutlined, FrownTwoTone } from '@ant-design/icons';
 import { useTable } from '@refinedev/core';
 import InputMask from 'react-input-mask';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import { BackHandOutlined } from '@mui/icons-material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { AddLocation, AddReactionSharp } from '@mui/icons-material';
+import axios from 'axios';
 
 interface IBranchs {
     f_id: number;
@@ -31,14 +31,23 @@ const formatCNPJ = (cnpj: any) => {
 
 export const AdmBranchlist = () => {
     const [municipios, setMunicipios] = useState([]);
-    const [uf, setUf] = useState("");
     const [ufs, setUfs] = useState([])
-    const [selectedUf, setSelectedUf] = useState([]);
     const [isModal, setIsModal] = useState(false)
     const { tableQueryResult: companiesResult } = useTable({ resource: 'company', meta: {endpoint: 'listar-empresas'},syncWithLocation: false});
     const {tableQueryResult: branchsResult} = useTable<IBranchs>({resource: 'branch', meta: {endpoint: 'listar-filiais'}, syncWithLocation: false, liveMode: 'auto'})
-    const {formProps, form, saveButtonProps} = useForm<IBranchs>({resource: 'branchsCreate', action: 'create'})
-    const [currentStep, setCurrentStep] = useState(0); // Controle da etapa atual
+    const {formProps, form } = useForm<IBranchs>({resource: 'branchsCreate', action: 'create', 
+        successNotification(data) {
+        return{
+            message:  `${data?.data?.message}`,
+            type: 'success'
+        }
+    }, errorNotification(data){
+        return{
+            message: `${data?.response.data.message}`,
+            type: 'error'
+        }
+    }})
+    const [endereco, setEndereco] = useState({});
 
     
 
@@ -86,19 +95,14 @@ export const AdmBranchlist = () => {
 
           
     const columns: TableProps<IBranchs>['columns'] = [
-        {
-            key: 'f_id',
-            title: 'ID',
-            dataIndex: 'f_id',
-            render: (f_id)=><a>#{f_id}</a>,
-            width: 30,
-            
-        },
 
         {
             key: 'f_codigo',
-            title: 'Cod. Filial',
+            title: 'Num. Loja',
             dataIndex: 'f_codigo',
+            render: (_, record)=>(
+                <a>#{record.f_codigo}</a>
+            )
             
         },
 
@@ -130,7 +134,14 @@ export const AdmBranchlist = () => {
             key: 'f_cidade',
             title: 'Cidade',
             render: (_, record)=>(
-                <span>{record.f_cidade}-{record.f_uf}</span>
+                <span>{record.f_cidade}</span>
+            )
+        },
+        {
+            key: 'f_uf',
+            title: 'UF',
+            render: (_, record)=>(
+                <span>{record.f_uf}</span>
             )
         },
 
@@ -155,135 +166,175 @@ export const AdmBranchlist = () => {
         setIsModal(false)
     
     }
-
-    const handleNext = () => {
-        setCurrentStep(prevStep => prevStep + 1);
-    };
-
-    const handleBack = () => {
-        setCurrentStep(prevStep => prevStep - 1);
-    };
-
     
     const unidades = ufs.map((e: any)=>({
         label: e.unidade,
         value: e.unidade
     }))
 
+
+    const consultarCEP = async (cep: any) => {
+        try {
+            const cepLimpo = cep.replace(/\D/g, '');
+            const response = await axios.get(`https://viacep.com.br/ws/${cepLimpo}/json/`);
     
+            if (response.data.erro) {
+                console.error("CEP não encontrado!");
+                return;
+            }
+    
+            const { logradouro, bairro, localidade } = response.data;
+    
+            setEndereco({
+                f_endereco_logradouro: logradouro,
+                f_endereco_bairro: bairro,
+                f_cidade: localidade
+            });
+    
+            form.setFieldsValue({
+                f_endereco_logradouro: logradouro,
+                f_endereco_bairro: bairro,
+                f_cidade: localidade
+            });
+    
+        } catch (error) {
+            console.error("Erro ao consultar o CEP:", error);
+        }
+    };
+    
+
+    
+    const { TabPane } = Tabs;
     
     return (
         <>
-            <List breadcrumb createButtonProps={{ children: "Nova Filial", onClick: ()=>{setIsModal(true)}, icon: <BranchesOutlined /> }}>
+            <List breadcrumb createButtonProps={{ children: "Nova Filial", onClick: ()=>{setIsModal(true)}, icon: <BranchesOutlined /> }} >
                 <Table columns={columns} dataSource={branchsResult.data?.data} scroll={{ x: 'max-content' }} size='small' loading={branchsResult.isLoading}/>
             </List>
 
             <Modal 
-                title='Cadastrar Filial' 
-                open={isModal} 
-                onCancel={hadleCancel} 
-                centered 
-                okButtonProps={saveButtonProps} 
-                loading={companiesResult.isLoading}
+            title='Cadastrar Filial' 
+            open={isModal} 
+            onCancel={hadleCancel} 
+            centered 
+            onOk={() => form.submit()} // Submete o formulário ao clicar em OK
+            confirmLoading={companiesResult.isLoading}
             >
-                {currentStep === 0 && (
-                <Form  {...formProps} form={form} layout="vertical" style={{ width: '100%' }}>
-                    <Row gutter={16}>
-                        <Col xs={24} sm={12}>
-                            <Form.Item label="Empresa" name="f_empresa_id" rules={[{ required: true, message: 'Empresa Obrigatória' }]}>
-                                <Select options={companiesOptions} />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} sm={12}>
-                            <Form.Item label="Nome" name="f_nome" rules={[{ required: true, type: 'string', message: 'Nome da filial é obrigatório' }]}>
-                                <Input />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    <Row gutter={16}>
-                        <Col xs={24} sm={12}>
-                            <Form.Item label="Código" name="f_codigo">
-                                <Input type='number' allowClear={{ clearIcon: <ClearOutlined /> }} />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} sm={12}>
-                            <Form.Item label="CNPJ" name="f_cnpj" rules={[{ required: true, message: "CNPJ da empresa é obrigatório" }]}>
-                                <InputMask mask="99.999.999/9999-99">
-                                    {(inputProps: any) => <Input {...inputProps} placeholder="00.000.000/0000-00" allowClear={{ clearIcon: <ClearOutlined /> }} />}
-                                </InputMask>
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} sm={12}>
-                            <Form.Item label="Insc. Municiapal" name="f_insc_municipal">
-                                <Input type='number' allowClear={{ clearIcon: <ClearOutlined /> }} />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} sm={12}>
-                            <Form.Item label="Insc. Estadual" name="f_insc_estadual">
-                                <Input type='number' allowClear={{ clearIcon: <ClearOutlined /> }} />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    <Row gutter={16}>
-                        <Col xs={24} sm={12}>
-                            <Form.Item label="UF" name="f_uf" rules={[{ required: true, message: "UF é obrigatória" }]}>
-                                <Select showSearch allowClear onChange={handleUfChange} options={unidades} />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} sm={12}>
-                            <Form.Item label="Cidade" name="f_cidade" rules={[{ required: true, message: "Cidade da empresa é obrigatória" }]}>
-                                <Select showSearch allowClear>
-                                    {municipios.map((municipio: any) => (
-                                        <Select.Option key={municipio.codigo} value={municipio.nome}>
-                                            {municipio.nome}
-                                        </Select.Option>
-                                    ))}
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    <Row gutter={16}>
-                        <Col xs={24} sm={12}>
-                            <Form.Item label="Latitude" name="f_latitude">
-                                <InputMask mask="-99.999999">
-                                    {(inputProps: any) => <Input {...inputProps} placeholder="00.000000" allowClear={{ clearIcon: <ClearOutlined /> }} />}
-                                </InputMask>
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} sm={12}>
-                            <Form.Item label="Longitude" name="f_longitude">
-                                <InputMask mask="-99.999999">
-                                    {(inputProps: any) => <Input {...inputProps} placeholder="00.000000" allowClear={{ clearIcon: <ClearOutlined /> }} />}
-                                </InputMask>
-                            </Form.Item>
-                        </Col>
-                        <Button size='small' type='link' onClick={handleNext}><span style={{fontSize: 10}}>Endereço</span>{<ArrowForwardIcon fontSize='small' />}</Button>
-                    </Row>
-                    
-
-                    
-                </Form>
-
-                )}   
-                    {currentStep === 1 && (
-                        <Form {...formProps} form={form} layout="vertical" style={{ width: '100%' }}>
-                        <Button size='small' type='link' onClick={handleBack}>{<ArrowBackIcon fontSize='small' />}<span style={{fontSize: 10}}>Area cadastro</span></Button>
+            <Form 
+                {...formProps} 
+                form={form} 
+                layout="vertical" 
+                style={{ width: '100%' }}
+            >
+                <Tabs defaultActiveKey="1">
+                    <TabPane tab="Informações da Filial" icon={<BranchesOutlined size={10}/>} key="1">
                         <Row gutter={16}>
                             <Col xs={24} sm={12}>
                                 <Form.Item label="Empresa" name="f_empresa_id" rules={[{ required: true, message: 'Empresa Obrigatória' }]}>
-                                    <Select /* opções aqui */ />
+                                    <Select options={companiesOptions} />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} sm={12}>
-                                <Form.Item label="Nome" name="f_nome" rules={[{ required: true, message: 'Nome da filial é obrigatório' }]}>
+                                <Form.Item label="Nome" name="f_nome" rules={[{ required: true, type: 'string', message: 'Nome da filial é obrigatório' }]}>
                                     <Input />
                                 </Form.Item>
-
                             </Col>
                         </Row>
-                    </Form>
-                )}
-            </Modal>
+                        <Row gutter={16}>
+                            <Col xs={24} sm={12}>
+                                <Form.Item label="Código" name="f_codigo" rules={[{ required: true, type: 'number', message: 'Codigo da filial é obrigatório' }]}>
+                                    <Input type='number' allowClear={{ clearIcon: <ClearOutlined /> }} />
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} sm={12}>
+                                <Form.Item label="CNPJ" name="f_cnpj" rules={[{ required: true, message: "CNPJ da empresa é obrigatório" }]}>
+                                    <InputMask mask="99.999.999/9999-99">
+                                        {(inputProps: any) => <Input {...inputProps} placeholder="00.000.000/0000-00" allowClear={{ clearIcon: <ClearOutlined /> }} />}
+                                    </InputMask>
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                        <Row gutter={16}>
+                            <Col xs={24} sm={12}>
+                                <Form.Item label="Insc. Municipal" name="f_insc_municipal">
+                                    <Input type='number' allowClear={{ clearIcon: <ClearOutlined /> }} />
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} sm={12}>
+                                <Form.Item label="Insc. Estadual" name="f_insc_estadual">
+                                    <Input type='number' allowClear={{ clearIcon: <ClearOutlined /> }} />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </TabPane>
+                    <TabPane tab="Endereço" icon={<AddLocation fontSize='small'/>} key="2">
+                        <Row gutter={16}>
+                            <Col xs={24} sm={12}>
+                                <Form.Item label="UF" name="f_uf" rules={[{ required: true, message: "UF é obrigatória" }]}>
+                                    <Select showSearch allowClear onChange={handleUfChange} options={unidades} />
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} sm={12}>
+                                <Form.Item label="Cidade" name="f_cidade" rules={[{ required: true, message: "Cidade da empresa é obrigatória" }]}>
+                                    <Select showSearch allowClear>
+                                        {municipios.map((municipio: any) => (
+                                            <Select.Option key={municipio.codigo} value={municipio.nome}>
+                                                {municipio.nome}
+                                            </Select.Option>
+                                        ))}
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+
+                            <Col xs={24} sm={12}>
+                                <Form.Item label="CEP" name="f_cep" rules={[{ required: true, message: 'CEP é obrigatório' }]}>
+                                    <Input 
+                                        onBlur={(e) => consultarCEP(e.target.value)} 
+                                        placeholder="00000-000"
+                                        allowClear={{ clearIcon: <ClearOutlined /> }} 
+                                    />
+                                </Form.Item>
+                            </Col>
+
+
+                            <Col xs={24} sm={12}>
+                                    <Form.Item label="Logradouro" name="f_endereco_logradouro">
+                                        <Input allowClear={{ clearIcon: <ClearOutlined /> }} />
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={24} sm={12}>
+                                    <Form.Item label="Bairro" name="f_endereco_bairro">
+                                        <Input value={endereco.f_endereco_bairro} allowClear={{ clearIcon: <ClearOutlined /> }} />
+                                    </Form.Item>
+                                </Col>
+                                
+                                <Col xs={24} sm={12}>
+                                    <Form.Item label="Complemento" name="f_endereco_complemento">
+                                        <Input value={endereco.f_endereco_complemento} allowClear={{ clearIcon: <ClearOutlined /> }} />
+                                    </Form.Item>
+                                </Col>
+                        </Row>
+                        <Row gutter={16}>
+                            <Col xs={24} sm={12}>
+                                <Form.Item label="Latitude" name="f_latitude">
+                                    <InputMask mask="-99.999999">
+                                        {(inputProps: any) => <Input {...inputProps} placeholder="00.000000" allowClear={{ clearIcon: <ClearOutlined /> }} />}
+                                    </InputMask>
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} sm={12}>
+                                <Form.Item label="Longitude" name="f_longitude">
+                                    <InputMask mask="-99.999999">
+                                        {(inputProps: any) => <Input {...inputProps} placeholder="00.000000" allowClear={{ clearIcon: <ClearOutlined /> }} />}
+                                    </InputMask>
+                                </Form.Item>
+                            </Col>
+                            
+                        </Row>
+                    </TabPane>
+                </Tabs>
+            </Form>
+        </Modal>
 
         </>
     )
