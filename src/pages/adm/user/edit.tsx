@@ -19,11 +19,15 @@ export const AdmUserEdit = () => {
         action: "edit"
     });
 
+    
+
     const [valueID, setValueID] = useState(null);
     const { tableQueryResult: companiesResult } = useTable({ resource: 'company', meta: {
         endpoint: 'listar-empresas'
     },
     syncWithLocation: false});
+
+
     const { data: branchesResult } = useMany({ resource: 'branches', ids: valueID ? [valueID] : []});
     
     const { id } = useParams();

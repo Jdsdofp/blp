@@ -115,7 +115,7 @@ export const dataProvider: DataProvider = {
                     'Authorization': `Bearer ${token}`,
                 },
             });
-            console.log(data)
+            
             return {
                 data: data
             };
@@ -148,16 +148,13 @@ export const dataProvider: DataProvider = {
                 },
                 
             });
-
+            console.log(data)
             return {
-                data
+                data: data
             };
         } catch (error) {
-            console.log("Houve um erro ao buscar dados");
-            return {
-                data: [],
-                total: 0,
-            };
+            throw error?.response?.data.message;
+            
         }
     },
     deleteOne: async ({id, resource})=> {

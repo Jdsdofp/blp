@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { Badge, Col, Form, Input, Modal, Row, Select, Table, Tag } from 'antd';
+import { Badge, Button, Col, Form, Input, Modal, Popover, Row, Select, Table, Tag } from 'antd';
 import type { TableProps } from 'antd';
 import { List, useForm } from '@refinedev/antd';
-import { BranchesOutlined, ClearOutlined } from '@ant-design/icons';
+import { ArrowRightOutlined, BranchesOutlined, ClearOutlined, FrownTwoTone } from '@ant-design/icons';
 import { useTable } from '@refinedev/core';
 import InputMask from 'react-input-mask';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import { BackHandOutlined } from '@mui/icons-material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 interface IBranchs {
     f_id: number;
     f_nome: string;
+    f_codigo: number;
     f_cnpj: number;
     f_cidade: string;
     f_uf: string;
@@ -29,13 +33,14 @@ export const AdmBranchlist = () => {
     const [municipios, setMunicipios] = useState([]);
     const [uf, setUf] = useState("");
     const [ufs, setUfs] = useState([])
-    const [selectedUf, setSelectedUf] = useState("");
+    const [selectedUf, setSelectedUf] = useState([]);
     const [isModal, setIsModal] = useState(false)
     const { tableQueryResult: companiesResult } = useTable({ resource: 'company', meta: {endpoint: 'listar-empresas'},syncWithLocation: false});
     const {tableQueryResult: branchsResult} = useTable<IBranchs>({resource: 'branch', meta: {endpoint: 'listar-filiais'}, syncWithLocation: false, liveMode: 'auto'})
-    const {formProps, form, saveButtonProps} = useForm<IBranchs>({
-        resource: 'branchsCreate', 
-        action: 'create'})
+    const {formProps, form, saveButtonProps} = useForm<IBranchs>({resource: 'branchsCreate', action: 'create'})
+    const [currentStep, setCurrentStep] = useState(0); // Controle da etapa atual
+
+    
 
     const companiesOptions = companiesResult.data?.data.map((company)=>({
         label: company.e_nome,
@@ -43,23 +48,30 @@ export const AdmBranchlist = () => {
     }))
 
     useEffect(() => {
-            fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados`)
-                .then(response => response.json())
-                .then(data => {
-                    const estadosFormatados = data.map((estado: any) => ({
-                        unidade: estado.sigla,
-                        nome: estado.nome
-                    }));
-                    setUfs(estadosFormatados);
-                })
-                .catch(error => console.error('Erro ao buscar municípios:', error));
-        
+        fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados`)
+            .then(response => response.json())
+            .then(data => {
+                const estadosFormatados = data.map((estado: any) => ({
+                    unidade: estado.sigla,
+                    nome: estado.nome
+                }));
+                setUfs(estadosFormatados);
+            })
+            .catch(error => console.error('Erro ao buscar estados:', error));
     }, []);
 
-
     useEffect(() => {
-        if (uf) {
-            fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`)
+        if (!form.getFieldValue('f_uf')) {
+            setMunicipios([]); // Limpar municípios quando UF estiver vazio
+        }
+    }, [form.getFieldValue('f_uf')]);
+
+    const handleUfChange = (value: string) => {
+        form.setFieldsValue({ f_cidade: undefined }); // Limpar o campo de cidade
+        setMunicipios([]); // Limpar municípios
+
+        if (value) {
+            fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${value}/municipios`)
                 .then(response => response.json())
                 .then(data => {
                     const municipiosFormatados = data.map((municipio: any) => ({
@@ -70,31 +82,24 @@ export const AdmBranchlist = () => {
                 })
                 .catch(error => console.error('Erro ao buscar municípios:', error));
         }
-    }, [uf]);
-    
-    useEffect(() => {
-        if (selectedUf) {
-          fetch(`https://servicodados.ibge.gov.br/api/v2/localidades/estados/${selectedUf}/municipios`)
-            .then(response => response.json())
-            .then(data => {
-              const municipiosFormatted = data.map((municipio: any) => ({
-                codigo: municipio.id,
-                nome: municipio.nome
-              }));
-              setMunicipios(municipiosFormatted);
-            })
-            .catch(error => console.error('Erro ao buscar municípios:', error));
-        }
-      }, [selectedUf]);
-    
-      
+    };
+
+          
     const columns: TableProps<IBranchs>['columns'] = [
         {
             key: 'f_id',
             title: 'ID',
             dataIndex: 'f_id',
             render: (f_id)=><a>#{f_id}</a>,
-            width: 30
+            width: 30,
+            
+        },
+
+        {
+            key: 'f_codigo',
+            title: 'Cod. Filial',
+            dataIndex: 'f_codigo',
+            
         },
 
         {
@@ -146,24 +151,42 @@ export const AdmBranchlist = () => {
         }
     ]
 
-
     const hadleCancel = () =>{
         setIsModal(false)
     
     }
+
+    const handleNext = () => {
+        setCurrentStep(prevStep => prevStep + 1);
+    };
+
+    const handleBack = () => {
+        setCurrentStep(prevStep => prevStep - 1);
+    };
+
     
     const unidades = ufs.map((e: any)=>({
         label: e.unidade,
         value: e.unidade
     }))
 
+    
+    
     return (
         <>
             <List breadcrumb createButtonProps={{ children: "Nova Filial", onClick: ()=>{setIsModal(true)}, icon: <BranchesOutlined /> }}>
-                <Table columns={columns} dataSource={branchsResult.data?.data} scroll={{ x: 'max-content' }} size='small'/>
+                <Table columns={columns} dataSource={branchsResult.data?.data} scroll={{ x: 'max-content' }} size='small' loading={branchsResult.isLoading}/>
             </List>
 
-            <Modal title='Cadastrar Filial' open={isModal} onCancel={hadleCancel} centered okButtonProps={saveButtonProps}>
+            <Modal 
+                title='Cadastrar Filial' 
+                open={isModal} 
+                onCancel={hadleCancel} 
+                centered 
+                okButtonProps={saveButtonProps} 
+                loading={companiesResult.isLoading}
+            >
+                {currentStep === 0 && (
                 <Form  {...formProps} form={form} layout="vertical" style={{ width: '100%' }}>
                     <Row gutter={16}>
                         <Col xs={24} sm={12}>
@@ -204,7 +227,7 @@ export const AdmBranchlist = () => {
                     <Row gutter={16}>
                         <Col xs={24} sm={12}>
                             <Form.Item label="UF" name="f_uf" rules={[{ required: true, message: "UF é obrigatória" }]}>
-                                <Select showSearch allowClear onChange={(value) => setUf(value)} options={unidades} />
+                                <Select showSearch allowClear onChange={handleUfChange} options={unidades} />
                             </Form.Item>
                         </Col>
                         <Col xs={24} sm={12}>
@@ -234,8 +257,32 @@ export const AdmBranchlist = () => {
                                 </InputMask>
                             </Form.Item>
                         </Col>
+                        <Button size='small' type='link' onClick={handleNext}><span style={{fontSize: 10}}>Endereço</span>{<ArrowForwardIcon fontSize='small' />}</Button>
                     </Row>
+                    
+
+                    
                 </Form>
+
+                )}   
+                    {currentStep === 1 && (
+                        <Form {...formProps} form={form} layout="vertical" style={{ width: '100%' }}>
+                        <Button size='small' type='link' onClick={handleBack}>{<ArrowBackIcon fontSize='small' />}<span style={{fontSize: 10}}>Area cadastro</span></Button>
+                        <Row gutter={16}>
+                            <Col xs={24} sm={12}>
+                                <Form.Item label="Empresa" name="f_empresa_id" rules={[{ required: true, message: 'Empresa Obrigatória' }]}>
+                                    <Select /* opções aqui */ />
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} sm={12}>
+                                <Form.Item label="Nome" name="f_nome" rules={[{ required: true, message: 'Nome da filial é obrigatório' }]}>
+                                    <Input />
+                                </Form.Item>
+
+                            </Col>
+                        </Row>
+                    </Form>
+                )}
             </Modal>
 
         </>
