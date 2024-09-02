@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Badge, Button, Col, Form, Input, Modal, Popover, Row, Select, Table, Tabs, Tag } from 'antd';
 import type { TableProps } from 'antd';
 import { List, useForm } from '@refinedev/antd';
-import { ArrowRightOutlined, BranchesOutlined, ClearOutlined, FrownTwoTone } from '@ant-design/icons';
+import { ArrowRightOutlined, BranchesOutlined, ClearOutlined, ClockCircleFilled, FrownTwoTone } from '@ant-design/icons';
 import { useTable } from '@refinedev/core';
 import InputMask from 'react-input-mask';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
@@ -30,6 +30,7 @@ const formatCNPJ = (cnpj: any) => {
 };
 
 export const AdmBranchlist = () => {
+    const [bdgStatus, setBagStatus] = useState<number>(0)
     const [municipios, setMunicipios] = useState([]);
     const [ufs, setUfs] = useState([])
     const [isModal, setIsModal] = useState(false)
@@ -206,6 +207,20 @@ export const AdmBranchlist = () => {
     
     const { TabPane } = Tabs;
     
+    const handleBadge = () => {
+        let stts = form.getFieldValue();
+        let statusCount = 0;
+
+        Object.keys(stts).forEach((key) => {
+            if(stts[key]){
+                statusCount++;
+            }
+        });
+
+        setBagStatus(statusCount)
+    };
+    
+    
     return (
         <>
             <List breadcrumb createButtonProps={{ children: "Nova Filial", onClick: ()=>{setIsModal(true)}, icon: <BranchesOutlined /> }} >
@@ -225,48 +240,51 @@ export const AdmBranchlist = () => {
                 form={form} 
                 layout="vertical" 
                 style={{ width: '100%' }}
+                onChange={handleBadge}
             >
+                
                 <Tabs defaultActiveKey="1">
-                    <TabPane tab="Informações da Filial" icon={<BranchesOutlined size={10}/>} key="1">
-                        <Row gutter={16}>
-                            <Col xs={24} sm={12}>
-                                <Form.Item label="Empresa" name="f_empresa_id" rules={[{ required: true, message: 'Empresa Obrigatória' }]}>
-                                    <Select options={companiesOptions} />
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} sm={12}>
-                                <Form.Item label="Nome" name="f_nome" rules={[{ required: true, type: 'string', message: 'Nome da filial é obrigatório' }]}>
-                                    <Input />
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                        <Row gutter={16}>
-                            <Col xs={24} sm={12}>
-                                <Form.Item label="Código" name="f_codigo" rules={[{ required: true, type: 'number', message: 'Codigo da filial é obrigatório' }]}>
-                                    <Input type='number' allowClear={{ clearIcon: <ClearOutlined /> }} />
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} sm={12}>
-                                <Form.Item label="CNPJ" name="f_cnpj" rules={[{ required: true, message: "CNPJ da empresa é obrigatório" }]}>
-                                    <InputMask mask="99.999.999/9999-99">
-                                        {(inputProps: any) => <Input {...inputProps} placeholder="00.000.000/0000-00" allowClear={{ clearIcon: <ClearOutlined /> }} />}
-                                    </InputMask>
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                        <Row gutter={16}>
-                            <Col xs={24} sm={12}>
-                                <Form.Item label="Insc. Municipal" name="f_insc_municipal">
-                                    <Input type='number' allowClear={{ clearIcon: <ClearOutlined /> }} />
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} sm={12}>
-                                <Form.Item label="Insc. Estadual" name="f_insc_estadual">
-                                    <Input type='number' allowClear={{ clearIcon: <ClearOutlined /> }} />
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                    </TabPane>
+                        <TabPane tab={['Cadastro Filial ',  bdgStatus > 0 ? <Badge dot={bdgStatus === 0} color={bdgStatus >=3 ? 'green' : bdgStatus === 1 ? 'red' : 'yellow'} size='small'/> : null]}  icon={<BranchesOutlined size={10}/>} key="1">
+                            <Row gutter={16}>
+                                <Col xs={24} sm={12}>
+                                    <Form.Item label="Empresa" name="f_empresa_id" rules={[{ required: true, message: 'Empresa Obrigatória' }]}>
+                                        <Select options={companiesOptions}/>
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={24} sm={12}>
+                                    <Form.Item label="Nome" name="f_nome" rules={[{ required: true, type: 'string', message: 'Nome da filial é obrigatório' }]}>
+                                        <Input />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+                            <Row gutter={16}>
+                                <Col xs={24} sm={12}>
+                                    <Form.Item label="Código" name="f_codigo" rules={[{ required: true, type: 'number', message: 'Codigo da filial é obrigatório' }]}>
+                                        <Input type='number' allowClear={{ clearIcon: <ClearOutlined /> }} />
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={24} sm={12}>
+                                    <Form.Item label="CNPJ" name="f_cnpj" rules={[{ required: true, message: "CNPJ da empresa é obrigatório" }]}>
+                                        <InputMask mask="99.999.999/9999-99">
+                                            {(inputProps: any) => <Input {...inputProps} placeholder="00.000.000/0000-00" allowClear={{ clearIcon: <ClearOutlined /> }} />}
+                                        </InputMask>
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+                            <Row gutter={16}>
+                                <Col xs={24} sm={12}>
+                                    <Form.Item label="Insc. Municipal" name="f_insc_municipal">
+                                        <Input type='number' allowClear={{ clearIcon: <ClearOutlined /> }} />
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={24} sm={12}>
+                                    <Form.Item label="Insc. Estadual" name="f_insc_estadual">
+                                        <Input type='number' allowClear={{ clearIcon: <ClearOutlined /> }} />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+                        </TabPane>
+                        
                     <TabPane tab="Endereço" icon={<AddLocation fontSize='small'/>} key="2">
                         <Row gutter={16}>
                             <Col xs={24} sm={12}>
