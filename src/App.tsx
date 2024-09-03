@@ -44,7 +44,6 @@ import { resources } from "./config/resources";
 import { AdmCompanyShow } from "./pages/adm/company/show";
 import { AdmBranchShow } from "./pages/adm/branch/show";
 import { AdmUserShow } from "./pages/adm/user/show";
-import { DocTypeDoc } from "./pages/documents/typeDocument/show";
 import { DocConditionalsDoc } from "./pages/documents/conditinals/show";
 import { AdmUserlist } from "./pages/adm/user/list";
 import { dataProvider } from "./contexts/providerData";
@@ -52,6 +51,7 @@ import { AdmUserCreate } from "./pages/adm/user";
 import { AdmUserEdit } from "./pages/adm/user/edit";
 import { AdmCompanyCreate } from "./pages/adm/company/create";
 import { AdmBranchlist } from "./pages/adm/branch/list";
+import { DocTypeDocCreate } from "./pages/documents/typeDocument/list";
 
 
 type Props = {
@@ -99,7 +99,7 @@ function App() {
                 },
               },
               token: {
-                colorPrimary: "#8B41F2", // Cor primária personalizada
+                colorPrimary: "#8B41F2",
               },
             }}
             >
@@ -184,7 +184,7 @@ function App() {
                     </Route>
 
                     <Route path="/documents/type-documents">
-                      <Route index element={<DocTypeDoc/>}></Route>
+                      <Route index element={<DocTypeDocCreate/>}></Route>
                     </Route>
                     
                     <Route path="/documents/conditionals">
