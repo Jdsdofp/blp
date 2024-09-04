@@ -12,7 +12,7 @@ const getResourceUrl = (resource: string, ids: number, id: number): string => {
         branches: `${API_URL}/branch/${ids}/listar-filial`,
         userOne: `${API_URL}/user/${id}/listar-usuario`,
         branchsCreate: `${API_URL}/branch/registrar-filial`,
-        typeDocument: `${API_URL}/type-document/registrar-tipo-documento`
+        typeDocument: `${API_URL}/type-document/registrar-tipo-documento`,
     };
     
     return resourceMap[resource] || '';

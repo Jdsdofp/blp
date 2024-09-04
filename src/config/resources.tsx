@@ -18,11 +18,11 @@ export const resources: IResourceItem[] = [
     },
   },
   {
-    name: "categories",
-    list: "/categories",
-    create: "/categories/create",
-    edit: "/categories/edit/:id",
-    show: "/categories/show/:id",
+    name: "document",
+    list: "/document",
+    create: "/document/create",
+    edit: "/document/edit/:id",
+    show: "/document/show/:id",
     meta: {
       canDelete: true,
       label: 'Documentos',

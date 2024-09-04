@@ -32,8 +32,8 @@ import {
 import {
   CategoryCreate,
   CategoryEdit,
-  CategoryList,
   CategoryShow,
+  DocumentList,
 } from "./pages/categories";
 import ptBR from 'antd/es/locale/pt_BR';
 import 'dayjs/locale/pt-br'
@@ -41,8 +41,6 @@ import { UpdatePassword } from "./pages/updatePassword";
 import { Login } from "./pages/login";
 import { Register } from "./pages/register";
 import { resources } from "./config/resources";
-import { AdmCompanyShow } from "./pages/adm/company/show";
-import { AdmBranchShow } from "./pages/adm/branch/show";
 import { AdmUserShow } from "./pages/adm/user/show";
 import { DocConditionalsDoc } from "./pages/documents/conditinals/show";
 import { AdmUserlist } from "./pages/adm/user/list";
@@ -161,8 +159,8 @@ function App() {
                       <Route path="edit/:id" element={<BlogPostEdit />} />
                       <Route path="show/:id" element={<BlogPostShow />} />
                     </Route>
-                    <Route path="/categories">
-                      <Route index element={<CategoryList />} />
+                    <Route path="/document">
+                      <Route index element={<DocumentList />} />
                       <Route path="create" element={<CategoryCreate />} />
                       <Route path="edit/:id" element={<CategoryEdit />} />
                       <Route path="show/:id" element={<CategoryShow />} />
