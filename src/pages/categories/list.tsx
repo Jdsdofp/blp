@@ -2,7 +2,7 @@ import {
   List,
   useTable,
 } from "@refinedev/antd";
-import { Table, TableProps, Popover, Tag } from "antd";
+import { Table, TableProps, Popover, Tag, Badge } from "antd";
 import StoreIcon from '@mui/icons-material/Store';
 
 interface IDocuments {
@@ -12,10 +12,10 @@ interface IDocuments {
         f_cidade: string;
         f_uf: string;
         f_ativo: boolean;
-        f_endereco: [];
+        documentos: [];
         f_codigo: number;
-}
 
+}
 
 const formatCNPJ = (cnpj: any) => {
   return cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
@@ -23,7 +23,7 @@ const formatCNPJ = (cnpj: any) => {
 
 export const DocumentList = () => {
 
-  const { tableProps } = useTable({resource: 'branch', meta: {endpoint: 'listar-filiais'},
+  const { tableProps } = useTable({resource: 'document', meta: {endpoint: 'listar-documentos-filais'},
     syncWithLocation: true,
   });
 
@@ -89,23 +89,51 @@ export const DocumentList = () => {
     },
 
     {
-      key: 'status',
+      key: 'documentos',
       title: 'Status',
-      render: (_,record)=>(
-        <>
-          <Tag color="red-inverse">Vencido 1</Tag>
-          <Tag color="cyan">Em processo 1</Tag>
-          <Tag color="green">Emitido 1</Tag>
-          <Tag color="orange">Não iniciado 1</Tag>
-        </>
-      )
+      render: (_, { documentos }) => {
+        // Agrupar documentos por situação
+        const statusCount = documentos.reduce((acc, d) => {
+          if (acc[d.d_situacao]) {
+            acc[d.d_situacao].count += 1;
+          } else {
+            acc[d.d_situacao] = { count: 1 };
+          }
+          return acc;
+        }, {});
+    
+        // Função para determinar a cor da tag com base no status
+        const getColor = (status) => {
+          switch (status) {
+            case 'Vencido':
+              return 'red-inverse';
+            case 'Em processo':
+              return 'cyan';
+            case 'Não iniciado':
+              return 'orange';
+            case 'Emitido':
+              return 'green';
+            default:
+              return 'default'; // Cor padrão
+          }
+        };
+    
+        return (
+          <>
+            {Object.keys(statusCount).map((status) => (
+              <Tag color={getColor(status)} key={status}>
+                <Badge count={statusCount[status].count} size="small" color={getColor(status)}>{status}</Badge>
+              </Tag>
+            ))}
+          </>
+        );
+      }
     }
+    
+    
 
   ]
 
-
-
-  
   return (
     <List>
       <Table {...tableProps} rowKey="id" columns={columns} size="small" />

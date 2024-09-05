@@ -104,7 +104,7 @@ export const dataProvider: DataProvider = {
     create: async ({ resource, variables, meta }) => {
         const token = localStorage.getItem(TOKEN_KEY);
         const url = getResourceUrl(resource);
-        
+        console.log('meu resource', resource)
         if (!url) {
             throw new Error("Recurso não suportado");
         }

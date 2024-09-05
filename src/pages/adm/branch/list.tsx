@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Badge, Button, Col, Form, Input, Modal, Popover, Row, Select, Table, Tabs, Tag } from 'antd';
+import { Badge, Col, Form, Input, Modal, Row, Select, Table, Tabs, Tag } from 'antd';
 import type { TableProps } from 'antd';
 import { List, useForm } from '@refinedev/antd';
-import { ArrowRightOutlined, BranchesOutlined, ClearOutlined, ClockCircleFilled, FrownTwoTone } from '@ant-design/icons';
-import { useTable } from '@refinedev/core';
+import {  BranchesOutlined, ClearOutlined } from '@ant-design/icons';
+import { useInvalidate, useTable } from '@refinedev/core';
 import InputMask from 'react-input-mask';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import { AddLocation, AddReactionSharp } from '@mui/icons-material';
+import { AddLocation } from '@mui/icons-material';
 import axios from 'axios';
 
 interface IBranchs {
@@ -36,8 +35,11 @@ export const AdmBranchlist = () => {
     const [isModal, setIsModal] = useState(false)
     const { tableQueryResult: companiesResult } = useTable({ resource: 'company', meta: {endpoint: 'listar-empresas'},syncWithLocation: false});
     const {tableQueryResult: branchsResult} = useTable<IBranchs>({resource: 'branch', meta: {endpoint: 'listar-filiais'}, syncWithLocation: false, liveMode: 'auto'})
-    const {formProps, form } = useForm<IBranchs>({resource: 'branchsCreate', action: 'create', 
+    
+    const invalid = useInvalidate()
+    const {formProps, form, saveButtonProps } = useForm<IBranchs>({resource: 'branchsCreate', action: 'create', 
         successNotification(data) {
+        form.resetFields();
         return{
             message:  `${data?.data?.message}`,
             type: 'success'
@@ -47,6 +49,12 @@ export const AdmBranchlist = () => {
             message: `${data?.response.data.message}`,
             type: 'error'
         }
+    }, onMutationSuccess: ()=>{
+        invalid({
+            resource: 'branch',
+            meta: {endpoint: 'listar-filiais'},
+            invalidates: ['all']
+        })
     }})
     const [endereco, setEndereco] = useState({});
 
@@ -232,8 +240,7 @@ export const AdmBranchlist = () => {
             open={isModal} 
             onCancel={hadleCancel} 
             centered 
-            onOk={() => form.submit()} // Submete o formulário ao clicar em OK
-            confirmLoading={companiesResult.isLoading}
+            okButtonProps={saveButtonProps} 
             >
             <Form 
                 {...formProps} 
@@ -241,6 +248,7 @@ export const AdmBranchlist = () => {
                 layout="vertical" 
                 style={{ width: '100%' }}
                 onChange={handleBadge}
+                
             >
                 
                 <Tabs defaultActiveKey="1">
@@ -259,7 +267,7 @@ export const AdmBranchlist = () => {
                             </Row>
                             <Row gutter={16}>
                                 <Col xs={24} sm={12}>
-                                    <Form.Item label="Código" name="f_codigo" rules={[{ required: true, type: 'number', message: 'Codigo da filial é obrigatório' }]}>
+                                    <Form.Item label="Código" name="f_codigo">
                                         <Input type='number' allowClear={{ clearIcon: <ClearOutlined /> }} />
                                     </Form.Item>
                                 </Col>
