@@ -248,7 +248,6 @@ export const AdmBranchlist = () => {
                 layout="vertical" 
                 style={{ width: '100%' }}
                 onChange={handleBadge}
-                
             >
                 
                 <Tabs defaultActiveKey="1">
