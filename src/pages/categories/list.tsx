@@ -1,9 +1,10 @@
 import {
   List,
-  useTable,
+  useTable
 } from "@refinedev/antd";
 import { Table, TableProps, Popover, Tag, Badge } from "antd";
 import StoreIcon from '@mui/icons-material/Store';
+import { useNavigate } from "react-router-dom";
 
 interface IDocuments {
         f_id: number;
@@ -22,7 +23,7 @@ const formatCNPJ = (cnpj: any) => {
 };
 
 export const DocumentList = () => {
-
+const navigate = useNavigate()
   const { tableProps } = useTable({resource: 'document', meta: {endpoint: 'listar-documentos-filais'},
     syncWithLocation: true,
   });
@@ -91,9 +92,9 @@ export const DocumentList = () => {
     {
       key: 'documentos',
       title: 'Status',
-      render: (_, { documentos }) => {
-        // Agrupar documentos por situação
-        const statusCount = documentos.reduce((acc, d) => {
+      render: (_, { documentos, f_id }: any) => {
+        
+        const statusCount = documentos.reduce((acc: any, d: any) => {
           if (acc[d.d_situacao]) {
             acc[d.d_situacao].count += 1;
           } else {
@@ -102,8 +103,8 @@ export const DocumentList = () => {
           return acc;
         }, {});
     
-        // Função para determinar a cor da tag com base no status
-        const getColor = (status) => {
+        
+        const getColor = (status: any) => {
           switch (status) {
             case 'Vencido':
               return 'red-inverse';
@@ -114,15 +115,26 @@ export const DocumentList = () => {
             case 'Emitido':
               return 'green';
             default:
-              return 'default'; // Cor padrão
+              return 'default';
           }
         };
-    
+
+     const handleTagClick = (status: any, f_id: any) => {{
+      navigate(`/document/show/?status=${status}&filialId=${f_id}`);
+      }};
+
         return (
           <>
             {Object.keys(statusCount).map((status) => (
-              <Tag color={getColor(status)} key={status}>
-                <Badge count={statusCount[status].count} size="small" color={getColor(status)}>{status}</Badge>
+              <Tag
+                style={{cursor: 'pointer'}} 
+                color={getColor(status)} 
+                key={status}
+                onClick={() => handleTagClick(status, f_id)}
+              >
+                <Badge count={statusCount[status].count} size="small" color={getColor(status)}>
+                  {status}
+                </Badge>
               </Tag>
             ))}
           </>

@@ -22,7 +22,7 @@ export const resources: IResourceItem[] = [
     list: "/document",
     create: "/document/create",
     edit: "/document/edit/:id",
-    show: "/document/show/:id",
+    show: "/document/show",
     meta: {
       canDelete: true,
       label: 'Documentos',
