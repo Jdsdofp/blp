@@ -50,6 +50,8 @@ import { AdmUserEdit } from "./pages/adm/user/edit";
 import { AdmCompanyCreate } from "./pages/adm/company/create";
 import { AdmBranchlist } from "./pages/adm/branch/list";
 import { DocTypeDocCreate } from "./pages/documents/typeDocument/list";
+import { ListCondition } from "./pages/documents/conditinals/list";
+import { CreateCondition } from "./pages/documents/conditinals/create";
 
 
 type Props = {
@@ -186,7 +188,8 @@ function App() {
                     </Route>
                     
                     <Route path="/documents/conditionals">
-                      <Route index element={<DocConditionalsDoc/>}></Route>
+                      <Route  index element={<ListCondition />} />
+                      <Route path="list" element={<CreateCondition />}/>
                     </Route>
                     <Route path="*" element={<ErrorComponent />} />
                   </Route>

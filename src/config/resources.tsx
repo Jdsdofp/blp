@@ -91,6 +91,7 @@ export const resources: IResourceItem[] = [
     name: "/coditionals",
     show: "/documents/conditionals",
     list: "/documents/conditionals",
+    create: "/documents/conditionals",
     meta: {
       parent: "documents",
       label: "Condição",

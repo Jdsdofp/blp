@@ -107,7 +107,7 @@ export const AdmBranchlist = () => {
 
         {
             key: 'f_codigo',
-            title: 'Num. Loja',
+            title: 'Nº Loja',
             dataIndex: 'f_codigo',
             render: (_, record)=>(
                 <a>#{record.f_codigo}</a>
