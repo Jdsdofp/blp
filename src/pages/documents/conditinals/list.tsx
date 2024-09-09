@@ -1,37 +1,27 @@
-import React, { useEffect, useState } from 'react';
-import { Badge, Button, Col, Form, Input, Modal, Row, Select, Space, Table, Tabs, Tag } from 'antd';
+import React, { useState } from 'react';
+import { Badge, Button,Form, Input, Modal, Space, Table, Tabs, Tag } from 'antd';
 import type { TableProps } from 'antd';
 import { List, useForm } from '@refinedev/antd';
-import {  BranchesOutlined, ClearOutlined, DeleteOutlined, IssuesCloseOutlined, PlusOutlined } from '@ant-design/icons';
+import {  DeleteOutlined, IssuesCloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { useInvalidate, useTable } from '@refinedev/core';
-import InputMask from 'react-input-mask';
-import { AddLocation } from '@mui/icons-material';
-import axios from 'axios';
+import AssignmentTurnedInOutlinedIcon from '@mui/icons-material/AssignmentTurnedInOutlined';
 
-interface IBranchs {
-    f_id: number;
-    f_nome: string;
-    f_codigo: number;
-    f_cnpj: number;
-    f_cidade: string;
-    f_uf: string;
-    f_endereco: string;
-    f_latitude: string;
-    f_longitude: string;
-    empresa: object;
-    responsavel: object;
-    f_criado_em: Date;
-    f_ativo: boolean;
+interface IConditions {
+    c_id: number;
+    c_tipo: string;
+    c_condicao: []
   }
 
 
 export const ListCondition = () => {
     const [isModal, setIsModal] = useState(false)
+    const [modalList, setModalList] = useState(false)
+    const [listCond, setListCond] = useState()
     const { tableQueryResult: companiesResult } = useTable({ resource: 'company', meta: {endpoint: 'listar-empresas'},syncWithLocation: false});
-    const {tableQueryResult: branchsResult} = useTable<IBranchs>({resource: 'branch', meta: {endpoint: 'listar-filiais'}, syncWithLocation: false, liveMode: 'auto'})
-    
+    const {tableQueryResult: condtionsResult} = useTable<IConditions>({resource: 'condition', meta: {endpoint: 'listar-condicionantes'}})
+    console.log(`the return: ${condtionsResult}`)
     const invalid = useInvalidate()
-    const {formProps, form, saveButtonProps } = useForm<IBranchs>({resource: 'branchsCreate', action: 'create', 
+    const {formProps, form, saveButtonProps } = useForm<IConditions>({resource: 'conditionalCreate', action: 'create', 
         successNotification(data) {
         form.resetFields();
         return{
@@ -50,81 +40,42 @@ export const ListCondition = () => {
             invalidates: ['all']
         })
     }})
-    const [endereco, setEndereco] = useState({});
-
     
 
-    const companiesOptions = companiesResult.data?.data.map((company)=>({
-        label: company.e_nome,
-        value: company.e_id
+    const companiesOptions = condtionsResult.data?.data.map((company)=>({
+        label: company.c_tipo,
+        value: company.c_id
     }))
 
 
           
-    const columns: TableProps<IBranchs>['columns'] = [
+    const columns: TableProps<IConditions>['columns'] = [
 
         {
-            key: 'f_codigo',
-            title: 'Num. Loja',
-            dataIndex: 'f_codigo',
+            key: 'c_id',
+            title: 'Id',
+            dataIndex: 'c_id',
             render: (_, record)=>(
-                <a>#{record.f_codigo}</a>
+                <a>#{record.c_id}</a>
             )
             
         },
 
         {
-            key: 'empresa',
-            title: 'Empresa',
-            render: (_, record: any)=>(
+            key: 'c_tipo',
+            title: 'Tipo',
+            render: (_, {c_tipo})=>(
                 <span>
-                    {record?.empresa?.e_nome}
+                    {c_tipo}
                 </span>
             )
         },
 
         {
-            key: 'f_nome',
-            title: 'Nome Filial',
-            dataIndex: 'f_nome'
-        },
-
-        {
-            key: 'f_cnpj',
-            title: 'CNPJ',
+            key: 'c_condicao',
+            title: 'Condições',
             render: (_, record)=>(
-                <span>{record.f_cnpj}</span>
-            )
-        },
-
-        {
-            key: 'f_cidade',
-            title: 'Cidade',
-            render: (_, record)=>(
-                <span>{record.f_cidade}</span>
-            )
-        },
-        {
-            key: 'f_uf',
-            title: 'UF',
-            render: (_, record)=>(
-                <span>{record.f_uf}</span>
-            )
-        },
-
-        {
-            key: 'f_responsavel',
-            title: 'Responsavel',
-            render: (_, record: any)=>(
-                record?.responsavel?.u_nome
-            )
-        },
-
-        {
-            key: 'f_ativo',
-            title: 'Status',
-            render: (_, {f_ativo})=>(
-                <Tag color={f_ativo ? 'green' : 'error'} style={{fontSize: 10}}> <Badge color={f_ativo ? 'green': 'red'}/> {f_ativo ? 'Ativa' : 'Desativada'}</Tag>
+                <Tag style={{cursor: 'pointer', borderRadius: 50}} color='cyan' onClick={()=>handleModalList(record.c_condicao)}><AssignmentTurnedInOutlinedIcon fontSize='small'/> {record.c_condicao.length}</Tag>
             )
         }
     ]
@@ -133,6 +84,12 @@ export const ListCondition = () => {
         setIsModal(false)
     
     }
+
+
+    const handleModalList = (c_codicao: any) =>{
+        setModalList(true)
+        setListCond(c_codicao)
+    }
     
     const { TabPane } = Tabs;
    
@@ -140,7 +97,7 @@ export const ListCondition = () => {
     return (
         <>
             <List breadcrumb createButtonProps={{ children: "Nova condição", onClick: ()=>{setIsModal(true)}, icon: <IssuesCloseOutlined /> }} >
-                <Table columns={columns} dataSource={branchsResult.data?.data} scroll={{ x: 'max-content' }} size='small' loading={branchsResult.isLoading}/>
+                <Table columns={columns} dataSource={condtionsResult.data?.data} scroll={{ x: 'max-content' }} size='small'/>
             </List>
 
             <Modal 
@@ -152,14 +109,14 @@ export const ListCondition = () => {
             >
             <Form {...formProps} layout="vertical">  
                 <Form.Item  
-                    name={"firstName"} 
+                    name={"c_tipo"} 
                     style={{ maxWidth: "893px" }}  
                     rules={[{ required: true }]}  
                 >  
                     <Input placeholder="Nome" />
                 </Form.Item>  
 
-                <Form.List name={"skills"}>   
+                <Form.List name={"c_condicao"}>   
                     {(fields, { add, remove }) => {  
                         return (  
                             <>  
@@ -211,6 +168,11 @@ export const ListCondition = () => {
                         }}  
                     </Form.List>  
                 </Form>  
+            </Modal>
+
+
+            <Modal open={modalList} onCancel={()=>setModalList(false)}>
+                        <span>{listCond}</span>
             </Modal>
 
         </>

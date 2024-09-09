@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Badge, Col, DatePicker, Form, Input, Modal, Row, Select, Table, Tabs, Tag } from 'antd';
+import { Badge, Col, DatePicker, Form, Input, Modal, Row, Select, Switch, Table, Tabs, Tag } from 'antd';
 import type { TableProps } from 'antd';
 import { DateField, List, useForm } from '@refinedev/antd';
 import { ClearOutlined } from '@ant-design/icons';
 import { useInvalidate, useList } from '@refinedev/core';
-import {  DocumentScanner } from '@mui/icons-material';
+import {  Check, DocumentScanner } from '@mui/icons-material';
 
 interface ITypeDoc {
     td_id: number;
     td_desc: string;
     td_ativo: boolean;
+    td_requer_condicao: boolean;
     criado_em: Date;
   }
 
@@ -73,8 +74,18 @@ export const DocTypeDocCreate = () => {
         },
 
         {
-            key: 'f_ativo',
+            key: 'td_requer_condicao',
+            title: 'Req. Condicionante',
+            render: (_, {td_requer_condicao})=>(
+                <span style={{fontSize: '11px', color: td_requer_condicao ? 'green' : 'red', font: 'small-caption'}}>{td_requer_condicao ? 'Sim' : 'Não'}</span>
+            )
+        },
+
+        {
+            key: 'td_ativo',
             title: 'Status',
+            align: 'center',
+            width: '80px',
             render: (_, {td_ativo})=>(
                 <Tag color={td_ativo ? 'green' : 'error'} style={{fontSize: 10}}> <Badge color={td_ativo ? 'green': 'red'}/> {td_ativo ? 'Ativo' : 'Desativado'}</Tag>
             )
@@ -117,6 +128,13 @@ export const DocTypeDocCreate = () => {
                                         <Input/>    
                                     </Form.Item>
                                 </Col>
+
+                                <Col xs={24} sm={24}>
+                                    <Form.Item label="Requer Condicionante?" name="td_requer_condicao">
+                                        <Switch checkedChildren='Sim' unCheckedChildren='Não' defaultChecked/>    
+                                    </Form.Item>
+                                </Col>
+
                         </Row>
                 </Tabs>
             </Form>
