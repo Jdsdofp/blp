@@ -30,7 +30,6 @@ import {
   BlogPostShow,
 } from "./pages/blog-posts";
 import {
-  CategoryCreate,
   CategoryEdit,
   DocumentList,
   DocumentShow,
@@ -163,7 +162,6 @@ function App() {
                     </Route>
                     <Route path="/document">
                       <Route index element={<DocumentList />} />
-                      <Route path="create" element={<CategoryCreate />} />
                       <Route path="edit/:id" element={<CategoryEdit />} />
                       <Route path="show" element={<DocumentShow />} />
                     </Route>

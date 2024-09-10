@@ -80,6 +80,8 @@ export const ListCondition = () => {
         }
     ]
 
+    
+
     const hadleCancel = () =>{
         setIsModal(false)
     
@@ -96,7 +98,7 @@ export const ListCondition = () => {
     
     return (
         <>
-            <List breadcrumb createButtonProps={{ children: "Nova condição", onClick: ()=>{setIsModal(true)}, icon: <IssuesCloseOutlined /> }} >
+            <List title='Condição' breadcrumb createButtonProps={{ children: "Nova condição", onClick: ()=>{setIsModal(true)}, icon: <IssuesCloseOutlined /> }} >
                 <Table columns={columns} dataSource={condtionsResult.data?.data} scroll={{ x: 'max-content' }} size='small'/>
             </List>
 
@@ -171,8 +173,10 @@ export const ListCondition = () => {
             </Modal>
 
 
-            <Modal open={modalList} onCancel={()=>setModalList(false)}>
-                        <span>{listCond}</span>
+            <Modal open={modalList} onCancel={()=>setModalList(false)} styles={{body: {paddingTop: '28px'}}} okButtonProps={{hidden: true}} cancelButtonProps={{hidden: true}}>
+                        <Table dataSource={listCond} size='small' bordered scroll={{x: true}}>
+                            <Table.Column title='Condição' />
+                        </Table>
             </Modal>
 
         </>

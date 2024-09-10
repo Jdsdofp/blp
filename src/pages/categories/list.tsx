@@ -1,10 +1,18 @@
 import {
+  CloneButton,
+  Create,
+  CreateButton,
   List,
   useTable
 } from "@refinedev/antd";
-import { Table, TableProps, Popover, Tag, Badge } from "antd";
+import { Table, TableProps, Popover, Tag, Badge, Modal, Button, Tabs, Row, Col, Form, Select, Input } from "antd";
 import StoreIcon from '@mui/icons-material/Store';
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { AddLocation, CreateNewFolder, NoEncryption } from "@mui/icons-material";
+import TabPane from "antd/lib/tabs/TabPane";
+import { BranchesOutlined, ClearOutlined, ExceptionOutlined, FolderAddOutlined } from "@ant-design/icons";
+import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
 
 interface IDocuments {
         f_id: number;
@@ -23,6 +31,8 @@ const formatCNPJ = (cnpj: any) => {
 };
 
 export const DocumentList = () => {
+  const [isModal, setIsModal] = useState(false)
+  const [islistModal, setIsListModal] = useState([])
 const navigate = useNavigate()
   const { tableProps } = useTable({resource: 'document', meta: {endpoint: 'listar-documentos-filais'},
     syncWithLocation: true,
@@ -140,15 +150,112 @@ const navigate = useNavigate()
           </>
         );
       }
+    },
+
+    {
+      key: 'actions',
+      title: 'Novo Documento',
+      render: (_, record)=>(
+        <Button icon={<CreateNewFolder color={islistModal?.f_id === record.f_id ? "inherit" : "warning" } fontSize="inherit"/>} shape="circle" onClick={()=>hendleModal(record)} />
+      )
     }
     
     
 
   ]
 
+  const hendleModal = (record: any) =>{
+      if(record){
+        setIsModal(true)
+        setIsListModal(record)
+      }else{
+        setIsListModal([])
+    }    
+  }
+  let n = 1;
   return (
-    <List>
-      <Table {...tableProps} rowKey="id" columns={columns} size="small" />
-    </List>
+    <>
+      <List>
+        <Table {...tableProps} rowKey="id" columns={columns} size="small" />
+      </List>
+    
+      <Modal open={isModal} onCancel={()=>setIsModal(false)}>
+
+      <Tabs defaultActiveKey="1">
+                        <TabPane tab={[' Cadastro de Documento ']}  icon={<FolderAddOutlined /> } key="1">
+                            <Row gutter={16}>
+                                <Col xs={24} sm={12}>
+                                    <Form.Item label="Nome" name="f_nome" >
+                                        {islistModal.f_nome}
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+                            <Row gutter={16}>
+                                <Col xs={24} sm={12}>
+                                    <Form.Item label="aasa" name="f_codigo">
+                                        {/* {<Input type='number' allowClear={{ clearIcon: <ClearOutlined /> }} />} */}
+                                    </Form.Item>
+                                </Col>
+                                
+                            </Row>
+                            <Row gutter={16}>
+                                <Col xs={24} sm={12}>
+                                    <Form.Item label="asasa" name="f_insc_municipal">
+                                        {/* {<Input type='number' allowClear={{ clearIcon: <ClearOutlined /> }} />} */}
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={24} sm={12}>
+                                    <Form.Item label="aasa" name="f_insc_estadual">
+                                        {/* {<Input type='number' allowClear={{ clearIcon: <ClearOutlined /> }} />} */}
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+                        </TabPane>
+                     {n < 1 ? (<TabPane tab={[" Condicionante"]} icon={<ExceptionOutlined />} key="2">
+                        <Row gutter={16}>
+                           
+                            <Col xs={24} sm={12}>
+                                <Form.Item label="asasa" name="f_cidade" rules={[{ required: true, message: "Cidade da empresa é obrigatória" }]}>
+                                    
+                                </Form.Item>
+                            </Col>
+
+                            <Col xs={24} sm={12}>
+                                
+                            </Col>
+
+
+                            <Col xs={24} sm={12}>
+                                    <Form.Item label="Logradouro" name="f_endereco_logradouro">
+                                        <Input allowClear={{ clearIcon: <ClearOutlined /> }} />
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={24} sm={12}>
+                                    
+                                </Col>
+                                
+                                <Col xs={24} sm={12}>
+                                    
+                                </Col>
+                        </Row>
+                        <Row gutter={16}>
+                            <Col xs={24} sm={12}>
+                                <Form.Item label="Latitude" name="f_latitude">
+                                    
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} sm={12}>
+                                <Form.Item label="Longitude" name="f_longitude">
+                                    
+                                </Form.Item>
+                            </Col>
+                            
+                        </Row>
+                    </TabPane>) : ''}   
+                    
+                </Tabs>
+       
+      </Modal>
+    </>
   );
 };
