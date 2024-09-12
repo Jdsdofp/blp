@@ -1,18 +1,15 @@
 import {
-  CloneButton,
-  Create,
-  CreateButton,
   List,
   useTable
 } from "@refinedev/antd";
-import { Table, TableProps, Popover, Tag, Badge, Modal, Button, Tabs, Row, Col, Form, Select, Input } from "antd";
+import { Table, TableProps, Popover, Tag, Badge, Modal, Button, Tabs, Row, Col, Form, Select, Input, DatePicker } from "antd";
 import StoreIcon from '@mui/icons-material/Store';
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { AddLocation, CreateNewFolder, NoEncryption } from "@mui/icons-material";
+import {  useState } from "react";
+import { CreateNewFolder } from "@mui/icons-material";
 import TabPane from "antd/lib/tabs/TabPane";
-import { BranchesOutlined, ClearOutlined, ExceptionOutlined, FolderAddOutlined } from "@ant-design/icons";
-import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
+import { ExceptionOutlined, FolderAddOutlined } from "@ant-design/icons";
+import { useList } from "@refinedev/core";
 
 interface IDocuments {
         f_id: number;
@@ -26,6 +23,19 @@ interface IDocuments {
 
 }
 
+interface IDocument {
+  d_filial_id: number;
+  d_data_pedido: Date;
+  d_data_emissao: Date;
+  d_data_vencimento: Date;
+  d_tipo_doc_id: number;
+  d_orgao_exp: string;
+  d_anexo: string;
+  d_num_protocolo: string;
+  d_sitacao: string;
+  d_condicionante_id: number;
+}
+
 const formatCNPJ = (cnpj: any) => {
   return cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
 };
@@ -33,7 +43,23 @@ const formatCNPJ = (cnpj: any) => {
 export const DocumentList = () => {
   const [isModal, setIsModal] = useState(false)
   const [islistModal, setIsListModal] = useState([])
-const navigate = useNavigate()
+  const [tabCond, setTabCond] = useState(false)
+  const navigate = useNavigate()
+
+  const {data: listTypeDocument} = useList({resource: 'type-document', meta: {endpoint: 'listar-tipo-documentos'}, liveMode: 'auto'})
+  const {data: condtionsResult} = useList({resource: 'condition', meta: {endpoint: 'listar-condicionantes'}})
+  
+  const listaTipoDocumentos = listTypeDocument?.data.map((tpd)=>({
+    label: tpd.td_desc,
+    value: tpd.td_id,
+    ...tpd
+  }))
+
+  const listarCondicionantes = condtionsResult?.data.map((cond)=>({
+    label: cond.c_tipo,
+    value: cond.c_id
+  }))
+
   const { tableProps } = useTable({resource: 'document', meta: {endpoint: 'listar-documentos-filais'},
     syncWithLocation: true,
   });
@@ -160,8 +186,6 @@ const navigate = useNavigate()
       )
     }
     
-    
-
   ]
 
   const hendleModal = (record: any) =>{
@@ -172,7 +196,12 @@ const navigate = useNavigate()
         setIsListModal([])
     }    
   }
-  let n = 1;
+
+  const hendleCondicionante = (value, option) =>{
+    setTabCond(option.td_requer_condicao)
+  }
+
+  
   return (
     <>
       <List>
@@ -180,81 +209,81 @@ const navigate = useNavigate()
       </List>
     
       <Modal open={isModal} onCancel={()=>setIsModal(false)}>
+      <Form  
+          layout="vertical" 
+          style={{ width: '100%' }}
+        >
 
-      <Tabs defaultActiveKey="1">
-                        <TabPane tab={[' Cadastro de Documento ']}  icon={<FolderAddOutlined /> } key="1">
-                            <Row gutter={16}>
-                                <Col xs={24} sm={12}>
-                                    <Form.Item label="Nome" name="f_nome" >
-                                        {islistModal.f_nome}
-                                    </Form.Item>
-                                </Col>
-                            </Row>
-                            <Row gutter={16}>
-                                <Col xs={24} sm={12}>
-                                    <Form.Item label="aasa" name="f_codigo">
-                                        {/* {<Input type='number' allowClear={{ clearIcon: <ClearOutlined /> }} />} */}
-                                    </Form.Item>
-                                </Col>
-                                
-                            </Row>
-                            <Row gutter={16}>
-                                <Col xs={24} sm={12}>
-                                    <Form.Item label="asasa" name="f_insc_municipal">
-                                        {/* {<Input type='number' allowClear={{ clearIcon: <ClearOutlined /> }} />} */}
-                                    </Form.Item>
-                                </Col>
-                                <Col xs={24} sm={12}>
-                                    <Form.Item label="aasa" name="f_insc_estadual">
-                                        {/* {<Input type='number' allowClear={{ clearIcon: <ClearOutlined /> }} />} */}
-                                    </Form.Item>
-                                </Col>
-                            </Row>
-                        </TabPane>
-                     {n < 1 ? (<TabPane tab={[" Condicionante"]} icon={<ExceptionOutlined />} key="2">
-                        <Row gutter={16}>
-                           
-                            <Col xs={24} sm={12}>
-                                <Form.Item label="asasa" name="f_cidade" rules={[{ required: true, message: "Cidade da empresa é obrigatória" }]}>
-                                    
-                                </Form.Item>
-                            </Col>
+        <Tabs defaultActiveKey="1">
+                          <TabPane tab={[' Cadastro de Documento ']}  icon={<FolderAddOutlined /> } key="1">
+                              <Row gutter={16}>
+                                  <Col xs={24} sm={12}>
+                                      <Form.Item name="f_nome" >
+                                          <span>Filial: <a>{islistModal.f_nome}</a></span>
+                                      </Form.Item>
+                                  </Col>
+                                      <Form.Item name="d_num_protocolo" hidden={tabCond}>
+                                          <Input placeholder="Nº Documento"/>
+                                      </Form.Item>
+                              </Row>
+                              <Row gutter={16}>
+                                  <Col xs={24} sm={12}>
+                                      <Form.Item label="Tipo de Documento" name="f_codigo">
+                                          <Select 
+                                            options={listaTipoDocumentos} 
+                                            onChange={(value, option)=>hendleCondicionante(value, option)}
+                                          />
+                                      </Form.Item>
+                                  </Col>
+                                  
+                                  <Col xs={24} sm={12}>
+                                      <Form.Item label="Orgão Exp." name="d_orgao_exp">
+                                          <Input placeholder="Orgão Exp"/>
+                                      </Form.Item>
+                                  </Col>
+                              </Row>
 
-                            <Col xs={24} sm={12}>
-                                
-                            </Col>
+                              
+                              <Row gutter={16}>
+                                  
+                                  <Col xs={24} sm={12} hidden={tabCond}>
+                                      <Form.Item label="Data Pedido" name="d_data_pedido">
+                                          <DatePicker placeholder="00/00/0000" disabled={tabCond} format={'DD/MM/YYYY'} draggable/>
+                                      </Form.Item>
+                                  </Col>
+                                  <Col xs={24} sm={12} hidden={tabCond}>
+                                      <Form.Item label="Data Emissão" name="d_data_emissao">
+                                          <DatePicker placeholder="00/00/0000" disabled={tabCond} format={'DD/MM/YYYY'} draggable/>
+                                      </Form.Item>
+                                  </Col>
 
+                                  <Col xs={24} sm={12} hidden={tabCond}>
+                                      <Form.Item label="Data Vencimento" name="d_data_vencimento">
+                                          <DatePicker placeholder="00/00/0000" disabled={tabCond} format={'DD/MM/YYYY'} draggable/>
+                                      </Form.Item>
+                                  </Col>
 
-                            <Col xs={24} sm={12}>
-                                    <Form.Item label="Logradouro" name="f_endereco_logradouro">
-                                        <Input allowClear={{ clearIcon: <ClearOutlined /> }} />
-                                    </Form.Item>
-                                </Col>
-                                <Col xs={24} sm={12}>
-                                    
-                                </Col>
-                                
-                                <Col xs={24} sm={12}>
-                                    
-                                </Col>
-                        </Row>
-                        <Row gutter={16}>
-                            <Col xs={24} sm={12}>
-                                <Form.Item label="Latitude" name="f_latitude">
-                                    
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} sm={12}>
-                                <Form.Item label="Longitude" name="f_longitude">
-                                    
-                                </Form.Item>
-                            </Col>
+                                  <Col xs={24} sm={12} hidden={tabCond}>
+                                      <Form.Item label="Situação" name="d_situacao">
+                                          <Tag >Emitido</Tag>
+                                      </Form.Item>
+                                  </Col>
+                              </Row>
+                          </TabPane>
+                      {tabCond ? (<TabPane tab={[" Condicionante"]} icon={<ExceptionOutlined />} key="2">
+                          <Row gutter={16}>
                             
-                        </Row>
-                    </TabPane>) : ''}   
-                    
-                </Tabs>
-       
+                              <Col xs={24} sm={12}>
+                                 <Form.Item label="Condicionante" name="dc_id">
+                                      <Select options={listarCondicionantes}/>
+                                  </Form.Item>
+                              </Col>
+                          </Row>
+                          
+                      </TabPane>) : ''}   
+                      
+                  </Tabs>
+      </Form>  
       </Modal>
     </>
   );

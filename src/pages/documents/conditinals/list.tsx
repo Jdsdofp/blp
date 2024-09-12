@@ -19,7 +19,7 @@ export const ListCondition = () => {
     const [listCond, setListCond] = useState()
     const { tableQueryResult: companiesResult } = useTable({ resource: 'company', meta: {endpoint: 'listar-empresas'},syncWithLocation: false});
     const {tableQueryResult: condtionsResult} = useTable<IConditions>({resource: 'condition', meta: {endpoint: 'listar-condicionantes'}})
-    console.log(`the return: ${condtionsResult}`)
+    
     const invalid = useInvalidate()
     const {formProps, form, saveButtonProps } = useForm<IConditions>({resource: 'conditionalCreate', action: 'create', 
         successNotification(data) {
