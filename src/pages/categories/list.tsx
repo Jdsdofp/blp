@@ -10,6 +10,7 @@ import { CreateNewFolder } from "@mui/icons-material";
 import TabPane from "antd/lib/tabs/TabPane";
 import { ExceptionOutlined, FolderAddOutlined } from "@ant-design/icons";
 import { useList } from "@refinedev/core";
+import AssignmentTurnedInOutlinedIcon from '@mui/icons-material/AssignmentTurnedInOutlined';
 
 interface IDocuments {
         f_id: number;
@@ -43,6 +44,7 @@ const formatCNPJ = (cnpj: any) => {
 export const DocumentList = () => {
   const [isModal, setIsModal] = useState(false)
   const [islistModal, setIsListModal] = useState([])
+  const [islistModalConditions, setIsListModalConditions] = useState([])
   const [tabCond, setTabCond] = useState(false)
   const navigate = useNavigate()
 
@@ -57,8 +59,12 @@ export const DocumentList = () => {
 
   const listarCondicionantes = condtionsResult?.data.map((cond)=>({
     label: cond.c_tipo,
-    value: cond.c_id
+    value: cond.c_id,
+    ...cond
   }))
+
+  
+  
 
   const { tableProps } = useTable({resource: 'document', meta: {endpoint: 'listar-documentos-filais'},
     syncWithLocation: true,
@@ -201,7 +207,10 @@ export const DocumentList = () => {
     setTabCond(option.td_requer_condicao)
   }
 
-  
+  const hendleCondicoes = (value, option) =>{
+    setIsListModalConditions(option.c_condicao)
+  }
+
   return (
     <>
       <List>
@@ -247,7 +256,7 @@ export const DocumentList = () => {
                               <Row gutter={16}>
                                   
                                   <Col xs={24} sm={12} hidden={tabCond}>
-                                      <Form.Item label="Data Pedido" name="d_data_pedido">
+                                      <Form.Item label="Data Protocolo" name="d_data_pedido">
                                           <DatePicker placeholder="00/00/0000" disabled={tabCond} format={'DD/MM/YYYY'} draggable/>
                                       </Form.Item>
                                   </Col>
@@ -275,9 +284,11 @@ export const DocumentList = () => {
                             
                               <Col xs={24} sm={12}>
                                  <Form.Item label="Condicionante" name="dc_id">
-                                      <Select options={listarCondicionantes}/>
+                                      <Select options={listarCondicionantes} onChange={(value, option)=>hendleCondicoes(value, option)}/>
                                   </Form.Item>
+                                  <Tag style={{cursor: 'pointer', borderRadius: 50}} hidden={islistModalConditions.length < 1 ? true : false}  color='cyan' ><AssignmentTurnedInOutlinedIcon fontSize='small'/> {islistModalConditions.length}</Tag>
                               </Col>
+
                           </Row>
                           
                       </TabPane>) : ''}   
