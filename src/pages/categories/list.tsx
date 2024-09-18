@@ -7,10 +7,10 @@ import { Table, TableProps, Popover, Tag, Badge, Modal, Button, Tabs, Row, Col, 
 import StoreIcon from '@mui/icons-material/Store';
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import {  CreateNewFolder } from "@mui/icons-material";
+import {  CreateNewFolder, OneK } from "@mui/icons-material";
 import TabPane from "antd/lib/tabs/TabPane";
 import { CheckCircleOutlined, DownCircleOutlined, ExceptionOutlined, FolderAddOutlined, UpCircleOutlined } from "@ant-design/icons";
-import { useList } from "@refinedev/core";
+import { useInvalidate, useList } from "@refinedev/core";
 
 interface IDocuments {
   f_id: number;
@@ -24,7 +24,18 @@ interface IDocuments {
 
 }
 
-
+interface IDocument {
+  d_filial_id: number;
+  d_data_pedido: Date;
+  d_data_emissao: Date;
+  d_data_vencimento: Date;
+  d_tipo_doc_id: number;
+  d_orgao_exp: string;
+  d_anexo: string;
+  d_num_protocolo: string;
+  d_sitaucao: string;
+  d_condicoes: string[];
+}
 
 const formatCNPJ = (cnpj: any) => {
   return cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
@@ -36,42 +47,42 @@ export const DocumentList = () => {
   const [isModal, setIsModal] = useState(false)
   const [islistModal, setIsListModal] = useState([])
   const [islistModalConditions, setIsListModalConditions] = useState([])
-  const [tabCond, setTabCond] = useState(false)
+  const [tabCond, setTabCond] = useState(true)
   const [subList, setSubList] = useState(false)
+  const [conditionsStatus, setConditionsStatus] = useState<{[key: string]: boolean}>({})
   const navigate = useNavigate()
 
-  interface IDocument {
-    d_filial_id: number;
-    d_data_pedido: Date;
-    d_data_emissao: Date;
-    d_data_vencimento: Date;
-    d_tipo_doc_id: number;
-    d_orgao_exp: string;
-    d_anexo: string;
-    d_num_protocolo: string;
-    d_sitaucao: string;
-    d_condicoes: ...islistModalConditions;
-  }
-
-  const { data: listTypeDocument } = useList({ resource: 'type-document', meta: { endpoint: 'listar-tipo-documentos' }, liveMode: 'auto' });
+  
+  const { data: listTypeDocument } = useList({ resource: 'type-document', meta: { endpoint: 'listar-tipo-documentos' }, liveMode: 'auto',  });
   const { data: condtionsResult } = useList({ resource: 'condition', meta: { endpoint: 'listar-condicionantes' } });
-
-  const {formProps, form, saveButtonProps} = useForm<IDocument>({
+  
+  const invalid = useInvalidate()
+  const {formProps, form, saveButtonProps, formLoading} = useForm<IDocument>({
     resource: 'documentCreate', 
     action: 'create',
-    successNotification(data, values, resource) {
+    redirect: 'create',
+    successNotification(data) {
+      form.resetFields();
+      setIsListModalConditions([]);
+      setSubList(false);
       return{
-        type: 'success',
-        message: data?.data
+          message:  `${data?.data?.message}`,
+          type: 'success'
       }
-    },
-
+  },
     errorNotification(error, values, resource) {
       return{
         type: 'error',
         message: error?.response.data.error
       }
     },
+    onMutationSuccess: ()=>{
+      invalid({
+          resource: 'document',
+          meta: {endpoint: 'listar-documentos-filais'},
+          invalidates: ['all']
+      })
+  }
   })
 
   const listaTipoDocumentos = listTypeDocument?.data.map((tpd) => ({
@@ -91,7 +102,7 @@ export const DocumentList = () => {
 
   const { tableProps } = useTable({
     resource: 'document', meta: { endpoint: 'listar-documentos-filais' },
-    syncWithLocation: true,
+    syncWithLocation: false,
   });
 
 
@@ -214,11 +225,14 @@ export const DocumentList = () => {
       key: 'actions',
       title: 'Novo Documento',
       render: (_, record) => (
-        <Button icon={<CreateNewFolder color={islistModal?.f_id === record.f_id ? "inherit" : "warning"} fontSize="inherit" />} shape="circle" onClick={() => hendleModal(record)} />
+        
+        <Button hidden={record.f_ativo ? false : true} icon={<CreateNewFolder color={islistModal?.f_id === record.f_id ? "inherit" : "warning"} fontSize="inherit" />} shape="circle" onClick={() => hendleModal(record)} title="Criar novo documento"/>
       )
     }
 
   ]
+
+
 
   const hendleModal = (record: any) => {
 
@@ -227,6 +241,9 @@ export const DocumentList = () => {
 
       //console.log(record)
       setIsListModal(record)
+      form.setFieldsValue({
+        d_filial_id: record.f_id
+      });
     } else {
       setIsListModal([])
 
@@ -237,9 +254,7 @@ export const DocumentList = () => {
     setTabCond(option.td_requer_condicao)
   }
 
-  const hendleCondicoes = (value, option) => {
-    setIsListModalConditions(option.c_condicao)
-  }
+
 
   const hedleSubList = () => {
     if (!subList) {
@@ -249,6 +264,51 @@ export const DocumentList = () => {
     }
   }
 
+// Função para atualizar o status das condições
+const handleConditionCheck = (condition: string) => {
+  setConditionsStatus((prevState) => {
+    const updatedStatus = {
+      ...prevState,
+      [condition]: !prevState[condition], // Alterna entre true e false
+    };
+
+    // Converte o estado atualizado para o formato desejado
+    const formattedConditions = Object.keys(updatedStatus).reduce((acc, key) => {
+      acc[key] = updatedStatus[key];
+      return acc;
+    }, {});
+
+    // Atualiza o campo d_condicoes no formulário com o formato adequado
+    form.setFieldsValue({ d_condicoes: formattedConditions });
+
+    return updatedStatus;
+  });
+};
+
+// Função para capturar as condições ao selecionar uma condicionante
+const hendleCondicoes = (value, option) => {
+  const conditions = option.c_condicao;
+
+  // Inicializa o status das condições como 'false' (unchecked)
+  const initialStatus = conditions.reduce((acc: any, cond: string) => {
+    acc[cond] = false;
+    return acc;
+  }, {});
+
+  setConditionsStatus(initialStatus);
+
+  // Atualiza o campo d_condicoes no formulário com o formato inicial
+  const formattedConditions = Object.keys(initialStatus).reduce((acc, key) => {
+    acc[key] = initialStatus[key];
+    return acc;
+  }, {});
+
+  form.setFieldsValue({ d_condicoes: formattedConditions });
+  setIsListModalConditions(conditions);
+};
+
+
+
 
   return (
     <>
@@ -256,20 +316,20 @@ export const DocumentList = () => {
         <Table {...tableProps} rowKey="id" columns={columns} size="small" />
       </List>
 
-      <Modal open={isModal} onCancel={() => setIsModal(false)} okButtonProps={saveButtonProps}>
+      <Modal open={isModal} onCancel={() => {form.resetFields(); setIsModal(false); setSubList(false); setIsListModalConditions([]); setTabCond(true)}} okButtonProps={saveButtonProps}>
         <Form
           layout="vertical"
           style={{ width: '100%' }}
           form={form}
           {...formProps}
-          
+          disabled={formLoading}
         >
 
           <Tabs defaultActiveKey="1">
             <TabPane tab={[' Cadastro de Documento ']} icon={<FolderAddOutlined />} key="1">
               <Row gutter={16}>
                 <Col xs={24} sm={12}>
-                  <Form.Item name="d_filial_id" initialValue={islistModal.f_id} >
+                  <Form.Item name="d_filial_id">
                     <span>Filial: <a>{islistModal.f_nome}</a></span>
                   </Form.Item>
                 </Col>
@@ -302,7 +362,7 @@ export const DocumentList = () => {
                   </Col>
                   <Col xs={24} sm={12} hidden={tabCond}>
                     <Form.Item label="Data Emissão" name="d_data_emissao">
-                      <DatePicker placeholder="00/00/0000" disabled={tabCond} format={'DD/MM/YYYY'} draggable />
+                      <DatePicker placeholder="00/00/0000"  disabled={tabCond} format={'DD/MM/YYYY'} draggable />
                     </Form.Item>
                   </Col>
 
@@ -337,22 +397,33 @@ export const DocumentList = () => {
 
                   </Col>
                 </Row>
-                {
-                  subList ? (
+                  {
+                    subList ? (
+                    <>
+                    
                     <Table size="small" dataSource={islistModalConditions} loading={islistModalConditions ? false : true}>
-                      <Table.Column key="d_condicoes" dataIndex="d_condicoes" title='Condição' render={(_, record) => (
+                      <Table.Column title='Condição' render={(_, record) => (
                         <>
                           {record}
                         </>
                       )
                       } />
 
-                      <Table.Column title={'Status Condição'} align="center" render={(_, record) => (<><CheckCircleOutlined style={{ color: 'greenyellow' }} /></>)} />
+                      <Table.Column title={'Status Condição'} align="center"  render={(_, record) => (
+                      <CheckCircleOutlined
+                        style={{ color: conditionsStatus[record] ? 'greenyellow' : 'gray', cursor: 'pointer' }}
+                        onClick={() => handleConditionCheck(record)} // Atualiza o status ao clicar
+                      />
+                    )} />
                     </Table>
 
+                    </>
 
-                  ) : null
-                }
+                    ) : null
+                  }
+                    <Form.Item name="d_condicoes" hidden>
+                     <Input />
+                   </Form.Item>
              </TabPane>
             ) : ''}
 
