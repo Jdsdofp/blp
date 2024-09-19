@@ -1,4 +1,4 @@
-import { ApartmentOutlined, BranchesOutlined, DashboardFilled, DashboardTwoTone, DashOutlined, FileSyncOutlined, SafetyCertificateOutlined, UserSwitchOutlined } from "@ant-design/icons";
+import { ApartmentOutlined, BranchesOutlined, DashboardFilled, DashboardTwoTone, DashOutlined, ExceptionOutlined, FileSyncOutlined, SafetyCertificateOutlined, SubnodeOutlined, UserSwitchOutlined } from "@ant-design/icons";
 import { Dashboard, DashboardCustomizeOutlined, DashboardCustomizeSharp, DashboardOutlined, DocumentScannerTwoTone, FolderCopyOutlined, TypeSpecimen } from "@mui/icons-material";
 import AddBusinessIcon from '@mui/icons-material/AddBusiness';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
@@ -27,6 +27,18 @@ export const resources: IResourceItem[] = [
       canDelete: true,
       label: 'Documentos',
       icon: <ReceiptLongIcon/>
+    },
+  },
+  {
+    name: "conditions",
+    list: "/conditions",
+    create: "/conditions/create",
+    edit: "/conditions/edit/:id",
+    show: "/conditions/show",
+    meta: {
+      canDelete: true,
+      label: 'Condicionantes',
+      icon: <SubnodeOutlined />
     },
   },
   {

@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import {  CreateNewFolder, OneK } from "@mui/icons-material";
 import TabPane from "antd/lib/tabs/TabPane";
-import { CheckCircleOutlined, DownCircleOutlined, ExceptionOutlined, FolderAddOutlined, UpCircleOutlined } from "@ant-design/icons";
+import { CheckCircleOutlined, DownCircleOutlined, ExceptionOutlined, FolderAddOutlined, IssuesCloseOutlined, UpCircleOutlined } from "@ant-design/icons";
 import { useInvalidate, useList } from "@refinedev/core";
 
 interface IDocuments {
@@ -86,7 +86,12 @@ export const DocumentList = () => {
   })
 
   const listaTipoDocumentos = listTypeDocument?.data.map((tpd) => ({
-    label: tpd.td_desc,
+    label: (
+      <span>
+        {!tpd?.td_requer_condicao && <IssuesCloseOutlined style={{color: 'red', fontSize: 13}} /> }{' '}
+        {tpd.td_desc}
+      </span>
+    ),
     value: tpd.td_id,
     ...tpd
   }))
@@ -225,7 +230,6 @@ export const DocumentList = () => {
       key: 'actions',
       title: 'Novo Documento',
       render: (_, record) => (
-        
         <Button hidden={record.f_ativo ? false : true} icon={<CreateNewFolder color={islistModal?.f_id === record.f_id ? "inherit" : "warning"} fontSize="inherit" />} shape="circle" onClick={() => hendleModal(record)} title="Criar novo documento"/>
       )
     }
@@ -343,10 +347,11 @@ const hendleCondicoes = (value, option) => {
                     <Select
                       options={listaTipoDocumentos}
                       onChange={(value, option) => hendleCondicionante(value, option)}
+                      menuItemSelectedIcon={<CheckCircleOutlined/>}
                     />
                   </Form.Item>
                 </Col>
-
+                
                 <Col xs={24} sm={12}>
                   <Form.Item label="Orgão Exp." name="d_orgao_exp">
                     <Input placeholder="Orgão Exp" />
@@ -392,7 +397,7 @@ const hendleCondicoes = (value, option) => {
                     <Tag
                       onClick={hedleSubList}
                       style={{ cursor: 'pointer', borderRadius: 50 }}
-                      hidden={islistModalConditions.length < 1 ? true : false} color='cyan' > {subList ? (<UpCircleOutlined />) : (<DownCircleOutlined />)} {islistModalConditions.length}
+                      hidden={islistModalConditions.length < 1 ? true : false} color='purple-inverse' > {subList ? (<UpCircleOutlined />) : (<DownCircleOutlined />)} {islistModalConditions.length}
                     </Tag>
 
                   </Col>
@@ -411,7 +416,7 @@ const hendleCondicoes = (value, option) => {
 
                       <Table.Column title={'Status Condição'} align="center"  render={(_, record) => (
                       <CheckCircleOutlined
-                        style={{ color: conditionsStatus[record] ? 'greenyellow' : 'gray', cursor: 'pointer' }}
+                        style={{ color: conditionsStatus[record] ? 'green' : 'gray', cursor: 'pointer' }}
                         onClick={() => handleConditionCheck(record)} // Atualiza o status ao clicar
                       />
                     )} />
