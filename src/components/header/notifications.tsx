@@ -49,7 +49,8 @@ const NotificationsHeader: React.FC = () => {
             overlayStyle={{ width: 400 }}
           >
             <Badge count={0} size='small' showZero>
-              <Button 
+              <Button
+              size='small' 
                 shape='circle' icon={<NotificationOutlined />}
                 style={{ border: 0 }}
                 type='primary'

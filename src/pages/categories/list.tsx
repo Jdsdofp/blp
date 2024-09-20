@@ -338,7 +338,7 @@ const hendleCondicoes = (value, option) => {
                   </Form.Item>
                 </Col>
                 <Form.Item name="d_num_protocolo" hidden={tabCond}>
-                  <Input placeholder="Nº Documento" />
+                  <Input placeholder="Nº Protocolo" />
                 </Form.Item>
               </Row>
               <Row gutter={16}>

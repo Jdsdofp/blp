@@ -1,12 +1,18 @@
-  import { CheckCircleOutlined, IssuesCloseOutlined } from "@ant-design/icons";
+  import { CheckCircleOutlined, CloseCircleOutlined, IssuesCloseOutlined } from "@ant-design/icons";
 import { color } from "@mui/system";
-import { EditButton, Show, TextField, useForm } from "@refinedev/antd";
+import { EditButton, Show, ShowButton, TextField, useForm } from "@refinedev/antd";
   import { useList, useShow } from "@refinedev/core";
-  import { List, Typography, Card, Row, Col, Modal, Table } from "antd";
+  import { List, Typography, Card, Row, Col, Modal, Table, TableProps } from "antd";
 import { useEffect, useState } from "react";
   import { useParams } from "react-router-dom";
 
   const { Title } = Typography;
+
+
+  interface ICondition {
+    dc_id: number;
+    dc_condicoes: { [key: string]: boolean }; // Mapeamento de condições
+  }
 
   export const DocumentShow = () => {
     const queryParams = new URLSearchParams(location.search);
@@ -24,29 +30,31 @@ import { useEffect, useState } from "react";
     });
 
 
-    const { data: re} = useList({
+    const { data: result} = useList<ICondition>({
       resource: 'document-condition',
       meta:{endpoint: `/listar-documento-condicionante/${isModalIdCondition}`}
     })
 
-    console.log(re?.data.dc_condicoes)
+    
 
     const record = data?.data;
 
+    
+    const openModal = () =>{
+      setIsModal(true)
+    }
+
     const hendleOpenModalConditions = (id: any) =>{
       setIsModalIdCondition(id) 
-       setIsModal(true)
-        
     }
+
 
     const hendleCloseModalConditions = () =>{
       setIsModal(false)
     }
 
-
-
     return (
-      <Show>
+      <Show title={[<><span>{status}</span></>]}>
         <List
           loading={isInitialLoading}
           dataSource={record}
@@ -60,18 +68,24 @@ import { useEffect, useState } from "react";
             <Card
                 loading={isLoading}
                 size="small"
-                title={[(<h3>{item.tipo_documentos.td_desc}</h3>)]}
+                title={[(<><h3>{item.tipo_documentos.td_desc}</h3></>)]}
                 style={{ width: 300, margin: '16px', color: item.d_situacao == 'Vencido' ? 'red' : 'Highlight'}}
                 bordered
                 cover
                 hoverable
-                extra={<span id={item.d_condicionante_id} onClick={()=>hendleOpenModalConditions(item.d_condicionante_id)}>{item.d_condicionante_id && <IssuesCloseOutlined style={{color: 'cadetblue', fontSize: 20, cursor: 'pointer'}} />}</span>}
+                extra={<span id={item.d_condicionante_id} onClick={()=>{openModal(); hendleOpenModalConditions(item.d_condicionante_id)}}>{item.d_condicionante_id && <IssuesCloseOutlined style={{ color: '#ebc334', fontSize: 19, cursor: 'pointer' }} />}</span>}
+                actions={[
+                  <span><EditButton hideText shape="circle" size="small"/></span>,
+                                  
+                ]}
               >
                 <p>Filial: {item.filiais.f_nome}</p>
                 <p>Status: {item.d_situacao}</p>
                 <p>Descrição: {item.tipo_documentos.td_desc}</p>
+                
               </Card>
              </Col>
+             
             </Row>
             
             </>
@@ -79,15 +93,20 @@ import { useEffect, useState } from "react";
         />
 
         <Modal open={isModal} onCancel={hendleCloseModalConditions} okButtonProps={{hidden: true}} cancelButtonProps={{hidden: true}}>
-        <Table size="small" dataSource={re?.data}>
-                      <Table.Column title='Condição' render={(_, record) => (
-                        <>
-                          {record}
-                        </>
-                      )
-                      } />
-                    </Table>
+          <Card
+            title={['Condicionante ', <IssuesCloseOutlined style={{color: 'gray'}}/>]}
+           >
+            {Object.entries(result?.data?.dc_condicoes || {}).map(([key, value]) => (
+              <p key={key}>{key}: {value ? <CheckCircleOutlined style={{color: 'green'}}/> : <CloseCircleOutlined style={{color: 'red'}}/>}</p>
+            ))}
+
+          </Card>
+
+
         </Modal>
+
+
+
       </Show>
 
 

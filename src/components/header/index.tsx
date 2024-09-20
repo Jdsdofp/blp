@@ -52,6 +52,7 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
         <NotificationsHeader/>
 
         <Switch
+          size="small"
           checkedChildren="🌛"
           unCheckedChildren="🔆"
           onChange={() => setMode(mode === "light" ? "dark" : "light")}
