@@ -1,0 +1,17 @@
+.fc .fc-toolbar-title {
+    color: #976DF2; /* Título em azul */
+  }
+  
+  .fc .fc-button {
+    background-color: #976DF2; /* Cor de fundo dos botões */
+    color: white; /* Cor do texto nos botões */
+  }
+
+  
+  .fc .fc-day-today {
+    color: white;
+  }
+  
+  .fc .fc-daygrid-day-number {
+    color: #8B41F2; /* Altere essa cor conforme necessário */
+}

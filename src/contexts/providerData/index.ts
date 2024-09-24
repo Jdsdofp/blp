@@ -16,6 +16,7 @@ const getResourceUrl = (resource: string, ids: number, id: number): string => {
         listTypeDocument: `${API_URL}/type-document/listar-tipo-documentos`,
         conditionalCreate: `${API_URL}/condition/registrar-condicionante`,
         documentCreate: `${API_URL}/document/registrar-documento`,
+        listarDocumentos: `${API_URL}/document//listar-documentos`
     };
     
     return resourceMap[resource] || '';

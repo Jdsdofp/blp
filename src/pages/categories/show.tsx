@@ -58,36 +58,29 @@ import { useEffect, useState } from "react";
         <List
           loading={isInitialLoading}
           dataSource={record}
-          
           renderItem={item => (
             <>
-              
-
-            <Row gutter={16} align={"top"}>
-            <Col span={8}>
-            <Card
-                loading={isLoading}
-                size="small"
-                title={[(<><h3>{item.tipo_documentos.td_desc}</h3></>)]}
-                style={{ width: 300, margin: '16px', color: item.d_situacao == 'Vencido' ? 'red' : 'Highlight'}}
-                bordered
-                cover
-                hoverable
-                extra={<span id={item.d_condicionante_id} onClick={()=>{openModal(); hendleOpenModalConditions(item.d_condicionante_id)}}>{item.d_condicionante_id && <IssuesCloseOutlined style={{ color: '#ebc334', fontSize: 19, cursor: 'pointer' }} />}</span>}
-                actions={[
-                  <span><EditButton hideText shape="circle" size="small"/></span>,
-                                  
-                ]}
-              >
-                <p>Filial: {item.filiais.f_nome}</p>
-                <p>Status: {item.d_situacao}</p>
-                <p>Descrição: {item.tipo_documentos.td_desc}</p>
-                
-              </Card>
-             </Col>
-             
-            </Row>
-            
+              <Row gutter={16} align={"top"}>
+              <Col span={8}>
+                <Card
+                  loading={isLoading}
+                  size="small"
+                  title={[(<><h3>{item.tipo_documentos.td_desc}</h3></>)]}
+                  style={{ width: 300, margin: '16px', color: item.d_situacao == 'Vencido' ? 'red' : 'Highlight'}}
+                  bordered
+                  cover
+                  hoverable
+                  extra={<span id={item.d_condicionante_id} onClick={()=>{openModal(); hendleOpenModalConditions(item.d_condicionante_id)}}>{item.d_condicionante_id && <IssuesCloseOutlined style={{ color: '#ebc334', fontSize: 19, cursor: 'pointer' }} />}</span>}
+                  actions={[
+                    <span><EditButton hideText shape="circle" size="small"/></span>              
+                  ]}
+                >
+                    <p>Filial: {item.filiais.f_nome}</p>
+                    <p>Status: {item.d_situacao}</p>
+                    <p>Descrição: {item.tipo_documentos.td_desc}</p>  
+                </Card>
+                </Col>
+              </Row>
             </>
           )}
         />

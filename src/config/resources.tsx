@@ -1,5 +1,5 @@
-import { ApartmentOutlined, BranchesOutlined, DashboardFilled, DashboardTwoTone, DashOutlined, ExceptionOutlined, FileSyncOutlined, SafetyCertificateOutlined, SubnodeOutlined, UserSwitchOutlined } from "@ant-design/icons";
-import { Dashboard, DashboardCustomizeOutlined, DashboardCustomizeSharp, DashboardOutlined, DocumentScannerTwoTone, FolderCopyOutlined, TypeSpecimen } from "@mui/icons-material";
+import { ApartmentOutlined, BranchesOutlined, CalendarOutlined, DashboardFilled, DashboardTwoTone, DashOutlined, ExceptionOutlined, FileSyncOutlined, SafetyCertificateOutlined, SubnodeOutlined, UserSwitchOutlined } from "@ant-design/icons";
+import { CalendarMonthOutlined, Dashboard, DashboardCustomizeOutlined, DashboardCustomizeSharp, DashboardOutlined, DocumentScannerTwoTone, FolderCopyOutlined, TypeSpecimen } from "@mui/icons-material";
 import AddBusinessIcon from '@mui/icons-material/AddBusiness';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import type { IResourceItem } from "@refinedev/core";
@@ -30,15 +30,13 @@ export const resources: IResourceItem[] = [
     },
   },
   {
-    name: "conditions",
-    list: "/conditions",
-    create: "/conditions/create",
-    edit: "/conditions/edit/:id",
+    name: "calendario",
+    list: "/calendario",
     show: "/conditions/show",
     meta: {
       canDelete: true,
-      label: 'Condicionantes',
-      icon: <SubnodeOutlined />
+      label: 'Calendario',
+      icon: <CalendarMonthOutlined />
     },
   },
   {
