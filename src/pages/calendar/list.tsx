@@ -8,10 +8,11 @@ import { Badge, Card, Popover } from "antd";
 import { useList } from "@refinedev/core";
 import './style.css'
 import { AddAPhoto, NextPlan } from "@mui/icons-material";
+import { Show } from "@refinedev/antd";
 
 export const CalendarList = () => {
     // Obter dados da API
-    const { data } = useList({
+    const { data, isLoading } = useList({
         resource: "document",
         meta: { endpoint: "listar-documentos" },
     });
@@ -21,7 +22,7 @@ export const CalendarList = () => {
 const currentDate = new Date();
 
 // Função para calcular a diferença em dias
-const calculateDaysDifference = (date1, date2) => {
+const calculateDaysDifference = (date1: any, date2: any) => {
   const timeDiff = date1.getTime() - date2.getTime();
   const daysDiff = timeDiff / (1000 * 3600 * 24); // Converter de milissegundos para dias
   return Math.ceil(daysDiff); // Arredonda para o próximo dia
@@ -60,7 +61,8 @@ const events = data?.data?.map((documento) => {
       orgao_exp: documento.d_orgao_exp,
     },
     backgroundColor: getEventColor(daysDifference), // Define a cor do evento
-    textColor: getTextColor(getEventColor(daysDifference))
+    textColor: getTextColor(getEventColor(daysDifference)),
+    borderColor: getEventColor(daysDifference)
   };
 });
     
@@ -68,27 +70,29 @@ const events = data?.data?.map((documento) => {
 
 
     return (
-        <Card size="small" bordered={false} >
-            <FullCalendar
-                height={500}
-                locale={['pt-br']}
-                plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
-                initialView="dayGridMonth"
-                events={events} 
-                headerToolbar={{
-                    left: "prev,next today",
-                    center: "title",
-                    right: "dayGridMonth,timeGridWeek,timeGridDay,list",
-                }}
-                buttonText={{
-                    day: 'Dia',
-                    month: 'Mês',
-                    week: 'Semana',
-                    list: 'Lista',
-                    today: 'Hoje'
-                }}
-                
-            />
-        </Card>
+      <Show isLoading={isLoading} headerButtons title="Calendario">
+          <Card size="small" bordered>
+              <FullCalendar
+                  height={500}
+                  locale={['pt-br']}
+                  plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
+                  initialView="dayGridMonth"
+                  events={events} 
+                  headerToolbar={{
+                      left: "prev,next today title",
+                      right: "dayGridMonth timeGridWeek,timeGridDay,list",
+                  }}
+                  buttonText={{
+                      day: 'Dia',
+                      month: 'Mês',
+                      week: 'Semana',
+                      list: 'Lista',
+                      today: 'Hoje',
+                      nextYear: 'Ano'
+                  }}
+                  
+              />
+          </Card>
+      </Show>
     );
 };
