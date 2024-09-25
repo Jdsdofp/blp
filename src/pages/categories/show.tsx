@@ -1,8 +1,7 @@
-  import { CheckCircleOutlined, CloseCircleOutlined, IssuesCloseOutlined } from "@ant-design/icons";
-import { color } from "@mui/system";
+  import { CheckCircleOutlined, CloseCircleOutlined, IssuesCloseOutlined } from "@ant-design/icons"
 import { EditButton, Show, ShowButton, TextField, useForm } from "@refinedev/antd";
   import { useList, useShow } from "@refinedev/core";
-  import { List, Typography, Card, Row, Col, Modal, Table, TableProps } from "antd";
+  import { List, Typography, Card, Row, Col, Modal, Table, TableProps, Popover } from "antd";
 import { useEffect, useState } from "react";
   import { useParams } from "react-router-dom";
 
@@ -54,7 +53,7 @@ import { useEffect, useState } from "react";
     }
 
     return (
-      <Show title={[<><span>{status}</span></>]}>
+      <Show title={[<><span>{status}</span></>]} canEdit={false} canDelete={false}>
         <List
           loading={isInitialLoading}
           dataSource={record}
@@ -85,19 +84,42 @@ import { useEffect, useState } from "react";
           )}
         />
 
-        <Modal open={isModal} onCancel={hendleCloseModalConditions} okButtonProps={{hidden: true}} cancelButtonProps={{hidden: true}}>
-          <Card
-            title={['Condicionante ', <IssuesCloseOutlined style={{color: 'gray'}}/>]}
-           >
-            {Object.entries(result?.data?.dc_condicoes || {}).map(([key, value]) => (
-              <p key={key}>{key}: {value ? <CheckCircleOutlined style={{color: 'green'}}/> : <CloseCircleOutlined style={{color: 'red'}}/>}</p>
-            ))}
-
-          </Card>
-
-
-        </Modal>
-
+      <Modal 
+        open={isModal} 
+        onCancel={hendleCloseModalConditions} 
+        okButtonProps={{ hidden: true }} 
+        cancelButtonProps={{ hidden: true }}
+      >
+        <Card
+          title={['Condicionante ', <IssuesCloseOutlined style={{color: 'gray'}}/>]}
+        >
+          <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+            <table style={{ width: '100%' }}>
+              <thead>
+                <tr>
+                  <th>Condição</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(result?.data?.dc_condicoes || {}).map(([key, value]) => (
+                  <tr key={key} >
+                    <td style={{ padding: '2px', borderBottom: '1px solid #8B41F2' }}>
+                      <p>{key}</p>
+                    </td>
+                    <td style={{ borderBottom: '1px solid #8B41F2' }} align="center">
+                      {value ? 
+                        <CheckCircleOutlined style={{color: 'green'}}/> : 
+                        <CloseCircleOutlined style={{color: 'red'}}/>
+                      }
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      </Modal>
 
 
       </Show>
