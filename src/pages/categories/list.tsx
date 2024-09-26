@@ -295,7 +295,7 @@ const hendleCondicoes = (value: any, option: any) => {
 
   // Inicializa o status das condições como 'false' (unchecked)
   const initialStatus = conditions.reduce((acc: any, cond: string) => {
-    acc[cond] = false;
+    acc[cond] = null;
     return acc;
   }, {});
 
