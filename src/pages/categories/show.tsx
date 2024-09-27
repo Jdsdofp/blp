@@ -1,10 +1,12 @@
-import { CheckCircleOutlined, CloseCircleOutlined, ExclamationCircleOutlined, IssuesCloseOutlined } from "@ant-design/icons"
-import { DateField, EditButton, RefreshButton, Show } from "@refinedev/antd";
+import { CheckCircleOutlined, CloseCircleOutlined, CommentOutlined, ExclamationCircleOutlined, IssuesCloseOutlined } from "@ant-design/icons"
+import { CreateButton, DateField, EditButton, RefreshButton, Show } from "@refinedev/antd";
 import { useList } from "@refinedev/core";
-import { List, Card, Row, Col, Modal, Popover, Spin, DatePicker, Input, Space } from "antd";
+import { List, Card, Row, Col, Modal, Popover, Spin, DatePicker, Input, Space, Button, Badge, Mentions } from "antd";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../../authProvider";
+
+
 
 interface ICondition {
   dc_id: number;
@@ -12,11 +14,13 @@ interface ICondition {
 }
 
 export const DocumentShow = () => {
+  const {TextArea} = Input;
   const queryParams = new URLSearchParams(location.search);
   const status = queryParams.get("status");
   const filialId = queryParams.get("filialId");
   const [isModal, setIsModal] = useState<boolean>(false);
   const [isModalIdCondition, setIsModalIdCondition] = useState<any>();
+  const [isModalComment, setIsModalComment] = useState<boolean>(false);
   const [checkCondicionante, setCheckCondicionante] = useState<boolean>(true);
   const [conditions, setConditions] = useState<{ [key: string]: boolean | null }>({});
 
@@ -106,6 +110,16 @@ export const DocumentShow = () => {
     await refetch();
   };
 
+
+  const hendleOpenModalComments = () =>{
+    setIsModalComment(true)
+  }
+
+  const hendleCloseModalComments = () =>{
+    setIsModalComment(false)
+  }
+
+
   return (
     <Show title={[<><span>{status}</span></>]} canEdit={false} canDelete={false} headerButtons={<RefreshButton onClick={() => atualiza()} />}>
       <List
@@ -124,7 +138,7 @@ export const DocumentShow = () => {
                   cover
                   hoverable
                   extra={<span id={item.d_condicionante_id} onClick={() => { openModal(); hendleOpenModalConditions(item.d_condicionante_id); }}>{item.d_condicionante_id && <IssuesCloseOutlined style={{ color: '#ebc334', fontSize: 19, cursor: 'pointer' }} />}</span>}
-                  actions={[<span><EditButton hideText shape="circle" size="small" /></span>]}
+                  actions={[<Space><EditButton hideText shape="circle" size="small" /><Badge count={data?.data.map((k, v)=>k?.d_comentarios.length)[0]}  size="small"><Button icon={<CommentOutlined />} size="small" shape="circle" onClick={hendleOpenModalComments}/></Badge></Space>]}
                 >
                   <p>Filial: {item.filiais.f_nome}</p>
                   <p>Status: {item.d_situacao}</p>
@@ -192,6 +206,29 @@ export const DocumentShow = () => {
             </table>
           </div>
         </Card>
+      </Modal>
+
+
+      <Modal open={isModalComment} onCancel={()=>setIsModalComment(false)} centered>
+      <Mentions
+          rows={3}
+          placeholder="Comente sobre e use @ para mencionar alguem"
+          options={[
+            {
+              value: 'Lores Lenne',
+              label: 'Lores Lenne',
+              
+            },
+            {
+              value: 'Aless',
+              label: 'Aless',
+            },
+            {
+              value: 'Marinas',
+              label: 'Marinas',
+            },
+          ]}
+        />
       </Modal>
     </Show>
   );
