@@ -1,12 +1,19 @@
-  import { CheckCircleOutlined, IssuesCloseOutlined } from "@ant-design/icons";
+import { CheckCircleOutlined, IssuesCloseOutlined } from "@ant-design/icons";
 import { color } from "@mui/system";
 import { EditButton, Show, TextField, useForm } from "@refinedev/antd";
-  import { useList, useShow } from "@refinedev/core";
-  import { List, Typography, Card, Row, Col, Modal, Table } from "antd";
+import { useList, useShow } from "@refinedev/core";
+import { List, Typography, Card, Row, Col, Modal, Table } from "antd";
 import { useEffect, useState } from "react";
-  import { useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
   const { Title } = Typography;
+
+  interface ICondition {
+      dc_id: number;
+      dc_documento_id: number;
+      status: string;
+      dc_condicoes: object;
+  }
 
   export const DocumentShow = () => {
     const queryParams = new URLSearchParams(location.search);
@@ -14,6 +21,7 @@ import { useEffect, useState } from "react";
     const filialId = queryParams.get("filialId");
     const [isModal, setIsModal] = useState<boolean>(false)
     const [isModalIdCondition, setIsModalIdCondition] = useState<any>()
+    const [lista, setLista] = useState<ICondition[]>([]); 
 
     
 
@@ -24,26 +32,28 @@ import { useEffect, useState } from "react";
     });
 
 
-    const { data: re} = useList({
+    const { data: resultCondition} = useList<ICondition>({
       resource: 'document-condition',
-      meta:{endpoint: `/listar-documento-condicionante/${isModalIdCondition}`}
+      meta:{ endpoint: `${isModalIdCondition}/listar-documento-condicionante` }
     })
 
-    console.log(re?.data.dc_condicoes)
 
     const record = data?.data;
 
     const hendleOpenModalConditions = (id: any) =>{
-      setIsModalIdCondition(id) 
-       setIsModal(true)
-        
+      setIsModalIdCondition(id)
+      setIsModal(true)
+      
+      
     }
+
+    console.log(resultCondition?.data.dc_condicoes)
 
     const hendleCloseModalConditions = () =>{
       setIsModal(false)
     }
 
-
+    console.log(lista)
 
     return (
       <Show>
@@ -65,7 +75,7 @@ import { useEffect, useState } from "react";
                 bordered
                 cover
                 hoverable
-                extra={<span id={item.d_condicionante_id} onClick={()=>hendleOpenModalConditions(item.d_condicionante_id)}>{item.d_condicionante_id && <IssuesCloseOutlined style={{color: 'cadetblue', fontSize: 20, cursor: 'pointer'}} />}</span>}
+                extra={<span id={item.d_condicionante_id} onClick={()=>{hendleOpenModalConditions(item.d_condicionante_id); setLista(resultCondition?.data)}}>{item.d_condicionante_id && <IssuesCloseOutlined style={{color: 'cadetblue', fontSize: 20, cursor: 'pointer'}} />}</span>}
               >
                 <p>Filial: {item.filiais.f_nome}</p>
                 <p>Status: {item.d_situacao}</p>
@@ -79,14 +89,9 @@ import { useEffect, useState } from "react";
         />
 
         <Modal open={isModal} onCancel={hendleCloseModalConditions} okButtonProps={{hidden: true}} cancelButtonProps={{hidden: true}}>
-        <Table size="small" dataSource={re?.data}>
-                      <Table.Column title='Condição' render={(_, record) => (
-                        <>
-                          {record}
-                        </>
-                      )
-                      } />
-                    </Table>
+            <Table size="small" dataSource={lista}>
+                <Table.Column title='Condição' render={(_, record)=>(<>{record}</>)}/>
+            </Table>
         </Modal>
       </Show>
 
