@@ -1,10 +1,11 @@
 import { CheckCircleOutlined, CloseCircleOutlined, CommentOutlined, ExclamationCircleOutlined, IssuesCloseOutlined } from "@ant-design/icons"
 import { CreateButton, DateField, EditButton, RefreshButton, Show } from "@refinedev/antd";
 import { useList } from "@refinedev/core";
-import { List, Card, Row, Col, Modal, Popover, Spin, DatePicker, Input, Space, Button, Badge, Mentions } from "antd";
+import { List, Card, Row, Col, Modal, Popover, Spin, DatePicker, Input, Space, Button, Badge, Mentions, Tag, Table, Avatar } from "antd";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../../authProvider";
+import { Send } from "@mui/icons-material";
 
 
 
@@ -14,13 +15,13 @@ interface ICondition {
 }
 
 export const DocumentShow = () => {
-  const {TextArea} = Input;
   const queryParams = new URLSearchParams(location.search);
   const status = queryParams.get("status");
   const filialId = queryParams.get("filialId");
   const [isModal, setIsModal] = useState<boolean>(false);
   const [isModalIdCondition, setIsModalIdCondition] = useState<any>();
   const [isModalComment, setIsModalComment] = useState<boolean>(false);
+  const [isDocComment, setIsDocComment] = useState({})
   const [checkCondicionante, setCheckCondicionante] = useState<boolean>(true);
   const [conditions, setConditions] = useState<{ [key: string]: boolean | null }>({});
 
@@ -111,7 +112,8 @@ export const DocumentShow = () => {
   };
 
 
-  const hendleOpenModalComments = () =>{
+  const hendleOpenModalComments = (item: any) =>{
+    setIsDocComment(item)
     setIsModalComment(true)
   }
 
@@ -119,12 +121,27 @@ export const DocumentShow = () => {
     setIsModalComment(false)
   }
 
-
+  const getColor = (status: any) => {
+    switch (status) {
+      case 'Vencido':
+        return 'red-inverse';
+      case 'Em processo':
+        return 'cyan';
+      case 'Não iniciado':
+        return 'orange';
+      case 'Emitido':
+        return 'green';
+      default:
+        return 'default';
+    }
+  };
+  
   return (
     <Show title={[<><span>{status}</span></>]} canEdit={false} canDelete={false} headerButtons={<RefreshButton onClick={() => atualiza()} />}>
       <List
         loading={isInitialLoading || isLoading}
         dataSource={data?.data}
+        size="small"
         renderItem={item => (
           <>
             <Row gutter={16} align={"top"}>
@@ -133,16 +150,20 @@ export const DocumentShow = () => {
                   loading={isLoading}
                   size="small"
                   title={<><h3>{item.tipo_documentos.td_desc}</h3></>}
-                  style={{ width: 300, margin: '16px', color: item.d_situacao === 'Vencido' ? 'red' : 'Highlight' }}
+                  style={{ width: 300, margin: '16px' }}
                   bordered
                   cover
                   hoverable
                   extra={<span id={item.d_condicionante_id} onClick={() => { openModal(); hendleOpenModalConditions(item.d_condicionante_id); }}>{item.d_condicionante_id && <IssuesCloseOutlined style={{ color: '#ebc334', fontSize: 19, cursor: 'pointer' }} />}</span>}
-                  actions={[<Space><EditButton hideText shape="circle" size="small" /><Badge count={data?.data.map((k, v)=>k?.d_comentarios.length)[0]}  size="small"><Button icon={<CommentOutlined />} size="small" shape="circle" onClick={hendleOpenModalComments}/></Badge></Space>]}
+                  actions={[<Space><EditButton hideText shape="circle" size="small" /><Badge count={data?.data.map((k, v)=>k?.d_comentarios.length)[0]}  size="small"><Button icon={<CommentOutlined />} size="small" shape="circle" onClick={()=>hendleOpenModalComments(item)}/></Badge></Space>]}
                 >
-                  <p>Filial: {item.filiais.f_nome}</p>
-                  <p>Status: {item.d_situacao}</p>
-                  <p>Descrição: {item.tipo_documentos.td_desc}</p>
+              <p style={{fontSize: 12, margin: 0}}>{item?.filiais?.f_nome}</p>
+              <p style={{fontSize: 12, margin: 0}}>{item?.tipo_documentos?.td_desc}</p>   
+              <p style={{fontSize: 10}}><DateField value={item?.criado_em} format='DD/MM/YYYY · H:mm:ss' locales="pt-br" style={{fontSize: 9}}/></p>
+              <Space direction="vertical">
+                  <Tag style={{borderRadius: 20, padding: 3}}><Avatar shape="circle" icon={String(item?.usuario?.u_nome).toUpperCase()[0]} size="small" /> {item?.usuario?.u_nome}</Tag>
+                  <Tag color={getColor(item?.d_situacao)} style={{fontSize: 10, borderRadius: 20}}>{item?.d_situacao}</Tag>
+              </Space> 
                 </Card>
               </Col>
             </Row>
@@ -209,27 +230,54 @@ export const DocumentShow = () => {
       </Modal>
 
 
-      <Modal open={isModalComment} onCancel={()=>setIsModalComment(false)} centered>
-      <Mentions
-          rows={3}
-          placeholder="Comente sobre e use @ para mencionar alguem"
-          options={[
-            {
-              value: 'Lores Lenne',
-              label: 'Lores Lenne',
-              
-            },
-            {
-              value: 'Aless',
-              label: 'Aless',
-            },
-            {
-              value: 'Marinas',
-              label: 'Marinas',
-            },
-          ]}
-        />
+      <Modal open={isModalComment} onCancel={() => setIsModalComment(false)} centered footer={
+        <List dataSource={data?.data} size="small" style={{maxHeight: 400, overflowY: 'auto'}}>
+          <Card style={{margin: 0, border: 0}}/> 
+          <Card style={{margin: 0, border: 0}}/>
+          <Card style={{margin: 0, border: 0}}/> 
+          <Card style={{margin: 0, border: 0}}/>
+        </List>}>
+        
+        <Card size="small" style={{margin: 10}}>
+          <p style={{fontSize: 12, margin: 0}}>{isDocComment?.filiais?.f_nome}</p>
+          <p style={{fontSize: 12, margin: 0}}>{isDocComment?.tipo_documentos?.td_desc}</p>   
+          <p style={{fontSize: 10}}><DateField value={isDocComment?.criado_em} format='DD/MM/YYYY · H:mm:ss' locales="pt-br" style={{fontSize: 9}}/></p>
+          <Space direction="vertical">
+             <Tag style={{borderRadius: 20, padding: 3}}><Avatar shape="circle" icon={String(isDocComment?.usuario?.u_nome).toUpperCase()[0]} size="small" /> {isDocComment?.usuario?.u_nome}</Tag>
+             <Tag color={getColor(isDocComment?.d_situacao)} style={{fontSize: 10, borderRadius: 20}}>{isDocComment?.d_situacao}</Tag>
+          </Space> 
+        </Card>
+        
+        <Space>
+          <Card size="small">
+            <Space.Compact>
+              <Mentions
+                style={{border: 0, width: 400, overflowX: 'auto'}}
+                autoSize
+                placeholder="Comente sobre e use @ para mencionar alguém"
+                options={[
+                      {
+                        value: 'Lores Lenne',
+                        label: 'Lores Lenne',
+                      },
+                      {
+                        value: 'Aless',
+                        label: 'Aless',
+                      },
+                      {
+                        value: 'Marinas',
+                        label: 'Marinas',
+                      },
+                    ]}
+                />
+
+              <Button type="primary" shape="circle" icon={<Send/>}>
+              </Button>
+            </Space.Compact>
+          </Card>              
+        </Space>
       </Modal>
+
     </Show>
   );
 };

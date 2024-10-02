@@ -35,6 +35,7 @@ interface IDocument {
   d_num_protocolo: string;
   d_sitaucao: string;
   d_condicoes: string[];
+  criado_em: Date;
 }
 
 const formatCNPJ = (cnpj: any) => {
@@ -211,7 +212,7 @@ export const DocumentList = () => {
           <>
             {Object.keys(statusCount).map((status) => (
               <Tag
-                style={{ cursor: 'pointer' }}
+                style={{ cursor: 'pointer', borderRadius: 20 }}
                 color={getColor(status)}
                 key={status}
                 onClick={() => handleTagClick(status, f_id)}
@@ -317,7 +318,6 @@ const handleCondicoes = (value: any, option: any) => {
     <>
       <List>
         <Table {...tableProps} rowKey="id" columns={columns} size="small"  bordered/>
-        
       </List>
 
       <Modal open={isModal} onCancel={() => {form.resetFields(); setIsModal(false); setSubList(false); setIsListModalConditions([]); setTabCond(true)}} okButtonProps={saveButtonProps}>
