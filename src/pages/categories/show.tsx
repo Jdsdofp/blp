@@ -14,6 +14,16 @@ interface ICondition {
   dc_condicoes: { [key: string]: { status: boolean | null; date: Date | null } };
 }
 
+interface IComments {
+  cd_id: number;
+  cd_documento_id: number;
+  cd_autor_id: number;
+  usuario: string;
+  cd_msg: string;
+  cd_resposta: string[];
+  criado_em: Date;
+}
+
 export const DocumentShow = () => {
   const queryParams = new URLSearchParams(location.search);
   const status = queryParams.get("status");
@@ -22,8 +32,10 @@ export const DocumentShow = () => {
   const [isModalIdCondition, setIsModalIdCondition] = useState<any>();
   const [isModalComment, setIsModalComment] = useState<boolean>(false);
   const [isDocComment, setIsDocComment] = useState({})
+  const [isIdDoComment, setIsIdDoComment] = useState<number>()
   const [checkCondicionante, setCheckCondicionante] = useState<boolean>(true);
   const [conditions, setConditions] = useState<{ [key: string]: boolean | null }>({});
+  const [userTK, setUserTK] = useState(JSON.parse(localStorage.getItem('refine-user')).nome)
 
   const { data, isInitialLoading, isLoading, refetch } = useList({
     resource: 'document',
@@ -36,6 +48,8 @@ export const DocumentShow = () => {
     meta: { endpoint: `listar-documento-condicionante/${isModalIdCondition}` },
     liveMode: 'auto',
   });
+
+  const {data: comments, isLoading: carComment} = useList<IComments>({resource: 'comment-document', meta: {endpoint: `${isIdDoComment}/listar-comentario-documento`}})
 
   useEffect(() => {
     // Quando os dados de condições forem recebidos, inicialize o estado conditions
@@ -136,6 +150,8 @@ export const DocumentShow = () => {
     }
   };
   
+  
+
   return (
     <Show title={[<><span>{status}</span></>]} canEdit={false} canDelete={false} headerButtons={<RefreshButton onClick={() => atualiza()} />}>
       <List
@@ -155,13 +171,13 @@ export const DocumentShow = () => {
                   cover
                   hoverable
                   extra={<span id={item.d_condicionante_id} onClick={() => { openModal(); hendleOpenModalConditions(item.d_condicionante_id); }}>{item.d_condicionante_id && <IssuesCloseOutlined style={{ color: '#ebc334', fontSize: 19, cursor: 'pointer' }} />}</span>}
-                  actions={[<Space><EditButton hideText shape="circle" size="small" /><Badge count={data?.data.map((k, v)=>k?.d_comentarios.length)[0]}  size="small"><Button icon={<CommentOutlined />} size="small" shape="circle" onClick={()=>hendleOpenModalComments(item)}/></Badge></Space>]}
+                  actions={[<Space><EditButton hideText shape="circle" size="small" /><Badge count={item.d_comentarios.length}  size="small"><Button icon={<CommentOutlined />} size="small" shape="circle" onClick={()=>{hendleOpenModalComments(item); setIsIdDoComment(item.d_id)}}/></Badge></Space>]}
                 >
               <p style={{fontSize: 12, margin: 0}}>{item?.filiais?.f_nome}</p>
               <p style={{fontSize: 12, margin: 0}}>{item?.tipo_documentos?.td_desc}</p>   
               <p style={{fontSize: 10}}><DateField value={item?.criado_em} format='DD/MM/YYYY · H:mm:ss' locales="pt-br" style={{fontSize: 9}}/></p>
               <Space direction="vertical">
-                  <Tag style={{borderRadius: 20, padding: 3}}><Avatar shape="circle" icon={String(item?.usuario?.u_nome).toUpperCase()[0]} size="small" /> {item?.usuario?.u_nome}</Tag>
+                  <Tag style={{borderRadius: 20, padding: 3}}><Avatar shape="circle" icon={String(item?.usuario?.u_nome).toUpperCase()[0]} size="small" /> {item?.usuario?.u_nome == JSON.parse(localStorage.getItem('refine-user')).nome ? <a style={{fontSize: 11, margin: 3}}>você</a>: item?.usuario?.u_nome}</Tag>
                   <Tag color={getColor(item?.d_situacao)} style={{fontSize: 10, borderRadius: 20}}>{item?.d_situacao}</Tag>
               </Space> 
                 </Card>
@@ -231,19 +247,29 @@ export const DocumentShow = () => {
 
 
       <Modal open={isModalComment} onCancel={() => setIsModalComment(false)} centered footer={
-        <List dataSource={data?.data} size="small" style={{maxHeight: 400, overflowY: 'auto'}}>
-          <Card style={{margin: 0, border: 0}}/> 
-          <Card style={{margin: 0, border: 0}}/>
-          <Card style={{margin: 0, border: 0}}/> 
-          <Card style={{margin: 0, border: 0}}/>
-        </List>}>
+        <List
+        loading={carComment}
+        dataSource={comments?.data}
+        renderItem={(item, index) => (
+          <List.Item>
+                <List.Item.Meta
+                  avatar={<Avatar src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${index}`} />}
+                  title={<a href="https://ant.design">{userTK == item.usuario.u_nome ? 'você' : item.usuario.u_nome}</a>}
+                  description={item.cd_msg}
+                />
+              </List.Item>
+        )}
+        size="small"
+        style={{ maxHeight: 400, overflowY: 'auto' }}
+      />
+      }>
         
         <Card size="small" style={{margin: 10}}>
           <p style={{fontSize: 12, margin: 0}}>{isDocComment?.filiais?.f_nome}</p>
           <p style={{fontSize: 12, margin: 0}}>{isDocComment?.tipo_documentos?.td_desc}</p>   
           <p style={{fontSize: 10}}><DateField value={isDocComment?.criado_em} format='DD/MM/YYYY · H:mm:ss' locales="pt-br" style={{fontSize: 9}}/></p>
           <Space direction="vertical">
-             <Tag style={{borderRadius: 20, padding: 3}}><Avatar shape="circle" icon={String(isDocComment?.usuario?.u_nome).toUpperCase()[0]} size="small" /> {isDocComment?.usuario?.u_nome}</Tag>
+             <Tag style={{borderRadius: 20, padding: 3}}><Avatar shape="circle" icon={String(isDocComment?.usuario?.u_nome).toUpperCase()[0]} size="small" /> {isDocComment?.usuario?.u_nome == JSON.parse(localStorage.getItem('refine-user')).nome ? <a style={{fontSize: 11, margin: 3}}>você</a>: isDocComment?.usuario?.u_nome}</Tag>
              <Tag color={getColor(isDocComment?.d_situacao)} style={{fontSize: 10, borderRadius: 20}}>{isDocComment?.d_situacao}</Tag>
           </Space> 
         </Card>
