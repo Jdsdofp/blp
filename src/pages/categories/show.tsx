@@ -1,4 +1,4 @@
-import { CheckCircleOutlined, CloseCircleOutlined, CommentOutlined, ExclamationCircleOutlined, IssuesCloseOutlined, MessageOutlined } from "@ant-design/icons"
+import { CheckCircleOutlined, CloseCircleOutlined, CommentOutlined, DownOutlined, ExclamationCircleOutlined, IssuesCloseOutlined, MessageOutlined, UpOutlined } from "@ant-design/icons"
 import { DateField, EditButton, RefreshButton, Show, useForm } from "@refinedev/antd";
 import { useList } from "@refinedev/core";
 import { List, Card, Row, Col, Modal, Popover, Spin, DatePicker, Input, Space, Button, Badge, Mentions, Tag, Avatar } from "antd";
@@ -40,7 +40,10 @@ export const DocumentShow = () => {
   const [isIdDoComment, setIsIdDoComment] = useState<number>()
   const [checkCondicionante, setCheckCondicionante] = useState<boolean>(true);
   const [conditions, setConditions] = useState<{ [key: string]: boolean | null }>({});
+  const [expanded, setExpanded] = useState(false);
   const [userTK, setUserTK] = useState<any>(JSON.parse(localStorage.getItem('refine-user')).nome)
+  const [replyValue, setReplyValue] = useState<string>('');
+  const [isReplyingToComment, setIsReplyingToComment] = useState<number | null>(null);
 
   const { data, isInitialLoading, isLoading, refetch } = useList({
     resource: 'document',
@@ -128,6 +131,22 @@ export const DocumentShow = () => {
 
     });
 
+  };
+
+  const handleSendReply = async () => {
+    if (!isReplyingToComment) return;
+
+    try {
+        await axios.patch(`${API_URL}/comment-document/${isReplyingToComment}/registrar-resposta-comentario`, {
+            msg: replyValue
+        });
+        
+        setReplyValue('');
+        setIsReplyingToComment(null);
+        refetchComment();
+    } catch (error) {
+        console.error("Erro ao enviar resposta:", error);
+    } 
   };
 
   const openModal = async () => {
@@ -281,53 +300,125 @@ export const DocumentShow = () => {
         onCancel={() => setIsModalComment(false)}
         centered
         footer={
-          <List
-            loading={carComment}
-            dataSource={comments?.data}
-            renderItem={(item, index) => (
-              <List.Item style={{ padding: '12px 0', borderBottom: '1px solid #f0f0f0' }}>
-                <List.Item.Meta
-                  avatar={
-                    <Avatar
-                      src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${index}`}
-                      style={{ marginRight: '8px' }}
+<List
+  loading={carComment}
+  dataSource={comments?.data}
+  renderItem={(item, index) => {
+    
+    const hasMoreResponses = item.cd_resposta && item.cd_resposta.length > 1;
+    
+    return (
+      <List.Item style={{ padding: '12px 0', borderBottom: '1px solid #f0f0f0' }}>
+        <List.Item.Meta
+          avatar={
+            <Avatar
+              src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${index}`}
+              style={{ marginRight: '8px' }}
+            />
+          }
+          title={
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <a style={{ fontWeight: 'bold', color: '#8B41F2' }}>
+                {userTK === item.usuario.u_nome ? 'Você' : item.usuario.u_nome}
+              </a>
+              <span style={{ fontSize: '12px', color: '#888' }}>há 3 dias</span>
+            </div>
+          }
+          description={
+            <>
+              <p style={{ color: '#4a4a4a', marginTop: '4px', textAlign: 'justify', fontSize: 11 }}>
+                {item.cd_msg}
+              </p>
+              <ReplyOutlined
+                onClick={() => {setCommentValue(`@${item.usuario?.u_nome} `); setIsReplyingToComment(item.cd_id)}}  
+                style={{ cursor: 'pointer', color: 'GrayText' }}
+                fontSize="inherit"
+              />
+              {/* Campo de resposta e botão de envio */}
+            {isReplyingToComment === item.cd_id && (
+                <div style={{ marginTop: '8px' }}>
+                    <Input.TextArea
+                        value={replyValue}
+                        onChange={(e) => setReplyValue(e.target.value)}
+                        placeholder="Digite sua resposta aqui..."
                     />
-                  }
-                  title={
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <a style={{ fontWeight: 'bold', color: '#8B41F2' }}>
-                        {userTK === item.usuario.u_nome ? 'Você' : item.usuario.u_nome}
-                      </a>
-                      <span style={{ fontSize: '12px', color: '#888' }}>há 3 dias</span>
-                    </div>
-                  }
-                  description={
-                    <>
-                      <p style={{ color: '#4a4a4a', marginTop: '4px', textAlign: 'justify', fontSize: 11 }}>
-                        {item.cd_msg}
-                      </p>
-                      <ReplyOutlined
-                        onClick={() => setCommentValue(`@${item.usuario.u_nome} `)}
-                        style={{ cursor: 'pointer', color: 'GrayText' }}
-                        fontSize="inherit"
-                      />
-                    </>
-                  }
-                  style={{ textAlign: 'justify' }}
-                />
-              </List.Item>
+                    <Button
+                        type="primary"
+                        onClick={handleSendReply}
+                        style={{ marginTop: '4px' }}
+                    >
+                        Enviar Resposta
+                    </Button>
+                </div>
             )}
-            size="small"
-            style={{
-              maxHeight: 400,
-              overflowY: 'auto',
-              scrollbarColor: '#888 #f1f1f1',
-              scrollbarWidth: 'thin',
-              padding: '0 16px',
-              borderRadius: '8px',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
-            }}
-          />
+              {/* Renderizando respostas */}
+              {item.cd_resposta && item.cd_resposta.length > 0 && (
+                <>
+                  <List
+                    dataSource={expanded ? item.cd_resposta : [item.cd_resposta[0]]}
+                    renderItem={(response) => (
+                      <List.Item style={{ marginLeft: '30px', padding: '8px 0' }}>
+                        <List.Item.Meta
+                          avatar={
+                            <Avatar
+                              src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${response?.autor}`}
+                              style={{ marginRight: '8px' }}
+                            />
+                          }
+                          title={
+                            <a style={{ fontWeight: 'bold', color: '#8B41F2' }}>
+                              {response?.autor}
+                            </a>
+                          }
+                          description={
+                            <p style={{ color: '#4a4a4a', marginTop: '4px', textAlign: 'justify', fontSize: 11 }}>
+                              {response?.msg}
+                            </p>
+                          }
+                        />
+                        <span style={{ fontSize: '10px', color: '#888' }}>{response?.data}</span>
+                      </List.Item>
+                    )}
+                  />
+                  {hasMoreResponses && (
+                    <div
+                      onClick={() => setExpanded(!expanded)}
+                      style={{ cursor: 'pointer', color: '#8B41F2', marginLeft: '30px', fontSize: 12 }}
+                    >
+                      {expanded ? (
+                        <>
+                          <UpOutlined style={{ marginRight: 4 }} />
+                          Recolher respostas
+                        </>
+                      ) : (
+                        <>
+                          <DownOutlined style={{ marginRight: 4 }} />
+                          Mostrar {item.cd_resposta.length - 1} resposta(s) adicional(is)
+                        </>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </>
+          }
+          style={{ textAlign: 'justify' }}
+        />
+      </List.Item>
+    );
+  }}
+  size="small"
+  style={{
+    maxHeight: 400,
+    overflowY: 'auto',
+    scrollbarColor: '#888 #f1f1f1',
+    scrollbarWidth: 'thin',
+    padding: '0 16px',
+    borderRadius: '8px',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+  }}
+/>
+
         }
       >
         <Card size="small" style={{ marginBottom: 5, border: 0 }}>
@@ -376,7 +467,19 @@ export const DocumentShow = () => {
               options={[
                 { value: 'Lores Lenne', label: 'Lores Lenne' },
                 { value: 'Aless', label: 'Aless' },
-                { value: 'Marinas', label: 'Marinas' },
+                { 
+                  value: 'Marinas', 
+                  label: (
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <Avatar 
+                        size="small" 
+                        style={{ marginRight: 8, backgroundColor: '#ffbf00' }} 
+                        icon={String('Marinas').toUpperCase()[0]} 
+                      />
+                      Marinas
+                    </div>
+                  ),
+                },
               ]}
               value={commentValue}
               onChange={(value) => setCommentValue(value)}
