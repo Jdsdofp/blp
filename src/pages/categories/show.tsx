@@ -22,6 +22,7 @@ interface IComments {
   usuario: string;
   cd_msg: string;
   cd_resposta: string[];
+  cd_situacao_comentario: string;
   criado_em: Date;
 }
 
@@ -68,11 +69,14 @@ export const DocumentShow = () => {
   }, [result]);
 
   const [commentValue, setCommentValue] = useState<string>('');
+  const [commentStatusValue, setCommentStatusValue] = useState<string>('');
+
 
   const handleSendComment = async () => {
     try {
       await axios.post(`${API_URL}/comment-document/${isDocComment?.d_id}/registar-comentario`, {
         cd_msg: commentValue,
+        cd_situacao_comentario: commentStatusValue
       });
       // Ação após o envio bem-sucedido
       setCommentValue(''); // Limpar o campo de comentário
@@ -219,7 +223,7 @@ export const DocumentShow = () => {
                   cover
                   hoverable
                   extra={<span id={item.d_condicionante_id} onClick={() => { openModal(); hendleOpenModalConditions(item.d_condicionante_id); }}>{item.d_condicionante_id && <IssuesCloseOutlined style={{ color: '#ebc334', fontSize: 19, cursor: 'pointer' }} />}</span>}
-                  actions={[<Space><EditButton hideText shape="circle" size="small" /><Badge count={item?.d_comentarios?.length || null} size="small"><Button icon={<CommentOutlined />} size="small" shape="circle" onClick={() => { hendleOpenModalComments(item); setIsIdDoComment(item.d_id); updateComment(); atualiza() }} /></Badge></Space>]}
+                  actions={[<Space><EditButton hideText shape="circle" size="small" /><Badge count={item?.d_comentarios?.length || null} size="small"><Button icon={<CommentOutlined />} size="small" shape="circle" onClick={() => { hendleOpenModalComments(item); setIsIdDoComment(item.d_id); updateComment(); atualiza(); setCommentStatusValue(item.d_situacao)}} /></Badge></Space>]}
                 >
                   <p style={{ fontSize: 12, margin: 0 }}>{item?.filiais?.f_nome}</p>
                   <p style={{ fontSize: 12, margin: 0 }}>{item?.tipo_documentos?.td_desc}</p>
@@ -300,127 +304,163 @@ export const DocumentShow = () => {
         onCancel={() => setIsModalComment(false)}
         centered
         footer={
-<List
-  loading={carComment}
-  dataSource={comments?.data}
-  renderItem={(item, index) => {
-    
-    const hasMoreResponses = item.cd_resposta && item.cd_resposta.length > 1;
-    
-    return (
-      <List.Item style={{ padding: '12px 0', borderBottom: '1px solid #f0f0f0' }}>
-        <List.Item.Meta
-          avatar={
-            <Avatar
-              src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${index}`}
-              style={{ marginRight: '8px' }}
-            />
-          }
-          title={
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <a style={{ fontWeight: 'bold', color: '#8B41F2' }}>
-                {userTK === item.usuario.u_nome ? 'Você' : item.usuario.u_nome}
-              </a>
-              <span style={{ fontSize: '12px', color: '#888' }}>há 3 dias</span>
-            </div>
-          }
-          description={
-            <>
-              <p style={{ color: '#4a4a4a', marginTop: '4px', textAlign: 'justify', fontSize: 11 }}>
-                {item.cd_msg}
-              </p>
-              <ReplyOutlined
-                onClick={() => {setCommentValue(`@${item.usuario?.u_nome} `); setIsReplyingToComment(item.cd_id)}}  
-                style={{ cursor: 'pointer', color: 'GrayText' }}
-                fontSize="inherit"
-              />
-              {/* Campo de resposta e botão de envio */}
-            {isReplyingToComment === item.cd_id && (
-                <div style={{ marginTop: '8px' }}>
-                    <Input.TextArea
-                        value={replyValue}
-                        onChange={(e) => setReplyValue(e.target.value)}
-                        placeholder="Digite sua resposta aqui..."
-                    />
-                    <Button
-                        type="primary"
-                        onClick={handleSendReply}
-                        style={{ marginTop: '4px' }}
-                    >
-                        Enviar Resposta
-                    </Button>
-                </div>
-            )}
-              {/* Renderizando respostas */}
-              {item.cd_resposta && item.cd_resposta.length > 0 && (
-                <>
-                  <List
-                    dataSource={expanded ? item.cd_resposta : [item.cd_resposta[0]]}
-                    renderItem={(response) => (
-                      <List.Item style={{ marginLeft: '30px', padding: '8px 0' }}>
+          <List
+                  loading={carComment}
+                  dataSource={comments?.data}
+                  renderItem={(item, index) => {
+                    const hasMoreResponses = item.cd_resposta && item.cd_resposta.length > 1;
+                    return (
+                      <List.Item style={{ padding: '12px 0', borderBottom: '1px solid #f0f0f0' }}>
                         <List.Item.Meta
                           avatar={
                             <Avatar
-                              src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${response?.autor}`}
+                              src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${index}`}
                               style={{ marginRight: '8px' }}
                             />
                           }
                           title={
-                            <a style={{ fontWeight: 'bold', color: '#8B41F2' }}>
-                              {response?.autor}
-                            </a>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                              <a style={{ fontWeight: 'bold', color: '#8B41F2' }}>
+                                {userTK === item.usuario.u_nome ? 'Você' : item.usuario.u_nome} -
+                                 <Tag color={getColor(item?.cd_situacao_comentario)} style={{ fontSize: 8, borderRadius: 8, marginLeft: 8 }} >{item?.cd_situacao_comentario}</Tag>
+                              </a>
+                              <span style={{ fontSize: '12px', color: '#888' }}>há 3 dias</span>
+                            </div>
                           }
                           description={
-                            <p style={{ color: '#4a4a4a', marginTop: '4px', textAlign: 'justify', fontSize: 11 }}>
-                              {response?.msg}
-                            </p>
+                            <>
+                              <p style={{ marginTop: '4px', textAlign: 'justify', fontSize: 11 }}>
+                                {item.cd_msg}
+                              </p>
+                              <ReplyOutlined
+                                onClick={() => {
+                                  setReplyValue(`@${item.usuario?.u_nome} `); 
+                                  setIsReplyingToComment(item.cd_id);
+                                }}
+                                style={{ cursor: 'pointer', color: 'GrayText' }}
+                                fontSize="inherit"
+                              />
+                              {/* Campo de resposta e botão de envio */}
+                              {isReplyingToComment === item.cd_id && (
+                                <div style={{ marginTop: '8px' }}>
+                                      <Input.TextArea
+                                        value={replyValue} // Isso já deve ter o nome do usuário configurado
+                                        onChange={(e) => setReplyValue(e.target.value)} // Permite que o usuário edite o texto
+                                        placeholder="Digite sua resposta aqui..."
+                                      />
+                                  <Button
+                                    type="primary"
+                                    size="small"
+                                    shape="round"
+                                    onClick={handleSendReply}
+                                    style={{ marginTop: '4px' }}
+                                  >
+                                    Enviar Resposta
+                                  </Button>
+                                </div>
+                              )}
+                              {/* Renderizando respostas com a linha vertical de ligação */}
+                              {item.cd_resposta && item.cd_resposta.length > 0 && (
+                                <div style={{  marginTop: '8px', position: 'relative' }}>
+                                  {/* Linha vertical que conecta o comentário principal às respostas */}
+                                  <div
+                                    style={{
+                                      position: 'absolute',
+                                      top: '0',
+                                      left: '16px',
+                                      width: '15px',
+                                      height: item.cd_resposta.length > 1 ? '98%' : '40%',
+                                      borderLeft: '1px solid #8B41F2',
+                                      borderBottom: '1px solid #8B41F2',
+                                      borderBottomLeftRadius: '10px',
+                                    }}
+                                  ></div>
+                                  <div style={{ marginLeft: '24px', paddingLeft: '10px' }}>
+                                  <List
+                                      dataSource={expanded ? item.cd_resposta : [item.cd_resposta[0]]}
+                                      renderItem={(response) => (
+                                        <List.Item style={{ padding: '2px 0' }}>
+                                          <List.Item.Meta
+                                            avatar={
+                                              <Avatar
+                                                src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${response?.autor}`}
+                                                size='small'
+                                              />
+                                            }
+                                            title={
+                                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                <a style={{ fontWeight: 'bold', color: '#8B41F2', fontSize: 9 }}>
+                                                  {userTK === response?.autor ? 'Você' : response?.autor}
+                                                </a>
+                                              </div>
+                                            }
+                                            description={
+                                              <div style={{ padding: '4px', borderRadius: '4px' }}>
+                                                <p
+                                                  style={{
+                                                    textAlign: 'justify',
+                                                    margin: 0,
+                                                    fontSize: '9px',
+                                                    fontFamily: 'Arial, sans-serif',
+                                                    whiteSpace: 'normal',
+                                                    wordBreak: 'break-word',  // Quebra palavras longas
+                                                    overflowWrap: 'break-word', // Permite que palavras longas quebrem
+                                                    lineHeight: '1.2',
+                                                    maxWidth: '100%',  // Para garantir que o texto não extrapole o contêiner
+                                                  }}
+                                                >
+                                                  {response?.msg}
+                                                </p>
+                                              </div>
+                                            }
+                                            
+                                          />
+                                        </List.Item>
+                                      )}
+                                    />
+
+
+                                    {hasMoreResponses && (
+                                      <div
+                                        onClick={() => setExpanded(!expanded)}
+                                        style={{ cursor: 'pointer', color: '#8B41F2', marginLeft: '8px', fontSize: 12 }}
+                                      >
+                                        {expanded ? (
+                                          <>
+                                            <UpOutlined style={{ marginRight: 4 }} />
+                                            Recolher respostas
+                                          </>
+                                        ) : (
+                                          <>
+                                            <DownOutlined style={{ marginRight: 4 }} />
+                                            Mostrar {item.cd_resposta.length - 1} resposta(s) adicional(is)
+                                          </>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </>
                           }
                         />
-                        <span style={{ fontSize: '10px', color: '#888' }}>{response?.data}</span>
-                      </List.Item>
-                    )}
-                  />
-                  {hasMoreResponses && (
-                    <div
-                      onClick={() => setExpanded(!expanded)}
-                      style={{ cursor: 'pointer', color: '#8B41F2', marginLeft: '30px', fontSize: 12 }}
-                    >
-                      {expanded ? (
-                        <>
-                          <UpOutlined style={{ marginRight: 4 }} />
-                          Recolher respostas
-                        </>
-                      ) : (
-                        <>
-                          <DownOutlined style={{ marginRight: 4 }} />
-                          Mostrar {item.cd_resposta.length - 1} resposta(s) adicional(is)
-                        </>
-                      )}
-                    </div>
-                  )}
-                </>
-              )}
-            </>
-          }
-          style={{ textAlign: 'justify' }}
+                     </List.Item>
+                );
+              }}
+              size="small"
+              style={{
+                maxHeight: 400,
+                overflowY: 'auto',
+                scrollbarColor: '#888 #f1f1f1',
+                scrollbarWidth: 'thin',
+                padding: '0 10px',
+                borderRadius: '8px',
+                boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+              }}
         />
-      </List.Item>
-    );
-  }}
-  size="small"
-  style={{
-    maxHeight: 400,
-    overflowY: 'auto',
-    scrollbarColor: '#888 #f1f1f1',
-    scrollbarWidth: 'thin',
-    padding: '0 16px',
-    borderRadius: '8px',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
-  }}
-/>
 
         }
-      >
+       >
         <Card size="small" style={{ marginBottom: 5, border: 0 }}>
           <p style={{ fontSize: 12, margin: 0 }}>{isDocComment?.filiais?.f_nome}</p>
           <p style={{ fontSize: 12, margin: 0 }}>{isDocComment?.tipo_documentos?.td_desc}</p>
@@ -480,8 +520,7 @@ export const DocumentShow = () => {
                     </div>
                   ),
                 },
-              ]}
-              value={commentValue}
+              ]}  
               onChange={(value) => setCommentValue(value)}
             />
             <Button type="primary" shape="circle" icon={<Send />} onClick={handleSendComment} />
