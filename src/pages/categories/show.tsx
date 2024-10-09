@@ -1,18 +1,18 @@
 import { CheckCircleOutlined, CloseCircleOutlined, CommentOutlined, DownOutlined, ExclamationCircleOutlined, IssuesCloseOutlined, MessageOutlined, UpOutlined } from "@ant-design/icons"
 import { DateField, EditButton, RefreshButton, Show, useForm } from "@refinedev/antd";
-import { useList } from "@refinedev/core";
-import { List, Card, Row, Col, Modal, Popover, Spin, DatePicker, Input, Space, Button, Badge, Mentions, Tag, Avatar } from "antd";
+import { useList, useTable } from "@refinedev/core";
+import { List, Card, Row, Col, Modal, Popover, Spin, DatePicker, Input, Space, Button, Badge, Mentions, Tag, Avatar, Switch } from "antd";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../../authProvider";
-import { ReplyAllOutlined, ReplyOutlined, Send } from "@mui/icons-material";
+import { ReplyOutlined, Send } from "@mui/icons-material";
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-
+import GroupAddIcon from '@mui/icons-material/GroupAdd';
 
 
 interface ICondition {
   dc_id: number;
-  dc_condicoes: { [key: string]: { status: boolean | null; date: Date | null } };
+  dc_condicoes: { [key: string]: { status: boolean | null; date: Date | null;  users: [number]} };
 }
 
 interface IComments {
@@ -30,6 +30,8 @@ interface Icomment {
   cd_mdg: string
 }
 
+const { Search } = Input;
+
 export const DocumentShow = () => {
   const queryParams = new URLSearchParams(location.search);
   const status = queryParams.get("status");
@@ -45,12 +47,19 @@ export const DocumentShow = () => {
   const [userTK, setUserTK] = useState<any>(JSON.parse(localStorage.getItem('refine-user')).nome)
   const [replyValue, setReplyValue] = useState<string>('');
   const [isReplyingToComment, setIsReplyingToComment] = useState<number | null>(null);
+  const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
+
+
 
   const { data, isInitialLoading, isLoading, refetch } = useList({
     resource: 'document',
     meta: { endpoint: `listar-documentos-status-filial/${status}/${filialId}` },
     liveMode: 'auto',
   });
+
+  const { tableQueryResult } = useTable({ resource: "user", syncWithLocation: true, liveMode: "auto", meta: {
+    endpoint: "listar-usuarios"
+  } })
 
   const { data: result, isLoading: car, refetch: asas } = useList<ICondition>({
     resource: 'document-condition',
@@ -70,7 +79,8 @@ export const DocumentShow = () => {
 
   const [commentValue, setCommentValue] = useState<string>('');
   const [commentStatusValue, setCommentStatusValue] = useState<string>('');
-
+  const [openPopoverUser, setOpenPopoverUser] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handleSendComment = async () => {
     try {
@@ -202,6 +212,24 @@ export const DocumentShow = () => {
     }
   };
 
+  console.log(tableQueryResult.data?.data)
+  
+   // Filtra os usuários com base no termo de busca
+   const filteredUsuarios = tableQueryResult.data?.data.filter((user) =>
+    user.u_nome.toLowerCase().includes(searchTerm.toLowerCase())
+);
+
+const handleUserToggle = (userId: number) => {
+  setSelectedUserIds((prevSelected) => {
+      if (prevSelected.includes(userId)) {
+          return prevSelected.filter(id => id !== userId); // Remove se já estiver selecionado
+      } else {
+          return [...prevSelected, userId]; // Adiciona se não estiver
+      }
+  });
+};
+
+
 
 
   return (
@@ -253,6 +281,7 @@ export const DocumentShow = () => {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
             <h4 style={{ paddingLeft: 5 }}>Condição</h4>
             <h4 style={{ paddingRight: 20 }}>Status</h4>
+            <h4 style={{ paddingRight: 20 }}>Atribuir</h4>
           </div>
 
           <div style={{ maxHeight: '300px', overflowY: 'auto', padding: 5, borderTop: '1px solid #575757', scrollbarColor: '#888 #f1f1f1', scrollbarWidth: 'thin' }}>
@@ -288,12 +317,49 @@ export const DocumentShow = () => {
                           </Popover>
                         )}
                       </td>
-                    </tr>
+                      <td style={{ borderBottom: '1px solid #8B41F2' }} align="center">
+                          <Popover
+                              trigger="click"
+                              arrowContent
+                              placement="bottomLeft"
+                              content={
+                                  <div>
+                                      <Search
+                                          placeholder="Buscar usuário"
+                                          onChange={(e) => setSearchTerm(e.target.value)}
+                                          style={{ marginBottom: 8, width: '100%' }}
+                                          allowClear
+                                      />
+                                      <List
+                                          size="small"
+                                          style={{ maxHeight: 300, overflowY: 'auto' }}
+                                          dataSource={filteredUsuarios}
+                                          renderItem={(item) => (
+                                              <List.Item>
+                                                  {item?.u_nome}
+                                                  <Switch 
+                                                      size="small" 
+                                                      checked={selectedUserIds.includes(item.u_id)} 
+                                                      onChange={() => handleUserToggle(item.u_id)} // Altera aqui
+                                                  />
+                                              </List.Item>
+                                          )}
+                                      />
+
+                                  </div>
+                              }
+                          >
+                              <GroupAddIcon fontSize="inherit" style={{ cursor: 'pointer' }} />
+                          </Popover>
+                      </td>
+                    </tr> 
                   ))}
                 </tbody>
               )}
+         
             </table>
           </div>
+
         </Card>
       </Modal>
 
