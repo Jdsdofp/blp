@@ -1,13 +1,20 @@
 import { CheckCircleOutlined, CloseCircleOutlined, CommentOutlined, DownOutlined, ExclamationCircleOutlined, IssuesCloseOutlined, MessageOutlined, UpOutlined } from "@ant-design/icons"
-import { DateField, EditButton, RefreshButton, Show, useForm } from "@refinedev/antd";
+import { DateField, EditButton, RefreshButton, Show } from "@refinedev/antd";
 import { useList, useTable } from "@refinedev/core";
 import { List, Card, Row, Col, Modal, Popover, Spin, DatePicker, Input, Space, Button, Badge, Mentions, Tag, Avatar, Switch, message } from "antd";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../../authProvider";
-import { AddBox, ReplyOutlined, Send } from "@mui/icons-material";
+import { Money, ReplyOutlined, Send } from "@mui/icons-material";
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import PaidIcon from '@mui/icons-material/Paid';
+import 'dayjs/locale/pt-br';
+dayjs.extend(relativeTime);
+dayjs.locale('pt-br');
+
 
 
 interface ICondition {
@@ -33,6 +40,7 @@ interface Icomment {
 const { Search } = Input;
 
 export const DocumentShow = () => {
+  // Define a localização para português
   const queryParams = new URLSearchParams(location.search);
   const status = queryParams.get("status");
   const filialId = queryParams.get("filialId");
@@ -255,8 +263,8 @@ export const DocumentShow = () => {
     }
 };
 
-
-
+  
+ 
   return (
     <Show title={[<><span>{status}</span></>]} canEdit={false} canDelete={false} headerButtons={<RefreshButton onClick={() => atualiza()} />}>
       <List
@@ -266,148 +274,193 @@ export const DocumentShow = () => {
         renderItem={item => (
           <>
             <Row gutter={16} align={"top"}>
-              <Col span={8}>
-                <Card
-                  loading={isLoading}
-                  size="small"
-                  title={<><h3>{item.tipo_documentos.td_desc}</h3></>}
-                  style={{ width: 300, margin: '16px', boxShadow: 'rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px' }}
-                  bordered
-                  cover
-                  hoverable
-                  extra={<span id={item.d_condicionante_id} onClick={() => { openModal(); hendleOpenModalConditions(item.d_condicionante_id); }}>{item.d_condicionante_id && <IssuesCloseOutlined style={{ color: '#ebc334', fontSize: 19, cursor: 'pointer' }} />}</span>}
-                  actions={[<Space><EditButton hideText shape="circle" size="small" /><Badge count={item?.d_comentarios?.length || null} size="small"><Button icon={<CommentOutlined />} size="small" shape="circle" onClick={() => { hendleOpenModalComments(item); setIsIdDoComment(item.d_id); updateComment(); atualiza(); setCommentStatusValue(item.d_situacao)}} /></Badge></Space>]}
-                >
-                  <p style={{ fontSize: 12, margin: 0 }}>{item?.filiais?.f_nome}</p>
-                  <p style={{ fontSize: 12, margin: 0 }}>{item?.tipo_documentos?.td_desc}</p>
-                  <p style={{ fontSize: 10 }}><DateField value={item?.criado_em} format='DD/MM/YYYY · H:mm:ss' locales="pt-br" style={{ fontSize: 9 }} /></p>
-                  <Space direction="vertical">
-                    <Tag style={{ borderRadius: 20, padding: 3 }}><Avatar shape="circle" icon={String(item?.usuario?.u_nome).toUpperCase()[0]} size="small" /> {item?.usuario?.u_nome == JSON.parse(localStorage.getItem('refine-user')).nome ? <a style={{ fontSize: 11, margin: 3 }}>você</a> : item?.usuario?.u_nome}</Tag>
-                    <Tag color={getColor(item?.d_situacao)} style={{ fontSize: 10, borderRadius: 20 }}>{item?.d_situacao}</Tag>
-                  </Space>
-                </Card>
-              </Col>
-            </Row>
+                  <Col span={8}>
+                    <Card
+                      loading={isLoading}
+                      size="small"
+                      title={<><h3>{item.tipo_documentos.td_desc}</h3></>}
+                      style={{
+                        width: 300,
+                        margin: '16px',
+                        boxShadow: 'rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px',
+                      }}
+                      bordered
+                      cover
+                      hoverable
+                      extra={
+                        <span
+                          id={item.d_condicionante_id}
+                          onClick={() => {
+                            openModal();
+                            hendleOpenModalConditions(item.d_condicionante_id);
+                          }}
+                        >
+                          {item.d_condicionante_id && (
+                            <IssuesCloseOutlined style={{ color: '#ebc334', fontSize: 19, cursor: 'pointer' }} />
+                          )}
+                        </span>
+                      }
+                      actions={[
+                        <Space>
+                          <EditButton hideText shape="circle" size="small" />
+                          <Badge count={item?.d_comentarios?.length || null} size="small">
+                            <Button
+                              icon={<CommentOutlined />}
+                              size="small"
+                              shape="circle"
+                              onClick={() => {
+                                hendleOpenModalComments(item);
+                                setIsIdDoComment(item.d_id);
+                                updateComment();
+                                atualiza();
+                                setCommentStatusValue(item.d_situacao);
+                              }}
+                            />
+                          </Badge>
+                        </Space>,
+                      ]}
+                    >
+                      <p style={{ fontSize: 12, margin: 0 }}>{item?.filiais?.f_nome}</p>
+                      <p style={{ fontSize: 12, margin: 0 }}>{item?.tipo_documentos?.td_desc}</p>
+                      <p style={{ fontSize: 10 }}>
+                        <DateField value={item?.criado_em} format="DD/MM/YYYY · H:mm:ss" locales="pt-br" style={{ fontSize: 9 }} />
+                      </p>
+                      <Space direction="vertical">
+                        <Tag style={{ borderRadius: 20, padding: 3 }}>
+                          <Avatar shape="circle" icon={String(item?.usuario?.u_nome).toUpperCase()[0]} size="small" />{' '}
+                          {item?.usuario?.u_nome === JSON.parse(localStorage.getItem('refine-user')).nome ? (
+                            <a style={{ fontSize: 11, margin: 3 }}>você</a>
+                          ) : (
+                            item?.usuario?.u_nome
+                          )}
+                        </Tag>
+                        <Space>
+                          <Tag color={getColor(item?.d_situacao)} style={{ fontSize: 10, borderRadius: 20 }}>
+                            {item?.d_situacao}
+                          </Tag>
+                          <Button icon={<PaidIcon fontSize="small" />} shape="circle" style={{ marginLeft: 160, border: 0 }} />
+                        </Space>
+                      </Space>
+                    </Card>
+                  </Col>
+                </Row>
           </>
         )}
       />
 
-<Modal
-    
-    open={isModal}
-    onCancel={() => { hendleCloseModalConditions(); setCheckCondicionante(true); }}
-    okButtonProps={{ disabled: checkCondicionante, onClick: () => { setCheckCondicionante(true); } }}
-    cancelButtonProps={{ hidden: true }}
-    footer={[Object.entries(conditions || {}).filter(([key, value]) => value?.status === false).length >= 1 ? null : (
-        <Space>
-            <Input placeholder="Nº Protocolo" />
-            <DatePicker placeholder="Data Protocolo" locale='pt-BR' format={'DD/MM/YYYY'} />
-        </Space>
-    )]}
->
-    <Card
-        title={['Condicionante ', <IssuesCloseOutlined style={{ color: 'gray' }} />]}
-        size="small"
-    >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-            <h4 style={{ paddingLeft: 5 }}>Condição</h4>
-            <h4 style={{ paddingRight: 20 }}>Status</h4>
-            <h4 style={{ paddingRight: 20 }}>Atribuir</h4>
-        </div>
+      <Modal
+          
+          open={isModal}
+          onCancel={() => { hendleCloseModalConditions(); setCheckCondicionante(true); }}
+          okButtonProps={{ disabled: checkCondicionante, onClick: () => { setCheckCondicionante(true); } }}
+          cancelButtonProps={{ hidden: true }}
+          footer={[Object.entries(conditions || {}).filter(([key, value]) => value?.status === false).length >= 1 ? null : (
+              <Space>
+                  <Input placeholder="Nº Protocolo" />
+                  <DatePicker placeholder="Data Protocolo" locale='pt-BR' format={'DD/MM/YYYY'} />
+              </Space>
+          )]}
+      >
+          <Card
+              title={['Condicionante ', <IssuesCloseOutlined style={{ color: 'gray' }} />]}
+              size="small"
+          >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                  <h4 style={{ paddingLeft: 5 }}>Condição</h4>
+                  <h4 style={{ paddingRight: 20 }}>Status</h4>
+                  <h4 style={{ paddingRight: 20 }}>Atribuir</h4>
+              </div>
 
-        <div style={{ maxHeight: '300px', overflowY: 'auto', padding: 5, borderTop: '1px solid #575757', scrollbarColor: '#888 #f1f1f1', scrollbarWidth: 'thin' }}>
-            <table style={{ width: '100%' }}>
-                {car ? <Spin /> : (
-                    <tbody>
-                        {Object.entries(conditions || {}).map(([key, value]) => (
-                            <tr key={key}>
-                                <td style={{ borderBottom: '1px solid #8B41F2' }}>
-                                    <p style={{ textTransform: 'capitalize' }}>{key}</p>
-                                </td>
-                                <td style={{ borderBottom: '1px solid #8B41F2' }} align="center">
-                                    {value?.status === true ? (
-                                        <Popover content={`OK - ${new Date(value?.date).toLocaleString()}`}>
-                                            <CheckCircleOutlined
-                                                onClick={() => { toggleCondition(key); hendleCheck(); }}
-                                                style={{ color: 'green', cursor: 'pointer' }}
-                                            />
-                                        </Popover>
-                                    ) : value?.status === false ? (
-                                        <Popover content={`Pendente - ${new Date(value?.date).toLocaleString()}`}>
-                                            <CloseCircleOutlined
-                                                onClick={() => { toggleCondition(key); hendleCheck(); }}
-                                                style={{ color: 'red', cursor: 'pointer' }}
-                                            />
-                                        </Popover>
-                                    ) : (
-                                        <Popover content={`N/A - ${new Date(value?.date).toLocaleString()}`}>
-                                            <ExclamationCircleOutlined
-                                                onClick={() => { toggleCondition(key); hendleCheck(); }}
-                                                style={{ color: 'orange', cursor: 'pointer' }}
-                                            />
-                                        </Popover>
-                                    )}
-                                </td>
-                                <td style={{ borderBottom: '1px solid #8B41F2' }} align="center">
-                                    <Popover
-                                        trigger="click"
-                                        arrowContent
-                                        placement="bottomLeft"
-                                        visible={visiblePopover[key]} // Usar o estado para controlar a visibilidade
-                                        onVisibleChange={(visible) => setVisiblePopover(prev => ({ ...prev, [key]: visible }))}
-                                        content={
-                                            <div>
-                                                <Search
-                                                    placeholder="Buscar usuário"
-                                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                                    style={{ marginBottom: 8, width: '100%' }}
-                                                    allowClear  
-                                                />
-                                                <List
-                                                    size="small"
-                                                    style={{ maxHeight: 300, overflowY: 'auto' }}
-                                                    dataSource={filteredUsuarios}
-                                                    renderItem={(item) => (
-                                                        <List.Item>
-                                                            <h5>{item?.u_nome}</h5>
-                                                            <Switch 
-                                                                size="small" 
-                                                                checked={selectedUserIds.includes(item.u_id)} 
-                                                                onChange={() => handleUserToggle(item.u_id, key)} // Passa a condição correspondente
-                                                            />
-                                                        </List.Item>
-                                                    )}
-                                                />
-                                                <Button 
-                                                    type="primary"
-                                                    size="small"
-                                                    shape="round" 
-                                                    onClick={() => {
-                                                        handleSubmit(key); // Passa a condição correspondente aqui
-                                                        // Não fecha o popover para permitir novas atribuições
-                                                    }} 
-                                                    disabled={selectedUserIds.length === 0} 
-                                                >
-                                                    Atribuir
-                                                </Button>
-                                                {contextHolder}
-                                            </div>
-                                        }
-                                    >
-                                        <GroupAddIcon fontSize="inherit" style={{ cursor: 'pointer' }} />
-                                    </Popover>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                )}
-            </table>
-        </div>
-    </Card>
-</Modal>
-
-
-
+              <div style={{ maxHeight: '300px', overflowY: 'auto', padding: 5, borderTop: '1px solid #575757', scrollbarColor: '#888 #f1f1f1', scrollbarWidth: 'thin' }}>
+                  <table style={{ width: '100%' }}>
+                      {car ? <Spin /> : (
+                          <tbody>
+                              {Object.entries(conditions || {}).map(([key, value]) => (
+                                  <tr key={key}>
+                                      <td style={{ borderBottom: '1px solid #8B41F2' }}>
+                                          <p style={{ textTransform: 'capitalize' }}>{key}</p>
+                                      </td>
+                                      <td style={{ borderBottom: '1px solid #8B41F2' }} align="center">
+                                          {value?.status === true ? (
+                                              <Popover content={`OK - ${new Date(value?.date).toLocaleString()}`}>
+                                                  <CheckCircleOutlined
+                                                      onClick={() => { toggleCondition(key); hendleCheck(); }}
+                                                      style={{ color: 'green', cursor: 'pointer' }}
+                                                  />
+                                              </Popover>
+                                          ) : value?.status === false ? (
+                                              <Popover content={`Pendente - ${new Date(value?.date).toLocaleString()}`}>
+                                                  <CloseCircleOutlined
+                                                      onClick={() => { toggleCondition(key); hendleCheck(); }}
+                                                      style={{ color: 'red', cursor: 'pointer' }}
+                                                  />
+                                              </Popover>
+                                          ) : (
+                                              <Popover content={`N/A - ${new Date(value?.date).toLocaleString()}`}>
+                                                  <ExclamationCircleOutlined
+                                                      onClick={() => { toggleCondition(key); hendleCheck(); }}
+                                                      style={{ color: 'orange', cursor: 'pointer' }}
+                                                  />
+                                              </Popover>
+                                          )}
+                                      </td>
+                                      <td style={{ borderBottom: '1px solid #8B41F2' }} align="center">
+                                          <Popover
+                                              trigger="click"
+                                              arrowContent
+                                              placement="bottomLeft"
+                                              visible={visiblePopover[key]} // Usar o estado para controlar a visibilidade
+                                              onVisibleChange={(visible) => setVisiblePopover(prev => ({ ...prev, [key]: visible }))}
+                                              content={
+                                                  <div>
+                                                      <Search
+                                                          placeholder="Buscar usuário"
+                                                          onChange={(e) => setSearchTerm(e.target.value)}
+                                                          style={{ marginBottom: 8, width: '100%' }}
+                                                          allowClear  
+                                                      />
+                                                      <List
+                                                          size="small"
+                                                          style={{ maxHeight: 300, overflowY: 'auto' }}
+                                                          dataSource={filteredUsuarios}
+                                                          renderItem={(item) => (
+                                                              <List.Item>
+                                                                  <h5>{item?.u_nome}</h5>
+                                                                  <Switch 
+                                                                      size="small" 
+                                                                      checked={selectedUserIds.includes(item.u_id)} 
+                                                                      onChange={() => handleUserToggle(item.u_id, key)} // Passa a condição correspondente
+                                                                  />
+                                                              </List.Item>
+                                                          )}
+                                                      />
+                                                      <Button 
+                                                          type="primary"
+                                                          size="small"
+                                                          shape="round" 
+                                                          onClick={() => {
+                                                              handleSubmit(key); // Passa a condição correspondente aqui
+                                                              // Não fecha o popover para permitir novas atribuições
+                                                          }} 
+                                                          disabled={selectedUserIds.length === 0} 
+                                                      >
+                                                          Atribuir
+                                                      </Button>
+                                                      {contextHolder}
+                                                  </div>
+                                              }
+                                          >
+                                              <GroupAddIcon fontSize="inherit" style={{ cursor: 'pointer' }} />
+                                          </Popover>
+                                      </td>
+                                  </tr>
+                              ))}
+                          </tbody>
+                      )}
+                  </table>
+              </div>
+          </Card>
+      </Modal>
 
 
 
@@ -437,7 +490,7 @@ export const DocumentShow = () => {
                                 {userTK === item.usuario.u_nome ? 'Você' : item.usuario.u_nome} -
                                  <Tag color={getColor(item?.cd_situacao_comentario)} style={{ fontSize: 8, borderRadius: 8, marginLeft: 8 }} >{item?.cd_situacao_comentario}</Tag>
                               </a>
-                              <span style={{ fontSize: '12px', color: '#888' }}>há 3 dias</span>
+                              <span style={{ fontSize: '12px', color: '#888' }}>{dayjs(item.criado_em).fromNow()}</span>
                             </div>
                           }
                           description={
