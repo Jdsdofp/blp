@@ -1,11 +1,11 @@
 import { CheckCircleOutlined, CloseCircleOutlined, CommentOutlined, DownOutlined, ExclamationCircleOutlined, IssuesCloseOutlined, MessageOutlined, UpOutlined } from "@ant-design/icons"
 import { DateField, EditButton, RefreshButton, Show, useForm } from "@refinedev/antd";
 import { useList, useTable } from "@refinedev/core";
-import { List, Card, Row, Col, Modal, Popover, Spin, DatePicker, Input, Space, Button, Badge, Mentions, Tag, Avatar, Switch } from "antd";
+import { List, Card, Row, Col, Modal, Popover, Spin, DatePicker, Input, Space, Button, Badge, Mentions, Tag, Avatar, Switch, message } from "antd";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../../authProvider";
-import { ReplyOutlined, Send } from "@mui/icons-material";
+import { AddBox, ReplyOutlined, Send } from "@mui/icons-material";
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 
@@ -48,6 +48,7 @@ export const DocumentShow = () => {
   const [replyValue, setReplyValue] = useState<string>('');
   const [isReplyingToComment, setIsReplyingToComment] = useState<number | null>(null);
   const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
+  const [ messageApi, contextHolder ] = message.useMessage();
 
 
 
@@ -79,7 +80,7 @@ export const DocumentShow = () => {
 
   const [commentValue, setCommentValue] = useState<string>('');
   const [commentStatusValue, setCommentStatusValue] = useState<string>('');
-  const [openPopoverUser, setOpenPopoverUser] = useState(false)
+  const [visiblePopover, setVisiblePopover] = useState({}); // Armazena a visibilidade do popover por condição
   const [searchTerm, setSearchTerm] = useState('');
 
   const handleSendComment = async () => {
@@ -99,7 +100,7 @@ export const DocumentShow = () => {
 
   
 
-
+  
 
   const toggleCondition = async (key: string) => {
     setConditions((prevConditions) => {
@@ -212,23 +213,47 @@ export const DocumentShow = () => {
     }
   };
 
-  console.log(tableQueryResult.data?.data)
   
    // Filtra os usuários com base no termo de busca
    const filteredUsuarios = tableQueryResult.data?.data.filter((user) =>
     user.u_nome.toLowerCase().includes(searchTerm.toLowerCase())
 );
 
-const handleUserToggle = (userId: number) => {
-  setSelectedUserIds((prevSelected) => {
-      if (prevSelected.includes(userId)) {
-          return prevSelected.filter(id => id !== userId); // Remove se já estiver selecionado
-      } else {
-          return [...prevSelected, userId]; // Adiciona se não estiver
-      }
-  });
-};
+  const handleUserToggle = (userId: number) => {
+    setSelectedUserIds((prevSelected) => {
+        if (prevSelected.includes(userId)) {
+            return prevSelected.filter(id => id !== userId); // Remove se já estiver selecionado
+        } else {
+            return [...prevSelected, userId]; // Adiciona se não estiver
+        }
+    });
+  };
 
+  const handleSubmit = async (conditionKey) => {
+    try {
+        // Cria um objeto contendo os valores das condições e os IDs dos usuários selecionados
+        const payload = {
+            dc_condicoes: {
+                [conditionKey]: conditions[conditionKey]
+            },
+            userIds: selectedUserIds
+        };
+
+        const dc_id = isModalIdCondition; // Substitua pelo valor correto de 'dc_id'
+
+        // Envia a requisição para o backend com o parâmetro 'dc_id' na URL
+       const {data} = await axios.patch(`${API_URL}/document-condition/atribuir-usuarios-condicao/${dc_id}`, payload);
+
+
+        // Ações adicionais após o envio, como manter o modal aberto e limpar a lista de usuários selecionados
+        setSelectedUserIds([]); // Limpa a lista de IDs de usuários selecionados
+        setCheckCondicionante(true); // Atualize qualquer estado necessário
+        messageApi.success(data?.message); // Feedback ao usuário
+    } catch (error) {
+        console.error('Erro ao enviar os dados:', error);
+        message.error('Erro ao atribuir usuários. Por favor, tente novamente.');
+    }
+};
 
 
 
@@ -267,101 +292,123 @@ const handleUserToggle = (userId: number) => {
         )}
       />
 
-      <Modal
-        open={isModal}
-        onCancel={() => { hendleCloseModalConditions(); setCheckCondicionante(true); }}
-        okButtonProps={{ disabled: checkCondicionante, onClick: () => { setCheckCondicionante(true); } }}
-        cancelButtonProps={{ hidden: true }}
-        footer={Object.entries(conditions || {}).filter(([key, value]) => value?.status === false).length >= 1 ? null : (<Space><Input placeholder="Nº Protocolo" /><DatePicker placeholder="Data Protocolo" locale='pt-BR' format={'DD/MM/YYYY'} /></Space>)}
-      >
-        <Card
-          title={['Condicionante ', <IssuesCloseOutlined style={{ color: 'gray' }} />]}
-          size="small"
-        >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+<Modal
+    
+    open={isModal}
+    onCancel={() => { hendleCloseModalConditions(); setCheckCondicionante(true); }}
+    okButtonProps={{ disabled: checkCondicionante, onClick: () => { setCheckCondicionante(true); } }}
+    cancelButtonProps={{ hidden: true }}
+    footer={[Object.entries(conditions || {}).filter(([key, value]) => value?.status === false).length >= 1 ? null : (
+        <Space>
+            <Input placeholder="Nº Protocolo" />
+            <DatePicker placeholder="Data Protocolo" locale='pt-BR' format={'DD/MM/YYYY'} />
+        </Space>
+    )]}
+>
+    <Card
+        title={['Condicionante ', <IssuesCloseOutlined style={{ color: 'gray' }} />]}
+        size="small"
+    >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
             <h4 style={{ paddingLeft: 5 }}>Condição</h4>
             <h4 style={{ paddingRight: 20 }}>Status</h4>
             <h4 style={{ paddingRight: 20 }}>Atribuir</h4>
-          </div>
+        </div>
 
-          <div style={{ maxHeight: '300px', overflowY: 'auto', padding: 5, borderTop: '1px solid #575757', scrollbarColor: '#888 #f1f1f1', scrollbarWidth: 'thin' }}>
+        <div style={{ maxHeight: '300px', overflowY: 'auto', padding: 5, borderTop: '1px solid #575757', scrollbarColor: '#888 #f1f1f1', scrollbarWidth: 'thin' }}>
             <table style={{ width: '100%' }}>
-              {car ? <Spin /> : (
-                <tbody>
-                  {Object.entries(conditions || {}).map(([key, value]) => (
-                    <tr key={key}>
-                      <td style={{ borderBottom: '1px solid #8B41F2' }}>
-                        <p style={{ textTransform: 'capitalize' }}>{key}</p>
-                      </td>
-                      <td style={{ borderBottom: '1px solid #8B41F2' }} align="center">
-                        {value?.status === true ? (
-                          <Popover content={`OK - ${new Date(value?.date).toLocaleString()}`}>
-                            <CheckCircleOutlined
-                              onClick={() => { toggleCondition(key); hendleCheck(); }}
-                              style={{ color: 'green', cursor: 'pointer' }}
-                            />
-                          </Popover>
-                        ) : value?.status === false ? (
-                          <Popover content={`Pendente - ${new Date(value?.date).toLocaleString()}`}>
-                            <CloseCircleOutlined
-                              onClick={() => { toggleCondition(key); hendleCheck(); }}
-                              style={{ color: 'red', cursor: 'pointer' }}
-                            />
-                          </Popover>
-                        ) : (
-                          <Popover content={`N/A - ${new Date(value?.date).toLocaleString()}`}>
-                            <ExclamationCircleOutlined
-                              onClick={() => { toggleCondition(key); hendleCheck(); }}
-                              style={{ color: 'orange', cursor: 'pointer' }}
-                            />
-                          </Popover>
-                        )}
-                      </td>
-                      <td style={{ borderBottom: '1px solid #8B41F2' }} align="center">
-                          <Popover
-                              trigger="click"
-                              arrowContent
-                              placement="bottomLeft"
-                              content={
-                                  <div>
-                                      <Search
-                                          placeholder="Buscar usuário"
-                                          onChange={(e) => setSearchTerm(e.target.value)}
-                                          style={{ marginBottom: 8, width: '100%' }}
-                                          allowClear
-                                      />
-                                      <List
-                                          size="small"
-                                          style={{ maxHeight: 300, overflowY: 'auto' }}
-                                          dataSource={filteredUsuarios}
-                                          renderItem={(item) => (
-                                              <List.Item>
-                                                  {item?.u_nome}
-                                                  <Switch 
-                                                      size="small" 
-                                                      checked={selectedUserIds.includes(item.u_id)} 
-                                                      onChange={() => handleUserToggle(item.u_id)} // Altera aqui
-                                                  />
-                                              </List.Item>
-                                          )}
-                                      />
-
-                                  </div>
-                              }
-                          >
-                              <GroupAddIcon fontSize="inherit" style={{ cursor: 'pointer' }} />
-                          </Popover>
-                      </td>
-                    </tr> 
-                  ))}
-                </tbody>
-              )}
-         
+                {car ? <Spin /> : (
+                    <tbody>
+                        {Object.entries(conditions || {}).map(([key, value]) => (
+                            <tr key={key}>
+                                <td style={{ borderBottom: '1px solid #8B41F2' }}>
+                                    <p style={{ textTransform: 'capitalize' }}>{key}</p>
+                                </td>
+                                <td style={{ borderBottom: '1px solid #8B41F2' }} align="center">
+                                    {value?.status === true ? (
+                                        <Popover content={`OK - ${new Date(value?.date).toLocaleString()}`}>
+                                            <CheckCircleOutlined
+                                                onClick={() => { toggleCondition(key); hendleCheck(); }}
+                                                style={{ color: 'green', cursor: 'pointer' }}
+                                            />
+                                        </Popover>
+                                    ) : value?.status === false ? (
+                                        <Popover content={`Pendente - ${new Date(value?.date).toLocaleString()}`}>
+                                            <CloseCircleOutlined
+                                                onClick={() => { toggleCondition(key); hendleCheck(); }}
+                                                style={{ color: 'red', cursor: 'pointer' }}
+                                            />
+                                        </Popover>
+                                    ) : (
+                                        <Popover content={`N/A - ${new Date(value?.date).toLocaleString()}`}>
+                                            <ExclamationCircleOutlined
+                                                onClick={() => { toggleCondition(key); hendleCheck(); }}
+                                                style={{ color: 'orange', cursor: 'pointer' }}
+                                            />
+                                        </Popover>
+                                    )}
+                                </td>
+                                <td style={{ borderBottom: '1px solid #8B41F2' }} align="center">
+                                    <Popover
+                                        trigger="click"
+                                        arrowContent
+                                        placement="bottomLeft"
+                                        visible={visiblePopover[key]} // Usar o estado para controlar a visibilidade
+                                        onVisibleChange={(visible) => setVisiblePopover(prev => ({ ...prev, [key]: visible }))}
+                                        content={
+                                            <div>
+                                                <Search
+                                                    placeholder="Buscar usuário"
+                                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                                    style={{ marginBottom: 8, width: '100%' }}
+                                                    allowClear  
+                                                />
+                                                <List
+                                                    size="small"
+                                                    style={{ maxHeight: 300, overflowY: 'auto' }}
+                                                    dataSource={filteredUsuarios}
+                                                    renderItem={(item) => (
+                                                        <List.Item>
+                                                            <h5>{item?.u_nome}</h5>
+                                                            <Switch 
+                                                                size="small" 
+                                                                checked={selectedUserIds.includes(item.u_id)} 
+                                                                onChange={() => handleUserToggle(item.u_id, key)} // Passa a condição correspondente
+                                                            />
+                                                        </List.Item>
+                                                    )}
+                                                />
+                                                <Button 
+                                                    type="primary"
+                                                    size="small"
+                                                    shape="round" 
+                                                    onClick={() => {
+                                                        handleSubmit(key); // Passa a condição correspondente aqui
+                                                        // Não fecha o popover para permitir novas atribuições
+                                                    }} 
+                                                    disabled={selectedUserIds.length === 0} 
+                                                >
+                                                    Atribuir
+                                                </Button>
+                                                {contextHolder}
+                                            </div>
+                                        }
+                                    >
+                                        <GroupAddIcon fontSize="inherit" style={{ cursor: 'pointer' }} />
+                                    </Popover>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                )}
             </table>
-          </div>
+        </div>
+    </Card>
+</Modal>
 
-        </Card>
-      </Modal>
+
+
+
 
 
       <Modal
