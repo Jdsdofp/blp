@@ -1,11 +1,11 @@
-import { CheckCircleOutlined, CloseCircleOutlined, CloseCircleTwoTone, CommentOutlined, DownOutlined, ExclamationCircleOutlined, IssuesCloseOutlined, MessageOutlined, UpOutlined } from "@ant-design/icons"
+import { CheckCircleOutlined, CloseCircleOutlined, CloseCircleTwoTone, CommentOutlined, DownOutlined, ExclamationCircleOutlined, IssuesCloseOutlined, MessageOutlined, SaveOutlined, UpOutlined } from "@ant-design/icons"
 import { CloneButton, DateField, EditButton, RefreshButton, Show } from "@refinedev/antd";
 import { useList, useTable } from "@refinedev/core";
 import { List, Card, Row, Col, Modal, Popover, Spin, DatePicker, Input, Space, Button, Badge, Mentions, Tag, Avatar, Switch, message } from "antd";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../../authProvider";
-import { Close, CloseFullscreen, Money, ReplyOutlined, Send } from "@mui/icons-material";
+import { Check, Close, CloseFullscreen, Money, ReplyOutlined, Send } from "@mui/icons-material";
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import dayjs from 'dayjs';
@@ -350,8 +350,7 @@ export const DocumentShow = () => {
         )}
       />
 
-      <Modal
-          
+      <Modal  
           open={isModal}
           onCancel={() => { hendleCloseModalConditions(); setCheckCondicionante(true); }}
           okButtonProps={{ disabled: checkCondicionante, onClick: () => { setCheckCondicionante(true); } }}
@@ -360,6 +359,7 @@ export const DocumentShow = () => {
               <Space>
                   <Input placeholder="Nº Protocolo" />
                   <DatePicker placeholder="Data Protocolo" locale='pt-BR' format={'DD/MM/YYYY'} />
+                  <Button type="primary" icon={<Check/>}>Fechar</Button>
               </Space>
           )]}
       >
@@ -387,36 +387,43 @@ export const DocumentShow = () => {
                             <td style={{ borderBottom: '1px solid #8B41F2' }} align="center">
                               {value?.status === true ? (
                                 <Popover content={`OK - ${new Date(value?.date).toLocaleString()}`}>
-                                  <CheckCircleOutlined
-                                    hidden={value?.users?.includes(userTK) ? false : true}
-                                    onClick={() => {
-                                      toggleCondition(key);
-                                      hendleCheck();
-                                    }}
-                                    style={{ color: 'green', cursor: 'pointer' }}
-                                  />
+                                  <Button disabled={value?.users?.includes(userTK) ? false : true} shape="circle" style={{border: 'none', height: '30px'}}>
+                                    <CheckCircleOutlined
+                                      
+                                      onClick={() => {
+                                        
+                                        toggleCondition(key);
+                                        hendleCheck();
+                                      }}
+                                      style={{ color: value?.users?.includes(userTK) ? 'green' : 'gray', cursor: 'pointer' }}
+                                    />
+                                  </Button>
                                 </Popover>
                               ) : value?.status === false ? (
                                 <Popover content={`Pendente - ${new Date(value?.date).toLocaleString()}`}>
-                                  <CloseCircleOutlined
-                                    hidden={value?.users?.includes(userTK) ? false : true}
-                                    onClick={() => {
-                                      toggleCondition(key);
-                                      hendleCheck();
-                                    }}
-                                    style={{ color: 'red', cursor: 'pointer' }}
-                                  />
+                                  <Button disabled={value?.users?.includes(userTK) ? false : true} shape="circle" style={{border: 'none', height: '30px'}}>
+                                    <CloseCircleOutlined
+                                      
+                                      onClick={() => {
+                                        toggleCondition(key);
+                                        hendleCheck();
+                                      }}
+                                      style={{ color: value?.users?.includes(userTK) ? 'red' : 'gray  ', cursor: 'pointer' }}
+                                    />
+                                  </Button>
                                 </Popover>
                               ) : (
                                 <Popover content={`N/A - ${new Date(value?.date).toLocaleString()}`}>
-                                  <ExclamationCircleOutlined
-                                  hidden={value?.users?.includes(userTK) ? false : true}
-                                    onClick={() => {
-                                      toggleCondition(key);
-                                      hendleCheck();
-                                    }}
-                                    style={{ color: 'orange', cursor: 'pointer' }}
-                                  />
+                                  <Button disabled={value?.users?.includes(userTK) ? false : true} shape="circle" style={{border: 'none', height: '30px'}}>
+                                      <ExclamationCircleOutlined
+                                          
+                                            onClick={() => {
+                                              toggleCondition(key);
+                                              hendleCheck();
+                                            }}
+                                            style={{ color: value?.users?.includes(userTK) ? 'orange' : 'gray', cursor: 'pointer' }}
+                                          />
+                                  </Button>
                                 </Popover>
                               )}
                             </td>
