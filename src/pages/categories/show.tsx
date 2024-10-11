@@ -93,6 +93,7 @@ export const DocumentShow = () => {
 
   const handleSendComment = async () => {
     try {
+      if(commentValue == '') return messageApi.warning('Campo comentario vazio! ⚠')
       await axios.post(`${API_URL}/comment-document/${isDocComment?.d_id}/registar-comentario`, {
         cd_msg: commentValue,
         cd_situacao_comentario: commentStatusValue
@@ -691,6 +692,7 @@ export const DocumentShow = () => {
             />
             <Button type="primary" shape="circle" icon={<Send />} onClick={handleSendComment} />
           </Space.Compact>
+            {contextHolder}
         </Card>
       </Modal>
 
