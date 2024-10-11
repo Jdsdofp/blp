@@ -51,8 +51,10 @@ export const DocumentList = () => {
   const [tabCond, setTabCond] = useState(true)
   const [subList, setSubList] = useState(false)
   const [conditionsStatus, setConditionsStatus] = useState<{[key: string]: boolean}>({})
+  const [userTK, setUserTK] = useState<any>(JSON.parse(localStorage.getItem('refine-user'))?.id)
   const navigate = useNavigate()
-
+  
+  
   
   const { data: listTypeDocument } = useList({ resource: 'type-document', meta: { endpoint: 'listar-tipo-documentos' }, liveMode: 'auto',  });
   const { data: condtionsResult } = useList({ resource: 'condition', meta: { endpoint: 'listar-condicionantes' } });
@@ -270,7 +272,6 @@ export const DocumentList = () => {
   }
 
 // Função para atualizar o status das condições
-// Função para atualizar o status das condições
 const handleConditionCheck = (condition: string) => {
   setConditionsStatus((prevState) => {
     // Cria uma nova data
@@ -282,6 +283,7 @@ const handleConditionCheck = (condition: string) => {
       [condition]: {
         status: !prevState[condition]?.status, // Alterna entre true e false
         date: !prevState[condition]?.status ? currentDate : null, // Define a data se estiver sendo marcada como true
+        users: [userTK]
       },
     };
 
@@ -299,7 +301,7 @@ const handleCondicoes = (value: any, option: any) => {
 
   // Inicializa o status das condições como 'false' (unchecked) e data como null
   const initialStatus = conditions.reduce((acc: any, cond: string) => {
-    acc[cond] = { status: false, date: null }; // Inicializa cada condição com status false e data null
+    acc[cond] = { status: false, date: null, users: [userTK] }; // Inicializa cada condição com status false e data null
     return acc;
   }, {});
 

@@ -1,11 +1,11 @@
-import { CheckCircleOutlined, CloseCircleOutlined, CommentOutlined, DownOutlined, ExclamationCircleOutlined, IssuesCloseOutlined, MessageOutlined, UpOutlined } from "@ant-design/icons"
-import { DateField, EditButton, RefreshButton, Show } from "@refinedev/antd";
+import { CheckCircleOutlined, CloseCircleOutlined, CloseCircleTwoTone, CommentOutlined, DownOutlined, ExclamationCircleOutlined, IssuesCloseOutlined, MessageOutlined, UpOutlined } from "@ant-design/icons"
+import { CloneButton, DateField, EditButton, RefreshButton, Show } from "@refinedev/antd";
 import { useList, useTable } from "@refinedev/core";
 import { List, Card, Row, Col, Modal, Popover, Spin, DatePicker, Input, Space, Button, Badge, Mentions, Tag, Avatar, Switch, message } from "antd";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../../authProvider";
-import { Money, ReplyOutlined, Send } from "@mui/icons-material";
+import { Close, CloseFullscreen, Money, ReplyOutlined, Send } from "@mui/icons-material";
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import dayjs from 'dayjs';
@@ -52,7 +52,7 @@ export const DocumentShow = () => {
   const [checkCondicionante, setCheckCondicionante] = useState<boolean>(true);
   const [conditions, setConditions] = useState<{ [key: string]: boolean | null }>({});
   const [expanded, setExpanded] = useState(false);
-  const [userTK, setUserTK] = useState<any>(JSON.parse(localStorage.getItem('refine-user')).nome)
+  const [userTK, setUserTK] = useState<any>(JSON.parse(localStorage.getItem('refine-user')).id)
   const [replyValue, setReplyValue] = useState<string>('');
   const [isReplyingToComment, setIsReplyingToComment] = useState<number | null>(null);
   const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
@@ -129,6 +129,7 @@ export const DocumentShow = () => {
         [key]: {
           status: newValue,
           date: new Date(),
+          users: [userTK]
         },
 
       };
@@ -374,92 +375,115 @@ export const DocumentShow = () => {
 
               <div style={{ maxHeight: '300px', overflowY: 'auto', padding: 5, borderTop: '1px solid #575757', scrollbarColor: '#888 #f1f1f1', scrollbarWidth: 'thin' }}>
                   <table style={{ width: '100%' }}>
-                      {car ? <Spin /> : (
-                          <tbody>
-                              {Object.entries(conditions || {}).map(([key, value]) => (
-                                  <tr key={key}>
-                                      <td style={{ borderBottom: '1px solid #8B41F2' }}>
-                                          <p style={{ textTransform: 'capitalize' }}>{key}</p>
-                                      </td>
-                                      <td style={{ borderBottom: '1px solid #8B41F2' }} align="center">
-                                          {value?.status === true ? (
-                                              <Popover content={`OK - ${new Date(value?.date).toLocaleString()}`}>
-                                                  <CheckCircleOutlined
-                                                      onClick={() => { toggleCondition(key); hendleCheck(); }}
-                                                      style={{ color: 'green', cursor: 'pointer' }}
-                                                  />
-                                              </Popover>
-                                          ) : value?.status === false ? (
-                                              <Popover content={`Pendente - ${new Date(value?.date).toLocaleString()}`}>
-                                                  <CloseCircleOutlined
-                                                      onClick={() => { toggleCondition(key); hendleCheck(); }}
-                                                      style={{ color: 'red', cursor: 'pointer' }}
-                                                  />
-                                              </Popover>
-                                          ) : (
-                                              <Popover content={`N/A - ${new Date(value?.date).toLocaleString()}`}>
-                                                  <ExclamationCircleOutlined
-                                                      onClick={() => { toggleCondition(key); hendleCheck(); }}
-                                                      style={{ color: 'orange', cursor: 'pointer' }}
-                                                  />
-                                              </Popover>
-                                          )}
-                                      </td>
-                                      <td style={{ borderBottom: '1px solid #8B41F2' }} align="center">
-                                          <Popover
-                                              trigger="click"
-                                              arrowContent
-                                              placement="bottomLeft"
-                                              visible={visiblePopover[key]} // Usar o estado para controlar a visibilidade
-                                              onVisibleChange={(visible) => setVisiblePopover(prev => ({ ...prev, [key]: visible }))}
-                                              content={
-                                                  <div>
-                                                      <Search
-                                                          placeholder="Buscar usuário"
-                                                          onChange={(e) => setSearchTerm(e.target.value)}
-                                                          style={{ marginBottom: 8, width: '100%' }}
-                                                          allowClear  
-                                                      />
-                                                      <List
-                                                          size="small"
-                                                          style={{ maxHeight: 300, overflowY: 'auto' }}
-                                                          dataSource={filteredUsuarios}
-                                                          renderItem={(item) => (
-                                                              <List.Item>
-                                                                  <h5>{item?.u_nome}</h5>
-                                                                  <Switch 
-                                                                      size="small" 
-                                                                      checked={selectedUserIds.includes(item.u_id)} 
-                                                                      onChange={() => handleUserToggle(item.u_id, key)} // Passa a condição correspondente
-                                                                  />
-                                                              </List.Item>
-                                                          )}
-                                                      />
-                                                      <Button 
-                                                          type="primary"
-                                                          size="small"
-                                                          shape="round" 
-                                                          onClick={() => {
-                                                              handleSubmit(key); // Passa a condição correspondente aqui
-                                                              // Não fecha o popover para permitir novas atribuições
-                                                          }} 
-                                                          disabled={selectedUserIds.length === 0} 
-                                                      >
-                                                          Atribuir
-                                                      </Button>
-                                                      {contextHolder}
-                                                  </div>
-                                              }
-                                          >
-                                              <GroupAddIcon fontSize="inherit" style={{ cursor: 'pointer' }} />
-                                          </Popover>
-                                      </td>
-                                  </tr>
-                              ))}
-                          </tbody>
-                      )}
+                    {car ? (
+                      <Spin />
+                    ) : (
+                      <tbody>
+                        {Object.entries(conditions || {}).map(([key, value]) => (
+                          <tr key={key}>
+                            <td style={{ borderBottom: '1px solid #8B41F2' }}>
+                              <p style={{ textTransform: 'capitalize' }}>{key}</p>
+                            </td>
+                            <td style={{ borderBottom: '1px solid #8B41F2' }} align="center">
+                              {value?.status === true ? (
+                                <Popover content={`OK - ${new Date(value?.date).toLocaleString()}`}>
+                                  <CheckCircleOutlined
+                                    hidden={value?.users?.includes(userTK) ? false : true}
+                                    onClick={() => {
+                                      toggleCondition(key);
+                                      hendleCheck();
+                                    }}
+                                    style={{ color: 'green', cursor: 'pointer' }}
+                                  />
+                                </Popover>
+                              ) : value?.status === false ? (
+                                <Popover content={`Pendente - ${new Date(value?.date).toLocaleString()}`}>
+                                  <CloseCircleOutlined
+                                    hidden={value?.users?.includes(userTK) ? false : true}
+                                    onClick={() => {
+                                      toggleCondition(key);
+                                      hendleCheck();
+                                    }}
+                                    style={{ color: 'red', cursor: 'pointer' }}
+                                  />
+                                </Popover>
+                              ) : (
+                                <Popover content={`N/A - ${new Date(value?.date).toLocaleString()}`}>
+                                  <ExclamationCircleOutlined
+                                  hidden={value?.users?.includes(userTK) ? false : true}
+                                    onClick={() => {
+                                      toggleCondition(key);
+                                      hendleCheck();
+                                    }}
+                                    style={{ color: 'orange', cursor: 'pointer' }}
+                                  />
+                                </Popover>
+                              )}
+                            </td>
+                            <td style={{ borderBottom: '1px solid #8B41F2' }} align="center">
+                              <Popover
+                                title={[
+                                  <div style={{ position: 'relative' }}>
+                                    Atribuir Condições
+                                    <Button
+                                      shape="circle"
+                                      size="small"
+                                      style={{ left: 85 }}
+                                      icon={<Close fontSize="inherit" />}
+                                      onClick={() => setVisiblePopover(false)}
+                                    />
+                                  </div>
+                                ]}
+                                trigger="click"
+                                placement="bottomLeft"
+                                visible={visiblePopover[key]}
+                                onVisibleChange={(visible) => setVisiblePopover((prev) => ({ ...prev, [key]: visible }))}
+                                content={
+                                  <div>
+                                    <Search
+                                      placeholder="Buscar usuário"
+                                      onChange={(e) => setSearchTerm(e.target.value)}
+                                      style={{ marginBottom: 8, width: '100%' }}
+                                      allowClear
+                                    />
+                                    <List
+                                      size="small"
+                                      style={{ maxHeight: 300, overflowY: 'auto' }}
+                                      dataSource={filteredUsuarios}
+                                      renderItem={(item) => (
+                                        <List.Item>
+                                          <h5>{item?.u_nome}</h5>
+                                          <Switch
+                                            size="small"
+                                            checked={selectedUserIds.includes(item.u_id)}
+                                            onChange={() => handleUserToggle(item.u_id, key)}
+                                          />
+                                        </List.Item>
+                                      )}
+                                    />
+                                    <Button
+                                      type="primary"
+                                      size="small"
+                                      shape="round"
+                                      onClick={() => handleSubmit(key)}
+                                      disabled={selectedUserIds.length === 0}
+                                    >
+                                      Atribuir
+                                    </Button>
+                                    {contextHolder}
+                                  </div>
+                                }
+                              >
+                                <GroupAddIcon fontSize="inherit" style={{ cursor: 'pointer' }} />
+                              </Popover>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    )}
                   </table>
-              </div>
+                </div>
+
           </Card>
       </Modal>
 
