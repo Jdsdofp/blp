@@ -70,7 +70,7 @@ export const DocumentShow = () => {
     endpoint: "listar-usuarios"
   } })
 
-  const { data: result, isLoading: car, refetch: asas } = useList<ICondition>({
+  const { data: result, isLoading: car, refetch: asas, isRefetching } = useList<ICondition>({
     resource: 'document-condition',
     meta: { endpoint: `listar-documento-condicionante/${isModalIdCondition}` },
     liveMode: 'auto',
@@ -109,7 +109,9 @@ export const DocumentShow = () => {
 
   
 
-  
+  const refreshCondition = async () =>{
+    await asas();
+  }
 
   const toggleCondition = async (key: string) => {
     setConditions((prevConditions) => {
@@ -259,6 +261,7 @@ export const DocumentShow = () => {
         setSelectedUserIds([]); // Limpa a lista de IDs de usuários selecionados
         setCheckCondicionante(true); // Atualize qualquer estado necessário
         messageApi.success(data?.message); // Feedback ao usuário
+        await refreshCondition()
     } catch (error) {
         console.error('Erro ao enviar os dados:', error);
         message.error('Erro ao atribuir usuários. Por favor, tente novamente.');
@@ -298,7 +301,7 @@ export const DocumentShow = () => {
                           }}
                         >
                           {item.d_condicionante_id && (
-                            <IssuesCloseOutlined style={{ color: '#ebc334', fontSize: 19, cursor: 'pointer' }} />
+                            <IssuesCloseOutlined style={{ color: '#ebc334', fontSize: 19, cursor: 'pointer' }} hidden={item?.d_num_protocolo.length} />
                           )}
                         </span>
                       }
@@ -357,9 +360,9 @@ export const DocumentShow = () => {
           cancelButtonProps={{ hidden: true }}
           footer={[Object.entries(conditions || {}).filter(([key, value]) => value?.status === false).length >= 1 ? null : (
               <Space>
-                  <Input placeholder="Nº Protocolo" />
-                  <DatePicker placeholder="Data Protocolo" locale='pt-BR' format={'DD/MM/YYYY'} />
-                  <Button type="primary" icon={<Check/>}>Fechar</Button>
+                  <Input placeholder="Nº Protocolo" allowClear  style={{borderRadius: 20}} />
+                  <DatePicker placeholder="Data Protocolo" locale='pt-BR' format={'DD/MM/YYYY'} allowClear  style={{borderRadius: 20}} />
+                  <Button type="primary"  shape="round" icon={<Check fontSize="inherit" />} >Fechar</Button>
               </Space>
           )]}
       >
@@ -433,6 +436,7 @@ export const DocumentShow = () => {
                                   <div style={{ position: 'relative' }}>
                                     Atribuir Condições
                                     <Button
+                                     
                                       shape="circle"
                                       size="small"
                                       style={{ left: 85 }}
@@ -469,11 +473,13 @@ export const DocumentShow = () => {
                                       )}
                                     />
                                     <Button
+                                    
                                       type="primary"
                                       size="small"
                                       shape="round"
-                                      onClick={() => handleSubmit(key)}
+                                      onClick={() => {handleSubmit(key); refreshCondition()}}
                                       disabled={selectedUserIds.length === 0}
+                                      loading={isRefetching}
                                     >
                                       Atribuir
                                     </Button>
@@ -481,7 +487,8 @@ export const DocumentShow = () => {
                                   </div>
                                 }
                               >
-                                <GroupAddIcon fontSize="inherit" style={{ cursor: 'pointer' }} />
+                                 {value?.users?.includes(userTK) ? (<GroupAddIcon fontSize="inherit" style={{ cursor: 'pointer' }} />):null}
+                              
                               </Popover>
                             </td>
                           </tr>
