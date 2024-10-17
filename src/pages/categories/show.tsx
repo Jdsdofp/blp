@@ -20,6 +20,7 @@ dayjs.locale('pt-br');
 interface ICondition {
   dc_id: number;
   dc_condicoes: { [key: string]: { status: boolean | null; date: Date | null;  users: [number]} };
+  status: string;
 }
 
 interface IComments {
@@ -90,6 +91,8 @@ export const DocumentShow = () => {
   const [commentStatusValue, setCommentStatusValue] = useState<string>('');
   const [visiblePopover, setVisiblePopover] = useState({}); // Armazena a visibilidade do popover por condição
   const [searchTerm, setSearchTerm] = useState('');
+  const [numProtocolo, setNumProtocolo] = useState('');
+  const [dataProtocolo, setDataProtocolo] = useState(null);
 
   const handleSendComment = async () => {
     try {
@@ -266,9 +269,31 @@ export const DocumentShow = () => {
         console.error('Erro ao enviar os dados:', error);
         message.error('Erro ao atribuir usuários. Por favor, tente novamente.');
     }
-};
+  };
 
-  
+  const handleCloseProcss = async (conditionID: number)=>{
+ 
+      try {
+        const dc_id = conditionID; // Substitua pelo valor correto de 'dc_id'
+
+        const payload = {
+          d_data_pedido: dataProtocolo,
+          d_num_protocolo: numProtocolo
+        }
+
+        // Envia a requisição para o backend com o parâmetro 'dc_id' na URL
+       const {data} = await axios.put(`${API_URL}/document-condition/fechar-processo-condicionante/${dc_id}`, payload);
+       console.log(data)
+      } catch (error) {
+        console.log('Erro ao requisiatar ', error)
+      }
+
+
+  }
+
+  const limparCampos = () =>{
+    console.log('fechando') 
+  }
  
   return (
     <Show title={[<><span>{status}</span></>]} canEdit={false} canDelete={false} headerButtons={<RefreshButton onClick={() => atualiza()} />}>
@@ -343,6 +368,7 @@ export const DocumentShow = () => {
                           <Tag color={getColor(item?.d_situacao)} style={{ fontSize: 10, borderRadius: 20 }}>
                             {item?.d_situacao}
                           </Tag>
+
                           <Button icon={<PaidIcon fontSize="small" />} shape="circle" style={{ marginLeft: 160, border: 0 }} />
                         </Space>
                       </Space>
@@ -355,14 +381,15 @@ export const DocumentShow = () => {
 
       <Modal  
           open={isModal}
-          onCancel={() => { hendleCloseModalConditions(); setCheckCondicionante(true); }}
-          okButtonProps={{ disabled: checkCondicionante, onClick: () => { setCheckCondicionante(true); } }}
+          onCancel={() => { hendleCloseModalConditions(); setCheckCondicionante(true)}}
+          okButtonProps={{ disabled: checkCondicionante, onClick: () => { setCheckCondicionante(true); setNumProtocolo('')}}}
           cancelButtonProps={{ hidden: true }}
           footer={[Object.entries(conditions || {}).filter(([key, value]) => value?.status === false).length >= 1 ? null : (
               <Space>
-                  <Input placeholder="Nº Protocolo" allowClear  style={{borderRadius: 20}} />
-                  <DatePicker placeholder="Data Protocolo" locale='pt-BR' format={'DD/MM/YYYY'} allowClear  style={{borderRadius: 20}} />
-                  <Button type="primary"  shape="round" icon={<Check fontSize="inherit" />} >Fechar</Button>
+                   <Tag color='red-inverse' style={{ fontSize: 10, borderRadius: 20 }}>{result?.data?.status}</Tag>
+                  <Input placeholder="Nº Protocolo" allowClear  style={{borderRadius: 20}} onChange={(e)=>setNumProtocolo(e.target.value)} value={numProtocolo}/>
+                  <DatePicker placeholder="Data Protocolo" locale='pt-BR' format={'DD/MM/YYYY'} allowClear  style={{borderRadius: 20}} onChange={(date) => setDataProtocolo(date)} value={dataProtocolo}/>
+                  <Button type="primary" onClick={()=>handleCloseProcss(result?.data?.dc_id)} shape="round" icon={<Check fontSize="inherit"/>} >Fechar</Button>
               </Space>
           )]}
       >
@@ -372,8 +399,7 @@ export const DocumentShow = () => {
           >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                   <h4 style={{ paddingLeft: 5 }}>Condição</h4>
-                  <h4 style={{ paddingRight: 20 }}>Status</h4>
-                  <h4 style={{ paddingRight: 20 }}>Atribuir</h4>
+                  <h4>Status | Atribuir</h4>
               </div>
 
               <div style={{ maxHeight: '300px', overflowY: 'auto', padding: 5, borderTop: '1px solid #575757', scrollbarColor: '#888 #f1f1f1', scrollbarWidth: 'thin' }}>
@@ -387,7 +413,7 @@ export const DocumentShow = () => {
                             <td style={{ borderBottom: '1px solid #8B41F2' }}>
                               <p style={{ textTransform: 'capitalize' }}>{key}</p>
                             </td>
-                            <td style={{ borderBottom: '1px solid #8B41F2' }} align="center">
+                            <td style={{ borderBottom: '1px solid #8B41F2', paddingRight: 10 }} align="center">
                               {value?.status === true ? (
                                 <Popover content={`OK - ${new Date(value?.date).toLocaleString()}`}>
                                   <Button disabled={value?.users?.includes(userTK) ? false : true} shape="circle" style={{border: 'none', height: '30px'}}>
