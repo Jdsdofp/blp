@@ -35,6 +35,7 @@ interface IDocument {
   d_num_protocolo: string;
   d_sitaucao: string;
   d_condicoes: string[];
+  criado_em: Date;
 }
 
 const formatCNPJ = (cnpj: any) => {
@@ -50,8 +51,10 @@ export const DocumentList = () => {
   const [tabCond, setTabCond] = useState(true)
   const [subList, setSubList] = useState(false)
   const [conditionsStatus, setConditionsStatus] = useState<{[key: string]: boolean}>({})
+  const [userTK, setUserTK] = useState<any>(JSON.parse(localStorage.getItem('refine-user'))?.id)
   const navigate = useNavigate()
-
+  
+  
   
   const { data: listTypeDocument } = useList({ resource: 'type-document', meta: { endpoint: 'listar-tipo-documentos' }, liveMode: 'auto',  });
   const { data: condtionsResult } = useList({ resource: 'condition', meta: { endpoint: 'listar-condicionantes' } });
@@ -211,7 +214,7 @@ export const DocumentList = () => {
           <>
             {Object.keys(statusCount).map((status) => (
               <Tag
-                style={{ cursor: 'pointer' }}
+                style={{ cursor: 'pointer', borderRadius: 20 }}
                 color={getColor(status)}
                 key={status}
                 onClick={() => handleTagClick(status, f_id)}
@@ -271,45 +274,44 @@ export const DocumentList = () => {
 // Função para atualizar o status das condições
 const handleConditionCheck = (condition: string) => {
   setConditionsStatus((prevState) => {
+    // Cria uma nova data
+    const currentDate = new Date().toISOString();
+
+    // Atualiza o status da condição com o objeto desejado
     const updatedStatus = {
       ...prevState,
-      [condition]: !prevState[condition], // Alterna entre true e false
+      [condition]: {
+        status: !prevState[condition]?.status, // Alterna entre true e false
+        date: !prevState[condition]?.status ? currentDate : null, // Define a data se estiver sendo marcada como true
+        users: [userTK]
+      },
     };
 
-    // Converte o estado atualizado para o formato desejado
-    const formattedConditions = Object.keys(updatedStatus).reduce((acc, key) => {
-      acc[key] = updatedStatus[key];
-      return acc;
-    }, {});
-
     // Atualiza o campo d_condicoes no formulário com o formato adequado
-    form.setFieldsValue({ d_condicoes: formattedConditions });
+    form.setFieldsValue({ d_condicoes: updatedStatus });
 
     return updatedStatus;
   });
 };
 
+
 // Função para capturar as condições ao selecionar uma condicionante
-const hendleCondicoes = (value: any, option: any) => {
+const handleCondicoes = (value: any, option: any) => {
   const conditions = option.c_condicao;
 
-  // Inicializa o status das condições como 'false' (unchecked)
+  // Inicializa o status das condições como 'false' (unchecked) e data como null
   const initialStatus = conditions.reduce((acc: any, cond: string) => {
-    acc[cond] = null;
+    acc[cond] = { status: false, date: null, users: [userTK] }; // Inicializa cada condição com status false e data null
     return acc;
   }, {});
 
   setConditionsStatus(initialStatus);
 
   // Atualiza o campo d_condicoes no formulário com o formato inicial
-  const formattedConditions = Object.keys(initialStatus).reduce((acc, key) => {
-    acc[key] = initialStatus[key];
-    return acc;
-  }, {});
-
-  form.setFieldsValue({ d_condicoes: formattedConditions });
+  form.setFieldsValue({ d_condicoes: initialStatus });
   setIsListModalConditions(conditions);
 };
+
 
 
 
@@ -318,7 +320,6 @@ const hendleCondicoes = (value: any, option: any) => {
     <>
       <List>
         <Table {...tableProps} rowKey="id" columns={columns} size="small"  bordered/>
-        
       </List>
 
       <Modal open={isModal} onCancel={() => {form.resetFields(); setIsModal(false); setSubList(false); setIsListModalConditions([]); setTabCond(true)}} okButtonProps={saveButtonProps}>
@@ -392,7 +393,7 @@ const hendleCondicoes = (value: any, option: any) => {
                   <Col xs={24} sm={12}>
 
                     <Form.Item label="Condicionante" name="dc_id">
-                      <Select options={listarCondicionantes} onChange={(value, option) => hendleCondicoes(value, option)} />
+                      <Select options={listarCondicionantes} onChange={(value, option) => handleCondicoes(value, option)} />
                     </Form.Item>
 
                     <Tag

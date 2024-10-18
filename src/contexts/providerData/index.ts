@@ -16,7 +16,8 @@ const getResourceUrl = (resource: string, ids: number, id: number): string => {
         listTypeDocument: `${API_URL}/type-document/listar-tipo-documentos`,
         conditionalCreate: `${API_URL}/condition/registrar-condicionante`,
         documentCreate: `${API_URL}/document/registrar-documento`,
-        listarDocumentos: `${API_URL}/document//listar-documentos`
+        listarDocumentos: `${API_URL}/document//listar-documentos`,
+        commentCreate: `${API_URL}/comment-document/${id}/registar-comentario`
     };
     
     return resourceMap[resource] || '';
@@ -129,18 +130,22 @@ export const dataProvider: DataProvider = {
             throw error;
         }
     },
-    update: async ({id, meta}) => {
+    update: async ({ id, meta }) => {
         const token = localStorage.getItem(TOKEN_KEY);
         const endpoint = meta?.variables?.endpoint;
         const pat = meta?.variables?.pat;
         const values = meta?.variables?.values; // Objeto genérico de valores de atualização
-        
-        console.log('recebido', meta?.variables   )
-
+    
+        // Verifique se 'values' está definido
+        if (!values) {
+            throw new Error("Os valores de atualização não foram fornecidos.");
+        }
+    
         // Se houver empresas e filiais, tratamos separadamente
-        if (values.empresas && values.filiais) {
+        if (values?.empresas && values?.filiais) {
             values.u_empresas_ids = values.empresas.map(e => e.value ? e.value : e);
             values.u_filiais_ids = values.filiais.map(f => f.value ? f.value : f);
+    
             // Remover empresas e filiais do objeto principal após o mapeamento
             delete values.empresas;
             delete values.filiais;
@@ -155,16 +160,17 @@ export const dataProvider: DataProvider = {
                     'Authorization': `Bearer ${token}`,
                 },
             });
-            
-            console.log(`${API_URL}/${pat}/${id}/${endpoint}`);
-
+    
+            console.log(data);
             return {
                 data: data,
             };
         } catch (error) {
-            throw error?.response?.data?.message;
+            console.error("Erro na atualização:", error?.response?.data || error?.message || error);
+            throw new Error(error?.response?.data?.message || "Erro na atualização");
         }
     },
+    
     
     deleteOne: async ({id, resource})=> {
         const token = localStorage.getItem(TOKEN_KEY);
@@ -189,5 +195,4 @@ export const dataProvider: DataProvider = {
                 };
             }
     },
-    
 };
