@@ -41,7 +41,6 @@ import { Login } from "./pages/login";
 import { Register } from "./pages/register";
 import { resources } from "./config/resources";
 import { AdmUserShow } from "./pages/adm/user/show";
-import { DocConditionalsDoc } from "./pages/documents/conditinals/show";
 import { AdmUserlist } from "./pages/adm/user/list";
 import { dataProvider } from "./contexts/providerData";
 import { AdmUserCreate } from "./pages/adm/user";
@@ -51,6 +50,8 @@ import { AdmBranchlist } from "./pages/adm/branch/list";
 import { DocTypeDocCreate } from "./pages/documents/typeDocument/list";
 import { ListCondition } from "./pages/documents/conditinals/list";
 import { CreateCondition } from "./pages/documents/conditinals/create";
+import { CalendarList } from "./pages/calendar/list";
+import { dataProviderCond } from "./contexts/providerData/cond";
 
 
 type Props = {
@@ -164,6 +165,10 @@ function App() {
                       <Route index element={<DocumentList />} />
                       <Route path="edit/:id" element={<CategoryEdit />} />
                       <Route path="show" element={<DocumentShow />} />
+                    </Route>
+
+                    <Route path="/calendario">
+                      <Route index element={<CalendarList/>} />
                     </Route>
                     
                     <Route path="/adm/company">

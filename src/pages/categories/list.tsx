@@ -254,7 +254,7 @@ export const DocumentList = () => {
     }
   }
 
-  const hendleCondicionante = (value, option) => {
+  const hendleCondicionante = (value: any, option: any) => {
     setTabCond(option.td_requer_condicao)
   }
 
@@ -290,12 +290,12 @@ const handleConditionCheck = (condition: string) => {
 };
 
 // Função para capturar as condições ao selecionar uma condicionante
-const hendleCondicoes = (value, option) => {
+const hendleCondicoes = (value: any, option: any) => {
   const conditions = option.c_condicao;
 
   // Inicializa o status das condições como 'false' (unchecked)
   const initialStatus = conditions.reduce((acc: any, cond: string) => {
-    acc[cond] = false;
+    acc[cond] = null;
     return acc;
   }, {});
 
@@ -317,7 +317,8 @@ const hendleCondicoes = (value, option) => {
   return (
     <>
       <List>
-        <Table {...tableProps} rowKey="id" columns={columns} size="small" />
+        <Table {...tableProps} rowKey="id" columns={columns} size="small"  bordered/>
+        
       </List>
 
       <Modal open={isModal} onCancel={() => {form.resetFields(); setIsModal(false); setSubList(false); setIsListModalConditions([]); setTabCond(true)}} okButtonProps={saveButtonProps}>
@@ -338,7 +339,7 @@ const hendleCondicoes = (value, option) => {
                   </Form.Item>
                 </Col>
                 <Form.Item name="d_num_protocolo" hidden={tabCond}>
-                  <Input placeholder="Nº Documento" />
+                  <Input placeholder="Nº Protocolo" />
                 </Form.Item>
               </Row>
               <Row gutter={16}>
@@ -414,7 +415,7 @@ const hendleCondicoes = (value, option) => {
                       )
                       } />
 
-                      <Table.Column title={'Status Condição'} align="center"  render={(_, record) => (
+                      <Table.Column title={'Status Condição'} align="center"  render={(_, record: any) => (
                       <CheckCircleOutlined
                         style={{ color: conditionsStatus[record] ? 'green' : 'gray', cursor: 'pointer' }}
                         onClick={() => handleConditionCheck(record)} // Atualiza o status ao clicar

@@ -16,6 +16,7 @@ const getResourceUrl = (resource: string, ids: number, id: number): string => {
         listTypeDocument: `${API_URL}/type-document/listar-tipo-documentos`,
         conditionalCreate: `${API_URL}/condition/registrar-condicionante`,
         documentCreate: `${API_URL}/document/registrar-documento`,
+        listarDocumentos: `${API_URL}/document//listar-documentos`
     };
     
     return resourceMap[resource] || '';
@@ -128,39 +129,43 @@ export const dataProvider: DataProvider = {
             throw error;
         }
     },
-    update: async ({id,meta}) =>{
+    update: async ({id, meta}) => {
         const token = localStorage.getItem(TOKEN_KEY);
         const endpoint = meta?.variables?.endpoint;
         const pat = meta?.variables?.pat;
-        const { u_nome, u_email, u_ativo, empresas, filiais } = meta?.variables.values;
-        const u_empresas_ids = empresas.map((e)=>e.value ? e.value : e)
-        const u_filiais_ids = filiais.map((f)=>f.value ? f.value : f) 
+        const values = meta?.variables?.values; // Objeto genérico de valores de atualização
         
-        try {
-            
+        console.log('recebido', meta?.variables   )
 
+        // Se houver empresas e filiais, tratamos separadamente
+        if (values.empresas && values.filiais) {
+            values.u_empresas_ids = values.empresas.map(e => e.value ? e.value : e);
+            values.u_filiais_ids = values.filiais.map(f => f.value ? f.value : f);
+            // Remover empresas e filiais do objeto principal após o mapeamento
+            delete values.empresas;
+            delete values.filiais;
+        }
+    
+        try {
             axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-            const { data } = await axios.put (`${API_URL}/${pat}/${id}/${endpoint}`, {
-                u_nome: u_nome,
-                u_email: u_email,
-                u_ativo: u_ativo,
-                u_empresas_ids: u_empresas_ids,
-                u_filiais_ids: u_filiais_ids
-                }, {
+    
+            // Chamada genérica para o endpoint com os valores fornecidos
+            const { data } = await axios.put(`${API_URL}/${pat}/${id}/${endpoint}`, values, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
-                
             });
-            console.log(data)
+            
+            console.log(`${API_URL}/${pat}/${id}/${endpoint}`);
+
             return {
-                data: data
+                data: data,
             };
         } catch (error) {
-            throw error?.response?.data.message;
-            
+            throw error?.response?.data?.message;
         }
     },
+    
     deleteOne: async ({id, resource})=> {
         const token = localStorage.getItem(TOKEN_KEY);
         const u_id = id;
@@ -183,7 +188,6 @@ export const dataProvider: DataProvider = {
                     error: error?.response?.data
                 };
             }
-        },
-
+    },
     
 };

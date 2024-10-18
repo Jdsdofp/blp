@@ -1,0 +1,83 @@
+.fc .fc-toolbar-title {
+    color: #976DF2; /* Título em azul */
+  }
+    
+  .fc .fc-day-today {
+    color: white;
+  }
+  
+  .fc .fc-daygrid-day-number {
+    color: #8B41F2; /* Altere essa cor conforme necessário */
+}
+
+
+/* Estilos personalizados para os botões do FullCalendar */
+.fc .fc-button {
+  background-color: #976DF2;  /* Cor de fundo verde */
+  color: white;               /* Cor do texto branco */
+  border-radius: 20px;          /* Borda arredondada */
+  border: none;                /* Remove bordas */
+  padding: 2px 20px;          /* Padding para aumentar o tamanho do botão */
+  font-size: 10px;             /* Tamanho da fonte */
+  cursor: pointer;             /* Estilo do cursor */
+}
+
+/* Estilo para o botão quando o mouse passa por cima */
+.fc-button:hover {
+  background-color: #976DF2;  /* Muda a cor ao passar o mouse */
+}
+
+/* Estilos específicos para os botões de navegação */
+.fc-prev-button, .fc-next-button {
+  background-color: #008CBA;  /* Azul para botões de navegação */
+}
+
+.fc-today-button {
+  background-color: #f44336;  /* Vermelho para o botão "Hoje" */
+}
+
+.fc-button-active {
+  background-color: #555;     /* Botão ativo */
+  color: #fff;
+}
+
+
+/* Estilo para as bordas das células do calendário */
+.fc-daygrid-day-frame {
+  border: none; /* Define a espessura e cor da borda */
+}
+
+/* Estilo para as bordas superiores (separando os dias) */
+.fc-daygrid-day-top {
+  border-top: none /* Borda superior verde */
+}
+
+/* Estilo para as bordas laterais */
+.fc-daygrid-day-frame {
+  border-left: none; /* Borda lateral verde */
+}
+
+/* Estilo para bordas inferiores */
+.fc-daygrid-day {
+  border-bottom: noen; /* Borda inferior verde */
+}
+
+/* Definir altura máxima para os eventos em cada dia e ativar rolagem */
+.fc-daygrid-day-frame {
+  max-height: 100px;  /* Definir a altura máxima para os eventos dentro de cada célula de dia */
+  overflow-y: auto;   /* Habilitar rolagem vertical */
+}
+
+/* Estilizar a barra de rolagem (opcional) */
+.fc-daygrid-day-frame::-webkit-scrollbar {
+  width: 8px;
+}
+
+.fc-daygrid-day-frame::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+}
+
+.fc-daygrid-day-frame::-webkit-scrollbar-track {
+  background-color: #f1f1f1;
+}
