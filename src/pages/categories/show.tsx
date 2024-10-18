@@ -1,11 +1,11 @@
-import { CheckCircleOutlined, CloseCircleOutlined, CloseCircleTwoTone, CommentOutlined, DownOutlined, ExclamationCircleOutlined, IssuesCloseOutlined, MessageOutlined, SaveOutlined, UpOutlined } from "@ant-design/icons"
+import { CheckCircleOutlined, CloseCircleOutlined, CloseCircleTwoTone, CommentOutlined, DeleteOutlined, DownOutlined, ExclamationCircleOutlined, IssuesCloseOutlined, MessageOutlined, PlusCircleFilled, PlusCircleOutlined, PlusCircleTwoTone, PlusOutlined, PlusSquareOutlined, PlusSquareTwoTone, SaveOutlined, UpOutlined } from "@ant-design/icons"
 import { CloneButton, DateField, EditButton, RefreshButton, Show } from "@refinedev/antd";
 import { useList, useTable } from "@refinedev/core";
-import { List, Card, Row, Col, Modal, Popover, Spin, DatePicker, Input, Space, Button, Badge, Mentions, Tag, Avatar, Switch, message } from "antd";
+import { List, Card, Row, Col, Modal, Popover, Spin, DatePicker, Input, Space, Button, Badge, Mentions, Tag, Avatar, Switch, message, FloatButton, Form } from "antd";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../../authProvider";
-import { Check, Close, CloseFullscreen, Money, ReplyOutlined, Send } from "@mui/icons-material";
+import { Check, Close, CloseFullscreen, Money, PlusOne, PlusOneRounded, ReplyOutlined, Send } from "@mui/icons-material";
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import dayjs from 'dayjs';
@@ -58,6 +58,7 @@ export const DocumentShow = () => {
   const [isReplyingToComment, setIsReplyingToComment] = useState<number | null>(null);
   const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
   const [ messageApi, contextHolder ] = message.useMessage();
+  const [isMdAddCond, setIsMdAddCond] = useState(false)
 
 
 
@@ -116,6 +117,7 @@ export const DocumentShow = () => {
     await asas();
   }
 
+
   const toggleCondition = async (key: string) => {
     setConditions((prevConditions) => {
       const currentValue = prevConditions[key]?.status;
@@ -134,7 +136,8 @@ export const DocumentShow = () => {
         [key]: {
           status: newValue,
           date: new Date(),
-          users: [userTK]
+          users: [userTK],
+          statusProcesso: data?.data.map(d=>d?.d_situacao)[0],
         },
 
       };
@@ -290,10 +293,6 @@ export const DocumentShow = () => {
 
 
   }
-
-  const limparCampos = () =>{
-    console.log('fechando') 
-  }
  
   return (
     <Show title={[<><span>{status}</span></>]} canEdit={false} canDelete={false} headerButtons={<RefreshButton onClick={() => atualiza()} />}>
@@ -326,7 +325,7 @@ export const DocumentShow = () => {
                           }}
                         >
                           {item.d_condicionante_id && (
-                            <IssuesCloseOutlined style={{ color: '#ebc334', fontSize: 19, cursor: 'pointer' }} hidden={item?.d_num_protocolo.length} />
+                            <IssuesCloseOutlined style={{ color: '#ebc334', fontSize: 19, cursor: 'pointer' }} hidden={item?.d_situacao == 'Emitido' && item?.d_num_protocolo.length} />
                           )}
                         </span>
                       }
@@ -416,7 +415,7 @@ export const DocumentShow = () => {
                             <td style={{ borderBottom: '1px solid #8B41F2', paddingRight: 10 }} align="center">
                               {value?.status === true ? (
                                 <Popover content={`OK - ${new Date(value?.date).toLocaleString()}`}>
-                                  <Button disabled={value?.users?.includes(userTK) ? false : true} shape="circle" style={{border: 'none', height: '30px'}}>
+                                  <Button disabled={value?.users?.includes(userTK) && value?.statusProcesso ==  data?.data.map(d=>d?.d_situacao)[0] ? false : true} shape="circle" style={{border: 'none', height: '30px'}}>
                                     <CheckCircleOutlined
                                       
                                       onClick={() => {
@@ -424,33 +423,33 @@ export const DocumentShow = () => {
                                         toggleCondition(key);
                                         hendleCheck();
                                       }}
-                                      style={{ color: value?.users?.includes(userTK) ? 'green' : 'gray', cursor: 'pointer' }}
+                                      style={{ color: value?.users?.includes(userTK) && value?.statusProcesso ==  data?.data.map(d=>d?.d_situacao)[0] ? 'green' : 'gray', cursor: 'pointer' }}
                                     />
                                   </Button>
                                 </Popover>
                               ) : value?.status === false ? (
                                 <Popover content={`Pendente - ${new Date(value?.date).toLocaleString()}`}>
-                                  <Button disabled={value?.users?.includes(userTK) ? false : true} shape="circle" style={{border: 'none', height: '30px'}}>
+                                  <Button disabled={value?.users?.includes(userTK) && value?.statusProcesso ==  data?.data.map(d=>d?.d_situacao)[0] ? false : true} shape="circle" style={{border: 'none', height: '30px'}}>
                                     <CloseCircleOutlined
                                       
                                       onClick={() => {
                                         toggleCondition(key);
                                         hendleCheck();
                                       }}
-                                      style={{ color: value?.users?.includes(userTK) ? 'red' : 'gray  ', cursor: 'pointer' }}
+                                      style={{ color: value?.users?.includes(userTK) && value?.statusProcesso ==  data?.data.map(d=>d?.d_situacao)[0] ? 'red' : 'gray  ', cursor: 'pointer' }}
                                     />
                                   </Button>
                                 </Popover>
                               ) : (
                                 <Popover content={`N/A - ${new Date(value?.date).toLocaleString()}`}>
-                                  <Button disabled={value?.users?.includes(userTK) ? false : true} shape="circle" style={{border: 'none', height: '30px'}}>
+                                  <Button disabled={value?.users?.includes(userTK) && value?.statusProcesso ==  data?.data.map(d=>d?.d_situacao)[0] ? false : true} shape="circle" style={{border: 'none', height: '30px'}}>
                                       <ExclamationCircleOutlined
                                           
                                             onClick={() => {
                                               toggleCondition(key);
                                               hendleCheck();
                                             }}
-                                            style={{ color: value?.users?.includes(userTK) ? 'orange' : 'gray', cursor: 'pointer' }}
+                                            style={{ color: value?.users?.includes(userTK) && value?.statusProcesso ==  data?.data.map(d=>d?.d_situacao)[0] ? 'orange' : 'gray', cursor: 'pointer' }}
                                           />
                                   </Button>
                                 </Popover>
@@ -490,9 +489,10 @@ export const DocumentShow = () => {
                                       renderItem={(item) => (
                                         <List.Item>
                                           <h5>{item?.u_nome}</h5>
+                                          {selectedUserIds}
                                           <Switch
                                             size="small"
-                                            checked={selectedUserIds.includes(item.u_id)}
+                                            checked={tableQueryResult.data?.data.map(id=>id?.u_id).includes(item.u_id)}
                                             onChange={() => handleUserToggle(item.u_id, key)}
                                           />
                                         </List.Item>
@@ -513,7 +513,7 @@ export const DocumentShow = () => {
                                   </div>
                                 }
                               >
-                                 {value?.users?.includes(userTK) ? (<GroupAddIcon fontSize="inherit" style={{ cursor: 'pointer' }} />):null}
+                                 {value?.users?.includes(userTK) && value?.statusProcesso ==  data?.data.map(d=>d?.d_situacao)[0] ? (<GroupAddIcon fontSize="inherit" style={{ cursor: 'pointer' }} />) : null }
                               
                               </Popover>
                             </td>
@@ -523,7 +523,7 @@ export const DocumentShow = () => {
                     )}
                   </table>
                 </div>
-
+                <Button type="dashed" style={{marginTop: 10, fontSize: 12}} onClick={()=>setIsMdAddCond(true)}><PlusCircleOutlined /> Adicionar Itens</Button>
           </Card>
       </Modal>
 
@@ -759,6 +759,67 @@ export const DocumentShow = () => {
             {contextHolder}
         </Card>
       </Modal>
+
+      <Modal 
+            title='Condição' 
+            centered
+            open={isMdAddCond}
+            onCancel={()=>setIsMdAddCond(false)}
+            >
+            <Form  layout="vertical">   
+
+                <Form.List name={"c_condicao"}>   
+                    {(fields, { add, remove }) => {  
+                        return (  
+                            <>  
+                                <div style={{ maxHeight: '300px', overflowY: 'auto', overflowX: 'hidden'}}>
+                                    {fields.map((field, index) => {  
+                                        return (  
+                                            <Space  
+                                                key={field.key}  
+                                                direction="horizontal"  
+                                                style={{  
+                                                    position: "relative",  
+                                                    marginRight: "13px",  
+                                                }}  
+                                            >  
+                                                <Form.Item  
+                                                    name={field.name}  
+                                                    label={`Condição - ${index + 1}`}  
+                                                    style={{ width: "400px" }}  
+                                                    rules={[{ required: true }]}  
+                                                >  
+                                                    <Input placeholder="Condição" />  
+                                                </Form.Item>  
+                                                <Button  
+                                                    danger  
+                                                    onClick={() => remove(field.name)}  
+                                                    style={{ marginTop: "5px" }}  
+                                                    icon={<DeleteOutlined />}  
+                                                />  
+                                            </Space>  
+                                        );  
+                                    })}  
+                                </div>
+
+                                {/* Botão fora da área de rolagem */}
+                                <Form.Item>  
+                                    <Button  
+                                        type="dashed"  
+                                        block  
+                                        style={{ maxWidth: "893px", marginTop: "10px" }}  
+                                        icon={<PlusOutlined />}  
+                                        onClick={() => add()}  
+                                    >  
+                                        Adicionar Condição  
+                                    </Button>  
+                                </Form.Item> 
+                                </>  
+                            );  
+                        }}  
+                    </Form.List>  
+                </Form>  
+            </Modal>
 
 
     </Show>

@@ -301,7 +301,7 @@ const handleCondicoes = (value: any, option: any) => {
 
   // Inicializa o status das condições como 'false' (unchecked) e data como null
   const initialStatus = conditions.reduce((acc: any, cond: string) => {
-    acc[cond] = { status: false, date: null, users: [userTK] }; // Inicializa cada condição com status false e data null
+    acc[cond] = { status: false, date: null, users: [userTK], statusProcesso: 'Não iniciado' }; // Inicializa cada condição com status false e data null
     return acc;
   }, {});
 
