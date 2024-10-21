@@ -271,8 +271,9 @@ export const DocumentShow = () => {
 
         messageApi.success(response?.data?.message);
         await refreshCondition()
+        form.resetFields()
     } catch (error) {
-        console.error('Erro ao enviar dados:', error);
+      messageApi.error(error?.response?.data?.message);
     }
   };
 
@@ -319,6 +320,7 @@ export const DocumentShow = () => {
         // Envia a requisição para o backend com o parâmetro 'dc_id' na URL
        const {data} = await axios.put(`${API_URL}/document-condition/fechar-processo-condicionante/${dc_id}`, payload);
        console.log(data)
+       messageApi.success(data)
       } catch (error) {
         console.log('Erro ao requisiatar ', error)
       }
@@ -797,11 +799,11 @@ export const DocumentShow = () => {
           centered
           open={isMdAddCond}
           onCancel={() => setIsMdAddCond(false)}
-          onOk={handleSubmitAddConditions} // Submeter o formulário ao clicar em OK
+          onOk={handleSubmitAddConditions}
       >
           <Form form={form} layout="vertical">   
               <Form.Item
-                  name="c_condicao"  // Nome para pegar o valor diretamente
+                  name="c_condicao" 
                   label="Condição"
                   style={{ width: "400px" }}
                   rules={[{ required: true, message: 'Insira uma condição' }]}
@@ -811,9 +813,6 @@ export const DocumentShow = () => {
           </Form>
           {contextHolder}  
       </Modal>
-
-
-
     </Show>
   );
 };
