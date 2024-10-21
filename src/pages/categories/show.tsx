@@ -61,6 +61,7 @@ export const DocumentShow = () => {
   const [isMdAddCond, setIsMdAddCond] = useState(false)
 
 
+  const [form] = Form.useForm();
 
   const { data, isInitialLoading, isLoading, refetch } = useList({
     resource: 'document',
@@ -246,6 +247,37 @@ export const DocumentShow = () => {
         }
     });
   };
+
+
+  const handleSubmitAddConditions = async () => {
+    try {
+        // Pega os valores do formulário
+        const values = await form.validateFields();
+        const dc_id = isModalIdCondition;
+        
+        // Estrutura o payload para envio
+        const payload = {
+            novaCondicao: values?.c_condicao,  // Supondo que você está adicionando uma nova condição
+            detalhesCondicao: {
+                date: null,
+                users: [userTK],  // Exemplo de usuário. Você pode pegar isso dinamicamente conforme necessário
+                status: false,
+                statusProcesso: data?.data.map(d=>d?.d_situacao)[0]
+            }
+        };
+
+        // Envia os dados para o backend
+        const response = await axios.put(`${API_URL}/document-condition/adicionar-condicoes/${dc_id}`, payload);
+
+        messageApi.success(response?.data?.message);
+        await refreshCondition()
+    } catch (error) {
+        console.error('Erro ao enviar dados:', error);
+    }
+  };
+
+  
+
 
   const handleSubmit = async (conditionKey) => {
     try {
@@ -761,65 +793,25 @@ export const DocumentShow = () => {
       </Modal>
 
       <Modal 
-            title='Condição' 
-            centered
-            open={isMdAddCond}
-            onCancel={()=>setIsMdAddCond(false)}
-            >
-            <Form  layout="vertical">   
+          title='Adicionar Condição' 
+          centered
+          open={isMdAddCond}
+          onCancel={() => setIsMdAddCond(false)}
+          onOk={handleSubmitAddConditions} // Submeter o formulário ao clicar em OK
+      >
+          <Form form={form} layout="vertical">   
+              <Form.Item
+                  name="c_condicao"  // Nome para pegar o valor diretamente
+                  label="Condição"
+                  style={{ width: "400px" }}
+                  rules={[{ required: true, message: 'Insira uma condição' }]}
+              >
+                  <Input placeholder="Condição" />
+              </Form.Item>
+          </Form>
+          {contextHolder}  
+      </Modal>
 
-                <Form.List name={"c_condicao"}>   
-                    {(fields, { add, remove }) => {  
-                        return (  
-                            <>  
-                                <div style={{ maxHeight: '300px', overflowY: 'auto', overflowX: 'hidden'}}>
-                                    {fields.map((field, index) => {  
-                                        return (  
-                                            <Space  
-                                                key={field.key}  
-                                                direction="horizontal"  
-                                                style={{  
-                                                    position: "relative",  
-                                                    marginRight: "13px",  
-                                                }}  
-                                            >  
-                                                <Form.Item  
-                                                    name={field.name}  
-                                                    label={`Condição - ${index + 1}`}  
-                                                    style={{ width: "400px" }}  
-                                                    rules={[{ required: true }]}  
-                                                >  
-                                                    <Input placeholder="Condição" />  
-                                                </Form.Item>  
-                                                <Button  
-                                                    danger  
-                                                    onClick={() => remove(field.name)}  
-                                                    style={{ marginTop: "5px" }}  
-                                                    icon={<DeleteOutlined />}  
-                                                />  
-                                            </Space>  
-                                        );  
-                                    })}  
-                                </div>
-
-                                {/* Botão fora da área de rolagem */}
-                                <Form.Item>  
-                                    <Button  
-                                        type="dashed"  
-                                        block  
-                                        style={{ maxWidth: "893px", marginTop: "10px" }}  
-                                        icon={<PlusOutlined />}  
-                                        onClick={() => add()}  
-                                    >  
-                                        Adicionar Condição  
-                                    </Button>  
-                                </Form.Item> 
-                                </>  
-                            );  
-                        }}  
-                    </Form.List>  
-                </Form>  
-            </Modal>
 
 
     </Show>
