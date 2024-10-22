@@ -48,17 +48,17 @@ export const DocumentShow = () => {
   const [isModal, setIsModal] = useState<boolean>(false);
   const [isModalIdCondition, setIsModalIdCondition] = useState<any>();
   const [isModalComment, setIsModalComment] = useState<boolean>(false);
-  const [isDocComment, setIsDocComment] = useState({})
+  const [isDocComment, setIsDocComment] = useState({});
   const [isIdDoComment, setIsIdDoComment] = useState<number>()
   const [checkCondicionante, setCheckCondicionante] = useState<boolean>(true);
   const [conditions, setConditions] = useState<{ [key: string]: boolean | null }>({});
   const [expanded, setExpanded] = useState(false);
-  const [userTK, setUserTK] = useState<any>(JSON.parse(localStorage.getItem('refine-user')).id)
+  const [userTK, setUserTK] = useState<any>(JSON.parse(localStorage.getItem('refine-user')).id);
   const [replyValue, setReplyValue] = useState<string>('');
   const [isReplyingToComment, setIsReplyingToComment] = useState<number | null>(null);
   const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
   const [ messageApi, contextHolder ] = message.useMessage();
-  const [isMdAddCond, setIsMdAddCond] = useState(false)
+  const [isMdAddCond, setIsMdAddCond] = useState(false);
 
 
   const [form] = Form.useForm();
@@ -91,10 +91,13 @@ export const DocumentShow = () => {
 
   const [commentValue, setCommentValue] = useState<string>('');
   const [commentStatusValue, setCommentStatusValue] = useState<string>('');
-  const [visiblePopover, setVisiblePopover] = useState({}); // Armazena a visibilidade do popover por condição
+  const [visiblePopover, setVisiblePopover] = useState({});
   const [searchTerm, setSearchTerm] = useState('');
   const [numProtocolo, setNumProtocolo] = useState('');
   const [dataProtocolo, setDataProtocolo] = useState(null);
+  const [dataEmissao, setDataEmissao] = useState(null);
+  const [dataVencimento, setDataVencimento] = useState(null);
+
 
   const handleSendComment = async () => {
     try {
@@ -112,12 +115,9 @@ export const DocumentShow = () => {
     }
   };
 
-  
-
   const refreshCondition = async () =>{
     await asas();
   }
-
 
   const toggleCondition = async (key: string) => {
     setConditions((prevConditions) => {
@@ -232,11 +232,14 @@ export const DocumentShow = () => {
     }
   };
 
-  
-   // Filtra os usuários com base no termo de busca
-   const filteredUsuarios = tableQueryResult.data?.data.filter((user) =>
+  // Filtra os usuários com base no termo de busca
+  const filteredUsuarios = tableQueryResult.data?.data.filter((user) =>
     user.u_nome.toLowerCase().includes(searchTerm.toLowerCase())
 );
+
+  const c = Object.entries(conditions || {}).map(([key, value]) => (value))
+  console.log('e', c.map(u=>u.users))
+  // console.log('users', filteredUsuarios?.map(us=>us.u_id) == c.map(u=>u.users))
 
   const handleUserToggle = (userId: number) => {
     setSelectedUserIds((prevSelected) => {
@@ -276,8 +279,6 @@ export const DocumentShow = () => {
       messageApi.error(error?.response?.data?.message);
     }
   };
-
-  
 
 
   const handleSubmit = async (conditionKey) => {
@@ -319,15 +320,43 @@ export const DocumentShow = () => {
 
         // Envia a requisição para o backend com o parâmetro 'dc_id' na URL
        const {data} = await axios.put(`${API_URL}/document-condition/fechar-processo-condicionante/${dc_id}`, payload);
-       console.log(data)
-       messageApi.success(data)
+       setNumProtocolo('')
+       setDataProtocolo(null)
+       messageApi.success(data?.message)
       } catch (error) {
         console.log('Erro ao requisiatar ', error)
       }
 
 
   }
+  
+  const handleCloseAllProcss = async (conditionID: number)=>{
+      console.log('ID', conditionID)
+      console.log('Emissao', dataEmissao)
+      console.log('Vencimento', dataVencimento)
+
+      try {
+        const dc_id = conditionID;
+
+        const payload = {
+          d_data_emissao: dataEmissao,
+          d_data_vencimento: dataVencimento
+        }
+
+        const {data} = await axios.put(`${API_URL}/document-condition/fechar-processo/${dc_id}`, payload);
+        
+        setDataEmissao(null)
+        setDataVencimento(null)
+
+       messageApi.success(data?.message)
+
+      } catch (error) {
+        
+      }
+  }
  
+  
+
   return (
     <Show title={[<><span>{status}</span></>]} canEdit={false} canDelete={false} headerButtons={<RefreshButton onClick={() => atualiza()} />}>
       <List
@@ -359,7 +388,7 @@ export const DocumentShow = () => {
                           }}
                         >
                           {item.d_condicionante_id && (
-                            <IssuesCloseOutlined style={{ color: '#ebc334', fontSize: 19, cursor: 'pointer' }} hidden={item?.d_situacao == 'Emitido' && item?.d_num_protocolo.length} />
+                            <IssuesCloseOutlined style={{ color: '#ebc334', fontSize: 19, cursor: 'pointer' }} />
                           )}
                         </span>
                       }
@@ -419,10 +448,23 @@ export const DocumentShow = () => {
           cancelButtonProps={{ hidden: true }}
           footer={[Object.entries(conditions || {}).filter(([key, value]) => value?.status === false).length >= 1 ? null : (
               <Space>
-                   <Tag color='red-inverse' style={{ fontSize: 10, borderRadius: 20 }}>{result?.data?.status}</Tag>
-                  <Input placeholder="Nº Protocolo" allowClear  style={{borderRadius: 20}} onChange={(e)=>setNumProtocolo(e.target.value)} value={numProtocolo}/>
-                  <DatePicker placeholder="Data Protocolo" locale='pt-BR' format={'DD/MM/YYYY'} allowClear  style={{borderRadius: 20}} onChange={(date) => setDataProtocolo(date)} value={dataProtocolo}/>
-                  <Button type="primary" onClick={()=>handleCloseProcss(result?.data?.dc_id)} shape="round" icon={<Check fontSize="inherit"/>} >Fechar</Button>
+                 <Tag color='purple-inverse' style={{ fontSize: 10, borderRadius: 20 }}>{result?.data?.status}</Tag>
+                  {data?.data.map((d)=>d?.d_situacao)[0] == 'Não iniciado' ? (
+                      <>
+                        <Input placeholder="Nº Protocolo" allowClear  style={{borderRadius: 20}} onChange={(e)=>setNumProtocolo(e.target.value)} value={numProtocolo}/>
+                        <DatePicker placeholder="Data Protocolo" name="d_data" locale='pt-BR' format={'DD/MM/YYYY'} allowClear  style={{borderRadius: 20}} onChange={(date) => setDataProtocolo(date)} value={dataProtocolo}/>
+                        <Button type="primary" onClick={()=>handleCloseProcss(result?.data?.dc_id)} shape="round" icon={<Check fontSize="inherit"/>} >Fechar</Button>
+                      </>
+                  ) : (
+                      <>
+                      {data?.data.map((d)=>d?.d_situacao)[0] == 'Vencido' ? null : data?.data.map((d)=>d?.d_situacao)[0] == 'Emitido' ? null : (<>
+                        <DatePicker placeholder="Emissão" locale='pt-BR' format={'DD/MM/YYYY'} allowClear  style={{borderRadius: 20}} onChange={(date)=>setDataEmissao(date)} value={dataEmissao}/>
+                        <DatePicker placeholder="Vencimento" locale='pt-BR' format={'DD/MM/YYYY'} allowClear  style={{borderRadius: 20}} onChange={(date)=>setDataVencimento(date)} value={dataVencimento}/>
+                        <Button type="primary" onClick={()=>handleCloseAllProcss(result?.data?.dc_id)} shape="round" icon={<Check fontSize="inherit"/>} >Finalizar</Button>
+                      </>)}
+                      </>
+                  )}
+                  {contextHolder}
               </Space>
           )]}
       >
@@ -517,21 +559,20 @@ export const DocumentShow = () => {
                                       allowClear
                                     />
                                     <List
-                                      size="small"
-                                      style={{ maxHeight: 300, overflowY: 'auto' }}
-                                      dataSource={filteredUsuarios}
-                                      renderItem={(item) => (
-                                        <List.Item>
-                                          <h5>{item?.u_nome}</h5>
-                                          {selectedUserIds}
-                                          <Switch
-                                            size="small"
-                                            checked={tableQueryResult.data?.data.map(id=>id?.u_id).includes(item.u_id)}
-                                            onChange={() => handleUserToggle(item.u_id, key)}
-                                          />
-                                        </List.Item>
-                                      )}
-                                    />
+                                    size="small"
+                                    style={{ maxHeight: 300, overflowY: 'auto' }}
+                                    dataSource={filteredUsuarios}
+                                    renderItem={(item) => (
+                                      <List.Item key={item.u_id}>
+                                        <h5>{item?.u_nome}</h5>
+                                        <Checkbox
+                                          checked={item?.u_nome === 'admin'}
+                                          onChange={() => handleUserToggle(item.u_id, key)}
+                                        />
+                                      </List.Item>
+                                    )}
+                                  />
+
                                     <Button
                                     
                                       type="primary"
@@ -557,7 +598,10 @@ export const DocumentShow = () => {
                     )}
                   </table>
                 </div>
-                <Button type="dashed" style={{marginTop: 10, fontSize: 12}} onClick={()=>setIsMdAddCond(true)}><PlusCircleOutlined /> Adicionar Itens</Button>
+                {data?.data.map((d)=>d?.d_situacao)[0] == 'Vencido' ? null : data?.data.map((d)=>d?.d_situacao)[0] == 'Emitido' ? null : (<>
+                        <Button type="dashed" style={{marginTop: 10, fontSize: 12}} onClick={()=>setIsMdAddCond(true)}><PlusCircleOutlined /> Adicionar Itens</Button>
+                </>)}
+                
           </Card>
       </Modal>
 
