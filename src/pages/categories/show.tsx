@@ -1,7 +1,7 @@
 import { CheckCircleOutlined, CloseCircleOutlined, CloseCircleTwoTone, CommentOutlined, DeleteOutlined, DownOutlined, ExclamationCircleOutlined, IssuesCloseOutlined, MessageOutlined, PlusCircleFilled, PlusCircleOutlined, PlusCircleTwoTone, PlusOutlined, PlusSquareOutlined, PlusSquareTwoTone, SaveOutlined, UpOutlined } from "@ant-design/icons"
 import { CloneButton, DateField, EditButton, RefreshButton, Show } from "@refinedev/antd";
 import { useList, useTable } from "@refinedev/core";
-import { List, Card, Row, Col, Modal, Popover, Spin, DatePicker, Input, Space, Button, Badge, Mentions, Tag, Avatar, Switch, message, FloatButton, Form } from "antd";
+import { List, Card, Row, Col, Modal, Popover, Spin, DatePicker, Input, Space, Button, Badge, Mentions, Tag, Avatar, Switch, message, FloatButton, Form, Checkbox } from "antd";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../../authProvider";
@@ -56,9 +56,9 @@ export const DocumentShow = () => {
   const [userTK, setUserTK] = useState<any>(JSON.parse(localStorage.getItem('refine-user')).id);
   const [replyValue, setReplyValue] = useState<string>('');
   const [isReplyingToComment, setIsReplyingToComment] = useState<number | null>(null);
-  const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
   const [ messageApi, contextHolder ] = message.useMessage();
   const [isMdAddCond, setIsMdAddCond] = useState(false);
+  const [conditionUsers, setConditionUsers] = useState<number[]>([]); // Inicializa como array vazio
 
 
   const [form] = Form.useForm();
@@ -97,7 +97,12 @@ export const DocumentShow = () => {
   const [dataProtocolo, setDataProtocolo] = useState(null);
   const [dataEmissao, setDataEmissao] = useState(null);
   const [dataVencimento, setDataVencimento] = useState(null);
+  const [userList, setUserList] = useState([]);
+  const [loadingListUserAttr, setLoadingListUserAttr] = useState(false);
+  const [users, setUsers] = useState([]);
 
+  const [selectedUserIds, setSelectedUserIds] = useState([]);
+  const [isRefetchingUsers, setIsRefetchingUsers] = useState(false);
 
   const handleSendComment = async () => {
     try {
@@ -233,24 +238,47 @@ export const DocumentShow = () => {
   };
 
   // Filtra os usuários com base no termo de busca
-  const filteredUsuarios = tableQueryResult.data?.data.filter((user) =>
-    user.u_nome.toLowerCase().includes(searchTerm.toLowerCase())
-);
+  const filteredUsuarios = userList.filter((user) =>
+    user?.u_nome.toLowerCase().includes(searchTerm.toLowerCase())
+);  
 
-  const c = Object.entries(conditions || {}).map(([key, value]) => (value))
-  console.log('e', c.map(u=>u.users))
-  // console.log('users', filteredUsuarios?.map(us=>us.u_id) == c.map(u=>u.users))
+const handleUserToggle = (id) => {
+  setUsers(prevUsers => {
+      const updatedUsers = prevUsers.map(user =>
+          user.u_id === id ? { ...user, u_atribuido: !user.u_atribuido } : user
+      );
 
-  const handleUserToggle = (userId: number) => {
-    setSelectedUserIds((prevSelected) => {
-        if (prevSelected.includes(userId)) {
-            return prevSelected.filter(id => id !== userId); // Remove se já estiver selecionado
-        } else {
-            return [...prevSelected, userId]; // Adiciona se não estiver
-        }
-    });
+      // Atualiza a lista de IDs dos usuários selecionados
+      const newSelectedUserIds = updatedUsers
+          .filter(user => user.u_atribuido)
+          .map(user => user.u_id);
+
+      setSelectedUserIds(newSelectedUserIds); // Atualiza o estado com os IDs selecionados
+      return updatedUsers; // Retorna a lista atualizada
+  });
+};
+  
+  // Função para chamar a API e listar os usuários
+  const handleUserListAttr = async (dc_id, condicaoNome) => {
+    try {
+      setLoadingListUserAttr(true);
+
+      const payload = {
+        nome: condicaoNome
+      }
+
+      // Chamada à rota passando o id da condição e o nome da condição
+      const response = await axios.post(`${API_URL}/document-condition/listar-usuarios-atribuidos-condicao/${dc_id}`, payload);
+
+      // Define a lista de usuários no estado
+      setUserList(response.data);
+      setUsers(response.data)
+    } catch (error) {
+      console.error("Erro ao buscar usuários", error);
+    } finally {
+      setLoadingListUserAttr(false);
+    }
   };
-
 
   const handleSubmitAddConditions = async () => {
     try {
@@ -294,19 +322,17 @@ export const DocumentShow = () => {
         const dc_id = isModalIdCondition; // Substitua pelo valor correto de 'dc_id'
 
         // Envia a requisição para o backend com o parâmetro 'dc_id' na URL
-       const {data} = await axios.patch(`${API_URL}/document-condition/atribuir-usuarios-condicao/${dc_id}`, payload);
+        const { data } = await axios.patch(`${API_URL}/document-condition/atribuir-usuarios-condicao/${dc_id}`, payload);
 
-
-        // Ações adicionais após o envio, como manter o modal aberto e limpar a lista de usuários selecionados
+        // Ações adicionais após o envio
         setSelectedUserIds([]); // Limpa a lista de IDs de usuários selecionados
-        setCheckCondicionante(true); // Atualize qualquer estado necessário
         messageApi.success(data?.message); // Feedback ao usuário
-        await refreshCondition()
+        await refreshCondition();
     } catch (error) {
         console.error('Erro ao enviar os dados:', error);
         message.error('Erro ao atribuir usuários. Por favor, tente novamente.');
     }
-  };
+};
 
   const handleCloseProcss = async (conditionID: number)=>{
  
@@ -355,8 +381,6 @@ export const DocumentShow = () => {
       }
   }
  
-  
-
   return (
     <Show title={[<><span>{status}</span></>]} canEdit={false} canDelete={false} headerButtons={<RefreshButton onClick={() => atualiza()} />}>
       <List
@@ -558,23 +582,21 @@ export const DocumentShow = () => {
                                       style={{ marginBottom: 8, width: '100%' }}
                                       allowClear
                                     />
-                                    <List
-                                    size="small"
-                                    style={{ maxHeight: 300, overflowY: 'auto' }}
-                                    dataSource={filteredUsuarios}
-                                    renderItem={(item) => (
-                                      <List.Item key={item.u_id}>
-                                        <h5>{item?.u_nome}</h5>
-                                        <Checkbox
-                                          checked={item?.u_nome === 'admin'}
-                                          onChange={() => handleUserToggle(item.u_id, key)}
-                                        />
-                                      </List.Item>
-                                    )}
-                                  />
+
+                                    <List>
+                                      {users.map(item => (
+                                        <List.Item key={item?.u_id}>
+                                          <h5>{item?.u_nome}</h5>
+                                          <Checkbox
+                                            checked={item?.u_atribuido}
+                                            onChange={() => handleUserToggle(item?.u_id)}
+                                          />
+                                        </List.Item>
+                                      ))}
+                                    </List>
+
 
                                     <Button
-                                    
                                       type="primary"
                                       size="small"
                                       shape="round"
@@ -588,7 +610,7 @@ export const DocumentShow = () => {
                                   </div>
                                 }
                               >
-                                 {value?.users?.includes(userTK) && value?.statusProcesso ==  data?.data.map(d=>d?.d_situacao)[0] ? (<GroupAddIcon fontSize="inherit" style={{ cursor: 'pointer' }} />) : null }
+                                 {value?.users?.includes(userTK) && value?.statusProcesso ==  data?.data.map(d=>d?.d_situacao)[0] ? (<GroupAddIcon fontSize="inherit" onClick={()=>handleUserListAttr(isModalIdCondition, key)} style={{ cursor: 'pointer' }} />) : null }
                               
                               </Popover>
                             </td>
