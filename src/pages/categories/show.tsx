@@ -497,6 +497,7 @@ const handleUserToggle = (id) => {
               size="small"
           >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                  
                   <h4 style={{ paddingLeft: 5 }}>Condição</h4>
                   <h4>Status | Atribuir</h4>
               </div>
@@ -615,6 +616,7 @@ const handleUserToggle = (id) => {
                               </Popover>
                             </td>
                           </tr>
+                          
                         ))}
                       </tbody>
                     )}

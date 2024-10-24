@@ -33,6 +33,7 @@ import {
   CategoryEdit,
   DocumentList,
   DocumentShow,
+  ShowDocs,
 } from "./pages/categories";
 import ptBR from 'antd/es/locale/pt_BR';
 import 'dayjs/locale/pt-br'
@@ -164,6 +165,7 @@ function App() {
                       <Route index element={<DocumentList />} />
                       <Route path="edit/:id" element={<CategoryEdit />} />
                       <Route path="show" element={<DocumentShow />} />
+                      <Route path="alldocuments/:id" element={<ShowDocs />}/>
                     </Route>
 
                     <Route path="/calendario">

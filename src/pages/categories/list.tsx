@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import {  CreateNewFolder, OneK } from "@mui/icons-material";
 import TabPane from "antd/lib/tabs/TabPane";
-import { CheckCircleOutlined, DownCircleOutlined, ExceptionOutlined, FolderAddOutlined, IssuesCloseOutlined, UpCircleOutlined } from "@ant-design/icons";
+import { AlertOutlined, CheckCircleOutlined, ClockCircleOutlined, DownCircleOutlined, ExceptionOutlined, ExclamationCircleOutlined, FolderAddOutlined, IssuesCloseOutlined, UpCircleOutlined } from "@ant-design/icons";
 import { useInvalidate, useList } from "@refinedev/core";
 
 interface IDocuments {
@@ -117,12 +117,12 @@ export const DocumentList = () => {
   const columns: TableProps<IDocuments>['columns'] = [
     {
       key: 'filiais',
-      title: 'Sitação Imovel',
-      width: '7%',
+      title: '#',
+      width: 8,
       align: 'center',
       render: (_, record) => (
         <>
-          <Popover title={record.f_ativo ? (<Tag color="success" style={{ width: '100%' }}>Ativa</Tag>) : (<Tag color="error" style={{ width: '100%' }}>Desativada</Tag>)}
+          <Popover title={record.f_ativo ? (<Tag color="success" style={{ width: '100%' }}>Ativada</Tag>) : (<Tag color="error" style={{ width: '100%' }}>Desativada</Tag>)}
             arrowContent>
             <StoreIcon color={record.f_ativo ? 'success' : 'error'} fontSize="small" style={{ cursor: 'pointer' }} />
           </Popover>
@@ -135,10 +135,10 @@ export const DocumentList = () => {
       key: 'd_id',
       title: 'Nº Loja',
       align: 'center',
-      width: '6%',
+      width: '5%',
       sorter: (a, b) => a.f_codigo - b.f_codigo,
-      render: (_, { f_codigo }) => (
-        <a style={{ fontSize: '12px' }}>#{f_codigo}</a>
+      render: (_, { f_codigo, f_id }) => (
+        <a style={{ fontSize: '12px' }} onClick={()=> navigate(`alldocuments/${f_id}`)}>#{f_codigo}</a>
       )
     },
 
@@ -169,6 +169,8 @@ export const DocumentList = () => {
     {
       key: 'filiais',
       title: 'UF',
+      align: 'center',
+      width: 50,
       render: (_, record) => (
         record.f_uf
       )
@@ -177,6 +179,8 @@ export const DocumentList = () => {
     {
       key: 'documentos',
       title: 'Status',
+      width: 366,
+      align: 'center',
       render: (_, { documentos, f_id }: any) => {
 
         const statusCount = documentos.reduce((acc: any, d: any) => {
@@ -213,14 +217,18 @@ export const DocumentList = () => {
         return (
           <>
             {Object.keys(statusCount).map((status) => (
-              <Tag
-                style={{ cursor: 'pointer', borderRadius: 20 }}
+                <Tag
+                style={{ cursor: 'pointer', borderRadius: 30 }}
                 color={getColor(status)}
                 key={status}
                 onClick={() => handleTagClick(status, f_id)}
               >
                 <Badge count={statusCount[status].count} size="small" color={getColor(status)}>
-                  {status}
+                  {status == 'Vencido' ? <AlertOutlined /> : null}
+                  {status == 'Em processo' ? <ClockCircleOutlined /> : null}
+                  {status == 'Não iniciado' ? <ExclamationCircleOutlined /> : null}
+                  {status == 'Emitido' ? <CheckCircleOutlined /> : null}
+                  <span style={{fontSize: 10, marginLeft: 4}}>{status}</span>
                 </Badge>
               </Tag>
             ))}
