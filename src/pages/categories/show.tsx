@@ -1,17 +1,18 @@
-import { CheckCircleOutlined, CloseCircleOutlined, CloseCircleTwoTone, CommentOutlined, DeleteOutlined, DownOutlined, ExclamationCircleOutlined, IssuesCloseOutlined, MessageOutlined, PlusCircleFilled, PlusCircleOutlined, PlusCircleTwoTone, PlusOutlined, PlusSquareOutlined, PlusSquareTwoTone, SaveOutlined, UpOutlined } from "@ant-design/icons"
-import { CloneButton, DateField, EditButton, RefreshButton, Show } from "@refinedev/antd";
+import { CommentOutlined, DownOutlined, IssuesCloseOutlined, MessageOutlined, UpOutlined } from "@ant-design/icons"
+import { DateField, EditButton, RefreshButton, Show } from "@refinedev/antd";
 import { useList, useTable } from "@refinedev/core";
-import { List, Card, Row, Col, Modal, Popover, Spin, DatePicker, Input, Space, Button, Badge, Mentions, Tag, Avatar, Switch, message, FloatButton, Form, Checkbox } from "antd";
+import { List, Card, Row, Col, Modal, Input, Space, Button, Badge, Mentions, Tag, Avatar, message, Form } from "antd";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../../authProvider";
-import { Check, Close, CloseFullscreen, Money, PlusOne, PlusOneRounded, ReplyOutlined, Send } from "@mui/icons-material";
+import { ReplyOutlined, Send } from "@mui/icons-material";
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import PaidIcon from '@mui/icons-material/Paid';
 import 'dayjs/locale/pt-br';
+import { ModalConditions } from "./component/modalCondition";
 dayjs.extend(relativeTime);
 dayjs.locale('pt-br');
 
@@ -100,6 +101,7 @@ export const DocumentShow = () => {
   const [userList, setUserList] = useState([]);
   const [loadingListUserAttr, setLoadingListUserAttr] = useState(false);
   const [users, setUsers] = useState([]);
+  const [docStatusId, setDocStatusId] = useState<any>()
 
   const [selectedUserIds, setSelectedUserIds] = useState([]);
   const [isRefetchingUsers, setIsRefetchingUsers] = useState(false);
@@ -380,6 +382,22 @@ const handleUserToggle = (id) => {
         
       }
   }
+
+
+  const verifyStatusDoc = async (id) => {
+    console.log("ID do documento:", id); // Verifique se o ID está sendo passado corretamente
+  
+    try {
+      // Altere para axios.get se a rota suportar o método GET em vez de POST
+      const response = await axios.get(`${API_URL}/document/listar-status-id/${id}`);
+  
+      // Log para verificar a resposta da API
+      setDocStatusId(response.data);
+      // Manipule o status do documento conforme necessário, por exemplo, atualizar o estado
+    } catch (error) {
+      console.error("Erro ao obter o status do documento:", error);
+    }
+  };
  
   return (
     <Show title={[<><span>{status}</span></>]} canEdit={false} canDelete={false} headerButtons={<RefreshButton onClick={() => atualiza()} />}>
@@ -409,6 +427,7 @@ const handleUserToggle = (id) => {
                           onClick={() => {
                             openModal();
                             hendleOpenModalConditions(item.d_condicionante_id);
+                            verifyStatusDoc(item?.d_condicionante_id)
                           }}
                         >
                           {item.d_condicionante_id && (
@@ -465,171 +484,45 @@ const handleUserToggle = (id) => {
         )}
       />
 
-      <Modal  
-          open={isModal}
-          onCancel={() => { hendleCloseModalConditions(); setCheckCondicionante(true)}}
-          okButtonProps={{ disabled: checkCondicionante, onClick: () => { setCheckCondicionante(true); setNumProtocolo('')}}}
-          cancelButtonProps={{ hidden: true }}
-          footer={[Object.entries(conditions || {}).filter(([key, value]) => value?.status === false).length >= 1 ? null : (
-              <Space>
-                 <Tag color='purple-inverse' style={{ fontSize: 10, borderRadius: 20 }}>{result?.data?.status}</Tag>
-                  {data?.data.map((d)=>d?.d_situacao)[0] == 'Não iniciado' ? (
-                      <>
-                        <Input placeholder="Nº Protocolo" allowClear  style={{borderRadius: 20}} onChange={(e)=>setNumProtocolo(e.target.value)} value={numProtocolo}/>
-                        <DatePicker placeholder="Data Protocolo" name="d_data" locale='pt-BR' format={'DD/MM/YYYY'} allowClear  style={{borderRadius: 20}} onChange={(date) => setDataProtocolo(date)} value={dataProtocolo}/>
-                        <Button type="primary" onClick={()=>handleCloseProcss(result?.data?.dc_id)} shape="round" icon={<Check fontSize="inherit"/>} >Fechar</Button>
-                      </>
-                  ) : (
-                      <>
-                      {data?.data.map((d)=>d?.d_situacao)[0] == 'Vencido' ? null : data?.data.map((d)=>d?.d_situacao)[0] == 'Emitido' ? null : (<>
-                        <DatePicker placeholder="Emissão" locale='pt-BR' format={'DD/MM/YYYY'} allowClear  style={{borderRadius: 20}} onChange={(date)=>setDataEmissao(date)} value={dataEmissao}/>
-                        <DatePicker placeholder="Vencimento" locale='pt-BR' format={'DD/MM/YYYY'} allowClear  style={{borderRadius: 20}} onChange={(date)=>setDataVencimento(date)} value={dataVencimento}/>
-                        <Button type="primary" onClick={()=>handleCloseAllProcss(result?.data?.dc_id)} shape="round" icon={<Check fontSize="inherit"/>} >Finalizar</Button>
-                      </>)}
-                      </>
-                  )}
-                  {contextHolder}
-              </Space>
-          )]}
-      >
-          <Card
-              title={['Condicionante ', <IssuesCloseOutlined style={{ color: 'gray' }} />]}
-              size="small"
-          >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                  
-                  <h4 style={{ paddingLeft: 5 }}>Condição</h4>
-                  <h4>Status | Atribuir</h4>
-              </div>
-
-              <div style={{ maxHeight: '300px', overflowY: 'auto', padding: 5, borderTop: '1px solid #575757', scrollbarColor: '#888 #f1f1f1', scrollbarWidth: 'thin' }}>
-                  <table style={{ width: '100%' }}>
-                    {car ? (
-                      <Spin />
-                    ) : (
-                      <tbody>
-                        {Object.entries(conditions || {}).map(([key, value]) => (
-                          <tr key={key}>
-                            <td style={{ borderBottom: '1px solid #8B41F2' }}>
-                              <p style={{ textTransform: 'capitalize' }}>{key}</p>
-                            </td>
-                            <td style={{ borderBottom: '1px solid #8B41F2', paddingRight: 10 }} align="center">
-                              {value?.status === true ? (
-                                <Popover content={`OK - ${new Date(value?.date).toLocaleString()}`}>
-                                  <Button disabled={value?.users?.includes(userTK) && value?.statusProcesso ==  data?.data.map(d=>d?.d_situacao)[0] ? false : true} shape="circle" style={{border: 'none', height: '30px'}}>
-                                    <CheckCircleOutlined
-                                      
-                                      onClick={() => {
-                                        
-                                        toggleCondition(key);
-                                        hendleCheck();
-                                      }}
-                                      style={{ color: value?.users?.includes(userTK) && value?.statusProcesso ==  data?.data.map(d=>d?.d_situacao)[0] ? 'green' : 'gray', cursor: 'pointer' }}
-                                    />
-                                  </Button>
-                                </Popover>
-                              ) : value?.status === false ? (
-                                <Popover content={`Pendente - ${new Date(value?.date).toLocaleString()}`}>
-                                  <Button disabled={value?.users?.includes(userTK) && value?.statusProcesso ==  data?.data.map(d=>d?.d_situacao)[0] ? false : true} shape="circle" style={{border: 'none', height: '30px'}}>
-                                    <CloseCircleOutlined
-                                      
-                                      onClick={() => {
-                                        toggleCondition(key);
-                                        hendleCheck();
-                                      }}
-                                      style={{ color: value?.users?.includes(userTK) && value?.statusProcesso ==  data?.data.map(d=>d?.d_situacao)[0] ? 'red' : 'gray  ', cursor: 'pointer' }}
-                                    />
-                                  </Button>
-                                </Popover>
-                              ) : (
-                                <Popover content={`N/A - ${new Date(value?.date).toLocaleString()}`}>
-                                  <Button disabled={value?.users?.includes(userTK) && value?.statusProcesso ==  data?.data.map(d=>d?.d_situacao)[0] ? false : true} shape="circle" style={{border: 'none', height: '30px'}}>
-                                      <ExclamationCircleOutlined
-                                          
-                                            onClick={() => {
-                                              toggleCondition(key);
-                                              hendleCheck();
-                                            }}
-                                            style={{ color: value?.users?.includes(userTK) && value?.statusProcesso ==  data?.data.map(d=>d?.d_situacao)[0] ? 'orange' : 'gray', cursor: 'pointer' }}
-                                          />
-                                  </Button>
-                                </Popover>
-                              )}
-                            </td>
-                            <td style={{ borderBottom: '1px solid #8B41F2' }} align="center">
-                              <Popover
-                                title={[
-                                  <div style={{ position: 'relative' }}>
-                                    Atribuir Condições
-                                    <Button
-                                     
-                                      shape="circle"
-                                      size="small"
-                                      style={{ left: 85 }}
-                                      icon={<Close fontSize="inherit" />}
-                                      onClick={() => setVisiblePopover(false)}
-                                    />
-                                  </div>
-                                ]}
-                                trigger="click"
-                                placement="bottomLeft"
-                                visible={visiblePopover[key]}
-                                onVisibleChange={(visible) => setVisiblePopover((prev) => ({ ...prev, [key]: visible }))}
-                                content={
-                                  <div>
-                                    <Search
-                                      placeholder="Buscar usuário"
-                                      onChange={(e) => setSearchTerm(e.target.value)}
-                                      style={{ marginBottom: 8, width: '100%' }}
-                                      allowClear
-                                    />
-
-                                    <List>
-                                      {users.map(item => (
-                                        <List.Item key={item?.u_id}>
-                                          <h5>{item?.u_nome}</h5>
-                                          <Checkbox
-                                            checked={item?.u_atribuido}
-                                            onChange={() => handleUserToggle(item?.u_id)}
-                                          />
-                                        </List.Item>
-                                      ))}
-                                    </List>
 
 
-                                    <Button
-                                      type="primary"
-                                      size="small"
-                                      shape="round"
-                                      onClick={() => {handleSubmit(key); refreshCondition()}}
-                                      disabled={selectedUserIds.length === 0}
-                                      loading={isRefetching}
-                                    >
-                                      Atribuir
-                                    </Button>
-                                    {contextHolder}
-                                  </div>
-                                }
-                              >
-                                 {value?.users?.includes(userTK) && value?.statusProcesso ==  data?.data.map(d=>d?.d_situacao)[0] ? (<GroupAddIcon fontSize="inherit" onClick={()=>handleUserListAttr(isModalIdCondition, key)} style={{ cursor: 'pointer' }} />) : null }
-                              
-                              </Popover>
-                            </td>
-                          </tr>
-                          
-                        ))}
-                      </tbody>
-                    )}
-                  </table>
-                </div>
-                {data?.data.map((d)=>d?.d_situacao)[0] == 'Vencido' ? null : data?.data.map((d)=>d?.d_situacao)[0] == 'Emitido' ? null : (<>
-                        <Button type="dashed" style={{marginTop: 10, fontSize: 12}} onClick={()=>setIsMdAddCond(true)}><PlusCircleOutlined /> Adicionar Itens</Button>
-                </>)}
-                
-          </Card>
-      </Modal>
-
-
+      {/*MODAL DE CONDICIONANTES*/}
+      <ModalConditions 
+          isModal={isModal}
+          hendleCloseModalConditions={hendleCloseModalConditions}
+          checkCondicionante={checkCondicionante}
+          setCheckCondicionante={setCheckCondicionante}
+          numProtocolo={numProtocolo}
+          setNumProtocolo={setNumProtocolo}
+          dataProtocolo={dataProtocolo}
+          setDataProtocolo={setDataProtocolo}
+          dataEmissao={dataEmissao}
+          setDataEmissao={setDataEmissao}
+          dataVencimento={dataVencimento}
+          setDataVencimento={setDataVencimento}
+          handleCloseProcss={handleCloseProcss}
+          handleCloseAllProcss={handleCloseAllProcss}
+          conditions={conditions}
+          car={car}
+          result={result}
+          data={data}
+          toggleCondition={toggleCondition}
+          hendleCheck={hendleCheck}
+          users={users}
+          handleUserToggle={handleUserToggle}
+          handleSubmit={handleSubmit}
+          refreshCondition={refreshCondition}
+          selectedUserIds={selectedUserIds}
+          isRefetching={isRefetching}
+          visiblePopover={visiblePopover}
+          setVisiblePopover={setVisiblePopover}
+          userTK={userTK}
+          setIsMdAddCond={setIsMdAddCond}
+          isModalIdCondition={isModalIdCondition}
+          contextHolder={contextHolder}
+          handleUserListAttr={handleUserListAttr}
+          docStatusId={docStatusId}
+          />
 
       <Modal
         title={[<MessageOutlined />, ` Interações`]}
