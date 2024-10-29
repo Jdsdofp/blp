@@ -52,6 +52,7 @@ import { DocTypeDocCreate } from "./pages/documents/typeDocument/list";
 import { ListCondition } from "./pages/documents/conditinals/list";
 import { CreateCondition } from "./pages/documents/conditinals/create";
 import { CalendarList } from "./pages/calendar/list";
+import { Mapsall } from "./pages/maps/list";
 
 
 type Props = {
@@ -166,6 +167,10 @@ function App() {
                       <Route path="edit/:id" element={<CategoryEdit />} />
                       <Route path="show" element={<DocumentShow />} />
                       <Route path="alldocuments/:id" element={<ShowDocs />}/>
+                    </Route>
+                    
+                    <Route path="/mapsall">
+                        <Route index element={<Mapsall />} />
                     </Route>
 
                     <Route path="/calendario">
