@@ -5,7 +5,7 @@ import L from 'leaflet';
 import { List } from '@refinedev/antd';
 import { useContext, useState } from 'react';
 import { ColorModeContext } from '../../contexts/color-mode';
-import { Card } from 'antd';
+import { Card, Input } from 'antd';
 
 // Função para retornar a cor do ícone com base na situação
 const getMarkerColor = (situation) => {
@@ -32,7 +32,7 @@ export const Mapsall = () => {
     
 
     return (
-        <List breadcrumb canCreate={false} title >
+        <List breadcrumb canCreate={false} title='Relório Mapa por status' >
             <Card style={{padding: 0, margin: 0}}>
 
                 <div style={{ height: "80vh", width: "100%" }}>
