@@ -23,32 +23,44 @@ const getMarkerColor = (situation) => {
     }
 };
 
+
 // Componente do mapa
 export const Mapsall = () => {
     const centerCoordinates = [-5.091278491303021, -42.83431574194223];
     const { data } = useList({ resource: 'document', meta: { endpoint: 'listar-documentos-filais' } });
-    const [modeColor, setModeColor] = useState(localStorage.getItem('colorMode'))
+    const [modeColor, setModeColor] = useState(localStorage.getItem('colorMode'));
     const { mode, setMode } = useContext(ColorModeContext);
-    
+
+    // Função para definir o HTML do marcador com a condição de situação "Vencido"
+    function getMarkerHTML(d_situacao) {
+        if (d_situacao === 'Vencido') {
+            return `
+                <div class="ponto-vencido">
+                    <span class="ponto"><span style="margin: 2px; color: white;">❤</span></span>
+                </div>
+            `;
+        } else {
+            return `
+                <div style="background-color: ${getMarkerColor(d_situacao)}; border-radius: 50%; width: 24px; height: 24px; display: flex; justify-content: center; align-items: center;">
+                    <span style="color: white;">❤</span>
+                </div>
+            `;
+        }
+    }
 
     return (
-        <List breadcrumb canCreate={false} title='Relório Mapa por status' >
-            <Card style={{padding: 0, margin: 0}}>
-
+        <List breadcrumb canCreate={false} title="Relatório Mapa por Status">
+            <Card style={{ padding: 0, margin: 0 }}>
                 <div style={{ height: "80vh", width: "100%" }}>
                     <MapContainer 
                         center={centerCoordinates} 
                         zoom={6} 
                         style={{ height: "100%", width: "100%" }}
-                        
                     >
                         <TileLayer
-
-                            url={mode == 'light' ? "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" : "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"}
+                            url={mode === 'light' ? "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" : "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"}
                         />
 
-                        
-                        
                         {data?.data.map((filial) => (
                             filial.f_location && filial.f_location.coordinates && (
                                 <Marker
@@ -56,9 +68,7 @@ export const Mapsall = () => {
                                     position={[filial.f_location.coordinates[1], filial.f_location.coordinates[0]]}
                                     icon={new L.DivIcon({
                                         className: 'custom-marker',
-                                        html: `<div style="background-color: ${getMarkerColor(filial.documentos[0]?.d_situacao)}; border-radius: 50%; width: 24px; height: 24px; display: flex; justify-content: center; align-items: center;">
-                                                    <span style="color: white;">❤</span> <!-- Símbolo de marcador -->
-                                                </div>`,
+                                        html: getMarkerHTML(filial.documentos[0]?.d_situacao),
                                         iconSize: [24, 24],
                                         iconAnchor: [12, 12],
                                     })}
@@ -87,8 +97,61 @@ export const Mapsall = () => {
                     </MapContainer>
                 </div>
 
-            </Card>
+                {/* CSS para o efeito piscante */}
+                <style>{`
+                    .ponto-vencido {
+                        width: 24px;
+                        height: 24px;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                    }
 
+                    .ponto {
+                        width: 24px;
+                        height: 24px;
+                        padding: 4px;
+                        background-color: #ff0000;
+                        border-radius: 50%;
+                        position: relative;
+                        box-shadow: 0 0 10px 5px rgba(255, 0, 0, 0.5);
+                        animation: pulsar 1.5s infinite;
+                    }
+
+                    .ponto::after {
+                        content: "";
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        margin: -10px;
+                        border-radius: 50%;
+                        box-shadow: 0 0 20px 10px rgba(255, 0, 0, 0.4);
+                        animation: expandir 1.5s infinite;
+                    }
+
+                    @keyframes pulsar {
+                        0%, 100% {
+                            opacity: 1;
+                        }
+                        50% {
+                            opacity: 0.2;
+                        }
+                    }
+
+                    @keyframes expandir {
+                        0% {
+                            transform: scale(1);
+                            opacity: 1;
+                        }
+                        100% {
+                            transform: scale(2.5);
+                            opacity: 0;
+                        }
+                    }
+                `}</style>
+            </Card>
         </List>
     );
 };

@@ -1,0 +1,52 @@
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  /* Ponto piscando */
+  .ponto {
+    width: 15px;
+    height: 15px;
+    background-color: #ff0000; /* Cor do ponto */
+    border-radius: 50%;
+    position: relative;
+    box-shadow: 0 0 10px 5px rgba(255, 0, 0, 0.5);
+    animation: pulsar 1.5s infinite; /* Animação infinita */
+  }
+
+  /* Efeito de expansão (radius) */
+  .ponto::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: -10px;
+    border-radius: 50%;
+    box-shadow: 0 0 20px 10px rgba(255, 0, 0, 0.4);
+    animation: expandir 1.5s infinite;
+  }
+
+  /* Animações */
+  @keyframes pulsar {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.2;
+    }
+  }
+
+  @keyframes expandir {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(2.5);
+      opacity: 0;
+    }
+  }

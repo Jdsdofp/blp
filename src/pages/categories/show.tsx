@@ -1,7 +1,7 @@
 import { CommentOutlined, DownOutlined, IssuesCloseOutlined, MessageOutlined, UpOutlined } from "@ant-design/icons"
 import { DateField, EditButton, RefreshButton, Show } from "@refinedev/antd";
 import { useList, useTable } from "@refinedev/core";
-import { List, Card, Row, Col, Modal, Input, Space, Button, Badge, Mentions, Tag, Avatar, message, Form } from "antd";
+import { List, Card, Row, Col, Modal, Input, Space, Button, Badge, Mentions, Tag, Avatar, message, Form, Popover } from "antd";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../../authProvider";
@@ -13,6 +13,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import PaidIcon from '@mui/icons-material/Paid';
 import 'dayjs/locale/pt-br';
 import { ModalConditions } from "./component/modalCondition";
+import EqualizerIcon from '@mui/icons-material/Equalizer';
 dayjs.extend(relativeTime);
 dayjs.locale('pt-br');
 
@@ -452,6 +453,7 @@ const handleUserToggle = (id) => {
                               }}
                             />
                           </Badge>
+                          <Button icon={<EqualizerIcon fontSize="inherit" htmlColor="#F23847"/>} shape="circle" size="small"/>
                         </Space>,
                       ]}
                     >
@@ -474,7 +476,7 @@ const handleUserToggle = (id) => {
                             {item?.d_situacao}
                           </Tag>
 
-                          <Button icon={<PaidIcon fontSize="small" />} shape="circle" style={{ marginLeft: 160, border: 0 }} />
+                          <Button icon={<PaidIcon fontSize="small" htmlColor="green" />} shape="circle" style={{ marginLeft: 160, border: 0 }} />
                         </Space>
                       </Space>
                     </Card>
