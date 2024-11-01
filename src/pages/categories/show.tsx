@@ -85,7 +85,6 @@ export const DocumentShow = () => {
   useEffect(() => {
     if (result?.data?.dc_condicoes) {
       setConditions(result?.data?.dc_condicoes);
-      form.setFieldsValue({ dc_condicoes: result?.data?.dc_condicoes });
     }
   }, [result]);
 
@@ -266,6 +265,7 @@ export const DocumentShow = () => {
         setSelectedUserIds([]); // Limpa a lista de IDs de usuários selecionados
         setCheckCondicionante(true); // Atualize qualquer estado necessário
         messageApi.success(data?.message); // Feedback ao usuário
+        
         await refreshCondition()
     } catch (error) {
         console.error('Erro ao enviar os dados:', error);
@@ -293,9 +293,6 @@ export const DocumentShow = () => {
 
   }
 
-  const limparCampos = () =>{
-    console.log('fechando') 
-  }
  
   return (
     <Show title={[<><span>{status}</span></>]} canEdit={false} canDelete={false} headerButtons={<RefreshButton onClick={() => atualiza()} />}>
@@ -505,7 +502,8 @@ export const DocumentShow = () => {
                                       type="primary"
                                       size="small"
                                       shape="round"
-                                      onClick={() => {handleSubmit(key); refreshCondition()}}
+                                      onClick={() => {handleSubmit(key); refreshCondition(); 
+                                        setVisiblePopover(false)}}
                                       disabled={selectedUserIds.length === 0}
                                       loading={isRefetching}
                                     >
