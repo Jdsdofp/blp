@@ -386,8 +386,7 @@ const handleUserToggle = (id) => {
 
 
   const verifyStatusDoc = async (id) => {
-    console.log("ID do documento:", id); // Verifique se o ID está sendo passado corretamente
-  
+    
     try {
       // Altere para axios.get se a rota suportar o método GET em vez de POST
       const response = await axios.get(`${API_URL}/document/listar-status-id/${id}`);

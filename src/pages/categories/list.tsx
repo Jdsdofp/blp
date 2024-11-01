@@ -290,7 +290,11 @@ export const DocumentList = () => {
           }
           return acc;
         }, {});
-  
+    
+        // Ordem desejada dos status
+        const statusOrder = ['Vencido', 'Não iniciado', 'Em processo', 'Emitido'];
+    
+        // Função para definir a cor de cada status
         const getColor = (status) => {
           switch (status) {
             case 'Vencido': return 'red-inverse';
@@ -300,33 +304,36 @@ export const DocumentList = () => {
             default: return 'default';
           }
         };
-  
+    
         const handleTagClick = (status, f_id) => {
           navigate(`/document/show/?status=${status}&filialId=${f_id}`);
         };
-  
+    
         return (
           <>
-            {Object.keys(statusCount).map((status) => (
-              <Tag
-                style={{ cursor: 'pointer', borderRadius: 30 }}
-                color={getColor(status)}
-                key={status}
-                onClick={() => handleTagClick(status, f_id)}
-              >
-                <Badge count={statusCount[status].count} size="small" color={getColor(status)}>
-                  {status === 'Vencido' && <AlertOutlined />}
-                  {status === 'Em processo' && <ClockCircleOutlined />}
-                  {status === 'Não iniciado' && <ExclamationCircleOutlined />}
-                  {status === 'Emitido' && <CheckCircleOutlined />}
-                  <span style={{ fontSize: 10, marginLeft: 4 }}>{status}</span>
-                </Badge>
-              </Tag>
-            ))}
+            {statusOrder
+              .filter(status => statusCount[status]) // Filtra apenas os status existentes
+              .map((status) => (
+                <Tag
+                  style={{ cursor: 'pointer', borderRadius: 30 }}
+                  color={getColor(status)}
+                  key={status}
+                  onClick={() => handleTagClick(status, f_id)}
+                >
+                  <Badge count={statusCount[status].count} size="small" color={getColor(status)}>
+                    {status === 'Vencido' && <AlertOutlined />}
+                    {status === 'Em processo' && <ClockCircleOutlined />}
+                    {status === 'Não iniciado' && <ExclamationCircleOutlined />}
+                    {status === 'Emitido' && <CheckCircleOutlined />}
+                    <span style={{ fontSize: 10, marginLeft: 4 }}>{status}</span>
+                  </Badge>
+                </Tag>
+              ))}
           </>
         );
       }
     },
+    
 
     {
       key: 'actions',
