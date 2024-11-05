@@ -14,6 +14,7 @@ import PaidIcon from '@mui/icons-material/Paid';
 import 'dayjs/locale/pt-br';
 import { ModalConditions } from "./component/modalCondition";
 import EqualizerIcon from '@mui/icons-material/Equalizer';
+import { ModalCash } from "./component/modalCash";
 dayjs.extend(relativeTime);
 dayjs.locale('pt-br');
 
@@ -106,6 +107,7 @@ export const DocumentShow = () => {
 
   const [selectedUserIds, setSelectedUserIds] = useState([]);
   const [isRefetchingUsers, setIsRefetchingUsers] = useState(false);
+  const [isModalCash, setIsModalCash] = useState<boolean>()
 
   const handleSendComment = async () => {
     try {
@@ -475,7 +477,7 @@ const handleUserToggle = (id) => {
                             {item?.d_situacao}
                           </Tag>
 
-                          <Button icon={<PaidIcon fontSize="small" htmlColor="green" />} shape="circle" style={{ marginLeft: 160, border: 0 }} />
+                          <Button icon={<PaidIcon fontSize="small" htmlColor="green" />} shape="circle" style={{ marginLeft: 160, border: 0 }} onClick={()=>setIsModalCash(true)}/>
                         </Space>
                       </Space>
                     </Card>
@@ -775,6 +777,9 @@ const handleUserToggle = (id) => {
           </Form>
           {contextHolder}  
       </Modal>
+
+
+      <ModalCash open={isModalCash} close={()=>setIsModalCash(false)}  /> 
     </Show>
   );
 };
