@@ -11,8 +11,13 @@ export const ModalCash = ({
         return (
         <Modal open={open} onCancel={close} title='Valores do documento'>
             <Form layout="vertical">
+                    <Form.Item label="Tipo">
+                        <Select options={[{label: 'Taxa', value: 'Taxa'}, {label: 'Serviço', value: 'Serviço'}]}/>
+                    </Form.Item>
                 <Row gutter={16}>
                     <Col xs={24} sm={12}>
+
+
                     <Form.Item label="Descrição Custo" name="d_tipo_doc_id">
                         <Input placeholder="Desc. Custo" />
                     </Form.Item>
