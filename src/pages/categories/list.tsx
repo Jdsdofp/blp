@@ -6,7 +6,7 @@ import {
   useForm,
   useTable
 } from "@refinedev/antd";
-import { Table, TableProps, Popover, Tag, Badge, Modal, Button, Tabs, Row, Col, Form, Select, Input, DatePicker } from "antd";
+import { Table, TableProps, Popover, Tag, Badge, Modal, Button, Tabs, Row, Col, Form, Select, Input, DatePicker, Card, Space } from "antd";
 import StoreIcon from '@mui/icons-material/Store';
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -119,7 +119,13 @@ export const DocumentList = () => {
     liveMode: "auto"
   });
 
-
+  const situacaoCount = tableQueryResult.data?.data
+    .flatMap(doc => doc?.documentos) // Achata e mapeia os documentos
+    .reduce((acc, doc) => {
+        // Incrementa o contador para cada d_situacao
+        acc[doc?.d_situacao] = (acc[doc?.d_situacao] || 0) + 1;
+        return acc;
+    }, {});
 
   const getColumnSearchProps = (title, dataIndex: keyof IDocuments): ColumnType<IDocuments> => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }: FilterConfirmProps) => (
@@ -204,7 +210,6 @@ export const DocumentList = () => {
     {
       key: 'filiais',
       title: '#',
-      width: 8,
       align: 'center',
       render: (_, record) => (
         <>
@@ -221,7 +226,6 @@ export const DocumentList = () => {
       key: 'd_id',
       title: 'Nº Loja',
       align: 'center',
-      width: '5%',
       ...getColumnSearchProps("Cod", "f_codigo"),
       sorter: (a, b) => a.f_codigo - b.f_codigo,
       render: (_, { f_codigo, f_id }) => (
@@ -273,7 +277,6 @@ export const DocumentList = () => {
     {
       key: 'documentos',
       title: 'Status',
-      width: 366,
       align: 'center',
       filters: uniqueSituations,
       onFilter: (value, record) => {
@@ -418,12 +421,33 @@ const handleCondicoes = (value: any, option: any) => {
   setIsListModalConditions(conditions);
 };
 
+const colorsCards = (status: any)=>{
+          switch (status) {
+            case 'Vencido': return 'red';
+            case 'Em processo': return 'cyan';
+            case 'Não iniciado': return 'orange';
+            case 'Emitido': return 'green';
+            default: return 'default';
+          }
+}
+
 
 
   return (
     <>
-      <List canCreate={false} headerButtons={<RefreshButton  hideText shape="circle"/>}>
-        <Table {...tableProps} rowKey="id" columns={columns} size="small"  bordered/>
+      <List canCreate={false} headerButtons={<RefreshButton  hideText shape="circle"/>} >
+      <Space align="baseline" wrap>
+        {situacaoCount && Object.entries(situacaoCount).length > 0 ? (
+            Object.entries(situacaoCount).map(([situacao, count]) => (
+                <Card size="small" hoverable title={situacao} bordered={false} style={{ width: 200, textAlign: 'center' }} key={situacao} styles={{body: {background: colorsCards(situacao), marginBottom: 10}}}>
+                    <h4 style={{fontSize: 20}}>{count}</h4>
+                </Card>
+            ))
+        ) : (
+            <p>Nenhuma situação encontrada.</p>
+        )}
+    </Space>
+        <Table {...tableProps} tableLayout="auto" rowKey="id" columns={columns} size="small" sticky scroll={{y: 600 }} bordered={true}/>
       </List>
 
       <Modal open={isModal} onCancel={() => {form.resetFields(); setIsModal(false); setSubList(false); setIsListModalConditions([]); setTabCond(true)}} okButtonProps={saveButtonProps}>

@@ -7,7 +7,110 @@ export const ModalCash = ({
     open, 
     close
     }) =>{
-    
+        
+        const data = [
+            {
+                id: 1,
+                tipo: 'Taxa',
+                desc: 'Pagamento taxa 1',
+                custo: 12.56,
+                dataEntrada: '11-07-2024',
+                dataVencimento: '11-08-2024',
+
+            },
+            {
+                id: 2,
+                tipo: 'Taxa',
+                desc: 'Pagamento taxa 2',
+                custo: 55.98,
+                dataEntrada: '11-07-2024',
+                dataVencimento: '11-08-2024',
+
+            },
+            {
+                id: 3,
+                tipo: 'Taxa',
+                desc: 'Pagamento taxa 2',
+                custo: 150.66,
+                dataEntrada: '11-07-2024',
+                dataVencimento: '11-08-2024',
+
+            },
+            {
+                id: 4,
+                tipo: 'Taxa',
+                desc: 'Pagamento taxa 2',
+                custo: 1200,
+                dataEntrada: '11-07-2024',
+                dataVencimento: '11-08-2024',
+
+            },
+            {
+                id: 5,
+                tipo: 'Taxa',
+                desc: 'Pagamento taxa 2',
+                custo: 1200,
+                dataEntrada: '11-07-2024',
+                dataVencimento: '11-08-2024',
+
+            },
+            {
+                id: 6,
+                tipo: 'Serviço',
+                desc: 'Pagamento taxa 2',
+                custo: 1200,
+                dataEntrada: '11-07-2024',
+                dataVencimento: '11-08-2024',
+
+            },
+            {
+                id: 7,
+                tipo: 'Serviço  ',
+                desc: 'Pagamento taxa 2',
+                custo: 1200,
+                dataEntrada: '11-07-2024',
+                dataVencimento: '11-08-2024',
+
+            },
+            {
+                id: 8,
+                tipo: 'Serviço  ',
+                desc: 'Pagamento taxa 2',
+                custo: 1200,
+                dataEntrada: '11-07-2024',
+                dataVencimento: '11-08-2024',
+
+            },
+            {
+                id: 9,
+                tipo: 'Serviço  ',
+                desc: 'Pagamento taxa 2',
+                custo: 1200,
+                dataEntrada: '11-07-2024',
+                dataVencimento: '11-08-2024',
+
+            },
+            {
+                id: 10,
+                tipo: 'Serviço  ',
+                desc: 'Pagamento taxa 2',
+                custo: 1200,
+                dataEntrada: '11-07-2024',
+                dataVencimento: '11-08-2024',
+
+            },
+            {
+                id: 11,
+                tipo: 'Serviço  ',
+                desc: 'Pagamento taxa 2',
+                custo: 1200,
+                dataEntrada: '11-07-2024',
+                dataVencimento: '11-08-2024',
+
+            }
+        ]
+
+
         return (
         <Modal open={open} onCancel={close} title='Valores do documento'>
             <Form layout="vertical">
@@ -43,10 +146,19 @@ export const ModalCash = ({
                 </Row>
 
             </Form>
-            <Table size="small" bordered sticky={true}>
-                <Table.Column title={<span style={{fontSize: '10px'}}>Desc</span>} align="center" />
-                <Table.Column title={<span style={{fontSize: '10px'}}>Custo</span>} align="center"/>
-            </Table>
+            <Table size="small" footer={()=> (<div style={{ textAlign: 'end', paddingRight: 20 }}>
+  <span style={{ fontSize: '10px', display: 'block' }}>Total</span>
+  <p style={{ fontSize: '11px', margin: 0 }}>
+    R$ {data.reduce((acc, d) => acc + d.custo, 0).toFixed(2)}
+  </p>
+</div>
+)} tableLayout="auto" scroll={{x: 10, y: 200}} bordered sticky={true} dataSource={data.map(d=>d)}>
+                    <Table.Column title={<span style={{fontSize: '10px'}}>Tipo</span>} align="center"  dataIndex="tipo" render={(_, data)=>(<p style={{fontSize: '10px'}}>{data?.tipo}</p>)}/>
+                    <Table.Column title={<span style={{fontSize: '10px'}}>Desc</span>} dataIndex="desc" render={(_, data)=>(<p style={{fontSize: '10px'}}>{data?.desc}</p>)}/>
+                    <Table.Column title={<span style={{fontSize: '10px'}}>Entrada</span>} align="center" dataIndex="entrada" render={(_, data)=>(<p style={{fontSize: '10px'}}>{data?.dataEntrada}</p>) }/>
+                    <Table.Column title={<span style={{fontSize: '10px'}}>Vencimento</span>} align="center" dataIndex="vencimento" render={(_, data)=>(<p style={{fontSize: '10px'}}>{data?.dataVencimento}</p>) }/>
+                    <Table.Column title={<span style={{fontSize: '10px'}}>Custo</span>} align="center" dataIndex="custo" render={(_, data)=>(<p style={{fontSize: '10px'}}>R$ {data?.custo}</p>) }/>
+                </Table>
         </Modal>    
     )
 
