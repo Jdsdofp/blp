@@ -61,6 +61,7 @@ export const DocumentShow = () => {
   const [isReplyingToComment, setIsReplyingToComment] = useState<number | null>(null);
   const [ messageApi, contextHolder ] = message.useMessage();
   const [isMdAddCond, setIsMdAddCond] = useState(false);
+  const [usersComments, setUsersComments] = useState<[]>();
   const [conditionUsers, setConditionUsers] = useState<number[]>([]); // Inicializa como array vazio
 
 
@@ -107,7 +108,9 @@ export const DocumentShow = () => {
 
   const [selectedUserIds, setSelectedUserIds] = useState([]);
   const [isRefetchingUsers, setIsRefetchingUsers] = useState(false);
-  const [isModalCash, setIsModalCash] = useState<boolean>()
+  const [isModalCash, setIsModalCash] = useState<boolean>();
+
+  
 
   const handleSendComment = async () => {
     try {
@@ -219,9 +222,26 @@ export const DocumentShow = () => {
   }
 
   const hendleOpenModalComments = (item: any) => {
-    setIsDocComment(item)
-    setIsModalComment(true)
-  };
+    setIsDocComment(item);
+    setIsModalComment(true);
+    setUsersComments(tableQueryResult.data.data)
+  }; 
+
+  const usersCommentsAttr = usersComments?.map((result)=>({ 
+         value: result?.u_nome, 
+         label: (
+           <div style={{ display: 'flex', alignItems: 'center' }}>
+             <Avatar 
+               size="small" 
+               style={{ marginRight: 8, backgroundColor: '#ffbf00' }} 
+               icon={String(result?.u_nome).toUpperCase()[0]}
+               src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${result?.u_nome}`}
+             />
+             {result?.u_nome}
+           </div>
+         ),
+      }))
+
 
   const hendleCloseModalComments = () => {
     setIsModalComment(false)
@@ -733,23 +753,7 @@ const handleUserToggle = (id) => {
               cols={60}
               autoSize
               placeholder="Comente sobre e use @ para mencionar alguém"
-              options={[
-                { value: 'Lores Lenne', label: 'Lores Lenne' },
-                { value: 'Aless', label: 'Aless' },
-                { 
-                  value: 'Marinas', 
-                  label: (
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <Avatar 
-                        size="small" 
-                        style={{ marginRight: 8, backgroundColor: '#ffbf00' }} 
-                        icon={String('Marinas').toUpperCase()[0]} 
-                      />
-                      Marinas
-                    </div>
-                  ),
-                },
-              ]}  
+              options={usersCommentsAttr}
               onChange={(value) => setCommentValue(value)}
             />
             <Button type="primary" shape="circle" icon={<Send />} onClick={handleSendComment} />

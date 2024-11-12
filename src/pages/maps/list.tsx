@@ -5,7 +5,9 @@ import L from 'leaflet';
 import { List } from '@refinedev/antd';
 import { useContext, useState } from 'react';
 import { ColorModeContext } from '../../contexts/color-mode';
-import { Card, Input } from 'antd';
+import { Card, Input, Table, Tag } from 'antd';
+import Link from 'antd/es/typography/Link';
+import { useNavigate } from 'react-router-dom';
 
 // Função para retornar a cor do ícone com base na situação
 const getMarkerColor = (situation) => {
@@ -45,6 +47,22 @@ export const Mapsall = () => {
     const { data, isInitialLoading } = useList({ resource: 'document', meta: { endpoint: 'listar-documentos-filais' } });
     const [modeColor, setModeColor] = useState(localStorage.getItem('colorMode'));
     const { mode, setMode } = useContext(ColorModeContext);
+    const navigate = useNavigate()
+
+    const getColor = (status: any) => {
+        switch (status) {
+          case 'Vencido':
+            return 'red-inverse';
+          case 'Em processo':
+            return 'cyan';
+          case 'Não iniciado':
+            return 'orange';
+          case 'Emitido':
+            return 'green';
+          default:
+            return 'default';
+        }
+      };
 
     return (
         <List breadcrumb canCreate={false} title="Relatório Mapa por Status">
@@ -86,13 +104,12 @@ export const Mapsall = () => {
                                                 <p><strong>Cidade:</strong> {filial.f_cidade}, {filial.f_uf}</p>
                                                 <p><strong>CNPJ:</strong> {filial.f_cnpj}</p>
 
-                                                <h4>Documentos</h4>
-                                                {sortedDocumentos.map(doc => (
-                                                    <p key={doc.d_id}>
-                                                        <strong>ID:</strong> {doc.d_id} - <strong>Situação:</strong> {doc.d_situacao}
-                                                    </p>
-                                                ))}
                                             </div>
+                                            {/* navigate(`/document/show/?status=Não%20iniciado&filialId=`) */}
+                                            <Table size='middle' dataSource={sortedDocumentos.map(doc=>doc)}>
+                                                <Table.Column title='Doc' render={(_, doc)=>(<Link style={{fontSize: 10}} onClick={()=>navigate(`/document/show/?status=${doc?.d_situacao}&filialId=${filial?.f_id}`)}>{doc.tipo_documentos?.td_desc}</Link>)}/>
+                                                <Table.Column title='Status' render={(_, doc)=>(<Tag style={{fontSize: 10}} color={getColor(doc?.d_situacao)}>{doc.d_situacao}</Tag>)}/>
+                                            </Table>
                                         </Popup>
                                     </Marker>
                                 );

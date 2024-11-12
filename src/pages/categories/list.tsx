@@ -209,7 +209,6 @@ export const DocumentList = () => {
     ).map((situacao) => ({ text: situacao, value: situacao }));
 
   
-
   const columns: TableProps<IDocuments>['columns'] = [
     {
       key: 'filiais',
@@ -286,6 +285,7 @@ export const DocumentList = () => {
       onFilter: (value, record) => {
         // Verifica se a situação do documento contém o valor filtrado
         return record.documentos.some(doc => doc.d_situacao === value);
+
       },
       render: (_, { documentos, f_id }) => {
         // Contagem de status por filial
@@ -322,10 +322,10 @@ export const DocumentList = () => {
               .filter(status => statusCount[status]) // Filtra apenas os status existentes
               .map((status) => (
                 <Tag
-                  style={{ cursor: 'pointer', borderRadius: 30 }}
-                  color={getColor(status)}
-                  key={status}
-                  onClick={() => handleTagClick(status, f_id)}
+                style={{ cursor: 'pointer', borderRadius: 30 }}
+                color={getColor(status)}
+                key={status}
+                onClick={() => handleTagClick(status, f_id)}
                 >
                   <Badge count={statusCount[status].count} size="small" color={getColor(status)}>
                     {status === 'Vencido' && <AlertOutlined />}
