@@ -109,6 +109,7 @@ export const DocumentShow = () => {
   const [selectedUserIds, setSelectedUserIds] = useState([]);
   const [isRefetchingUsers, setIsRefetchingUsers] = useState(false);
   const [isModalCash, setIsModalCash] = useState<boolean>();
+  const [numberProtocol, setNumberProtocol] = useState<number>()
 
   
 
@@ -360,13 +361,12 @@ const handleUserToggle = (id) => {
 };
 
   const handleCloseProcss = async (conditionID: number)=>{
- 
+
       try {
         const dc_id = conditionID; // Substitua pelo valor correto de 'dc_id'
 
         const payload = {
-          d_data_pedido: dataProtocolo,
-          d_num_protocolo: numProtocolo
+          d_data_pedido: dataProtocolo
         }
 
         // Envia a requisição para o backend com o parâmetro 'dc_id' na URL
@@ -380,18 +380,18 @@ const handleUserToggle = (id) => {
 
 
   }
+
   
   const handleCloseAllProcss = async (conditionID: number)=>{
-      console.log('ID', conditionID)
-      console.log('Emissao', dataEmissao)
-      console.log('Vencimento', dataVencimento)
-
       try {
         const dc_id = conditionID;
 
+        console.log('N Protocolo', numProtocolo)
+
         const payload = {
           d_data_emissao: dataEmissao,
-          d_data_vencimento: dataVencimento
+          d_data_vencimento: dataVencimento,
+          d_num_protocolo: numProtocolo
         }
 
         const {data} = await axios.put(`${API_URL}/document-condition/fechar-processo/${dc_id}`, payload);
@@ -400,12 +400,11 @@ const handleUserToggle = (id) => {
         setDataVencimento(null)
 
        messageApi.success(data?.message)
-
+       setNumberProtocol(data?.doc)
       } catch (error) {
         
       }
   }
-
 
   const verifyStatusDoc = async (id) => {
     
@@ -545,6 +544,7 @@ const handleUserToggle = (id) => {
           contextHolder={contextHolder}
           handleUserListAttr={handleUserListAttr}
           docStatusId={docStatusId}
+          numberProtocol={numberProtocol}
           />
 
       <Modal
