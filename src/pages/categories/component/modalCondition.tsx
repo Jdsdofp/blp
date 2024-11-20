@@ -42,9 +42,11 @@ export const ModalConditions = ({
     handleUserListAttr,
     docStatusId,
     numberProtocol,
-    dataOneDoc
+    dataOneDoc,
+    handlerDataOneData
 }) =>{
     
+  const [dataApi, setDataApi] = useState()
   const [stateProtocolo, setStateProtocolo] = useState<boolean>()
   const hasProtocol = numberProtocol?.d_num_protocolo;
   
@@ -59,8 +61,9 @@ export const ModalConditions = ({
      // Atualiza apenas com base no número de protocolo
   }, [hasProtocol]); // O useEffect dispara apenas quando d_num_protocolo muda
   
+
   
-  //console.log('Dados que vem da consulta API', dataOneDoc)
+  console.log('Dados que vem da consulta API', dataOneDoc)
   
 
   return (
@@ -69,7 +72,7 @@ export const ModalConditions = ({
         <Modal  
           open={isModal}
           onCancel={() => { hendleCloseModalConditions(); setCheckCondicionante(true); setNumProtocolo('')}}
-          okButtonProps={{ disabled: checkCondicionante, onClick: () => { setCheckCondicionante(true); setNumProtocolo('')}}}
+          okButtonProps={{ disabled: checkCondicionante, onClick: () => { setCheckCondicionante(true); setNumProtocolo(''); handlerDataOneData(dataOneDoc?.d_condicionante_id)}}}
           cancelButtonProps={{ hidden: true }}
           footer={[Object.entries(conditions || {}).filter(([key, value]) => value?.status === false).length >= 1 ? null : (
             

@@ -562,6 +562,7 @@ const handleUserToggle = (id) => {
           docStatusId={docStatusId}
           numberProtocol={numberProtocol}
           dataOneDoc={dataOneDoc}
+          handlerDataOneData={handlerDataOneData}
           />
 
       <Modal
