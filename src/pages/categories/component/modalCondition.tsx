@@ -4,6 +4,7 @@ import { Check, Close } from "@mui/icons-material";
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import { Button, Card, Checkbox, DatePicker, Input, List, Modal, Popover, Space, Spin, Tag } from "antd";
 
+
 const { Search } = Input;
 export const ModalConditions = ({
     isModal,
@@ -40,28 +41,34 @@ export const ModalConditions = ({
     contextHolder,
     handleUserListAttr,
     docStatusId,
-    numberProtocol
+    numberProtocol,
+    dataOneDoc
 }) =>{
     
   const [stateProtocolo, setStateProtocolo] = useState<boolean>()
   const hasProtocol = numberProtocol?.d_num_protocolo;
+  
+  
 
   useEffect(() => {
-    if(data?.data.map(d=>d?.d_num_protocolo)[0] == ''){
-      setStateProtocolo(true);
-    } else {
+    if(hasProtocol){
       setStateProtocolo(false);
+    } else {
+      setStateProtocolo(true);
     }
      // Atualiza apenas com base no número de protocolo
-  }, [data?.data.map((d)=>d?.d_situacao)[0], numberProtocol?.d_num_protocolo]); // O useEffect dispara apenas quando d_num_protocolo muda
-
+  }, [hasProtocol]); // O useEffect dispara apenas quando d_num_protocolo muda
+  
+  
+  //console.log('Dados que vem da consulta API', dataOneDoc)
+  
 
   return (
 
 
         <Modal  
           open={isModal}
-          onCancel={() => { hendleCloseModalConditions(); setCheckCondicionante(true)}}
+          onCancel={() => { hendleCloseModalConditions(); setCheckCondicionante(true); setNumProtocolo('')}}
           okButtonProps={{ disabled: checkCondicionante, onClick: () => { setCheckCondicionante(true); setNumProtocolo('')}}}
           cancelButtonProps={{ hidden: true }}
           footer={[Object.entries(conditions || {}).filter(([key, value]) => value?.status === false).length >= 1 ? null : (
@@ -69,17 +76,19 @@ export const ModalConditions = ({
               <Space>
                  <Tag color='purple-inverse' style={{ fontSize: 10, borderRadius: 20 }}>{result?.data?.status}</Tag>
                  
-                  {data?.data.map((d)=>d?.d_situacao)[0] == 'Não iniciado' ? (
+                  {dataOneDoc?.d_situacao == 'Não iniciado' ? (
                       <>
                         <DatePicker placeholder="Data Protocolo" name="d_data" locale='pt-BR' format={'DD/MM/YYYY'} allowClear  style={{borderRadius: 20}} onChange={(date) => setDataProtocolo(date)} value={dataProtocolo}/>
-                        <Button type="primary" onClick={()=>handleCloseProcss(result?.data?.dc_id)} shape="round" icon={<Check fontSize="inherit"/>} >Fechar</Button>
+                        <Button type="primary" onClick={()=>{handleCloseProcss(result?.data?.dc_id)}} shape="round" icon={<Check fontSize="inherit"/>} >Fechar</Button>
                       </>
                   ) : (
                       <>
-                      {data?.data.map((d)=>d?.d_situacao)[0] == 'Vencido' ? null : data?.data.map((d)=>d?.d_situacao)[0] == 'Emitido' ? null : (<>
-                        {data?.data.map(d=>d?.d_num_protocolo)[0] == '' ? <Input placeholder="Nº Protocolo" allowClear  style={{borderRadius: 20}} onChange={(e)=>setNumProtocolo(e.target.value)} value={numProtocolo}  /> : null}
-                        <DatePicker placeholder="Emissão" locale='pt-BR' format={'DD/MM/YYYY'} allowClear  style={{borderRadius: 20}} onChange={(date)=>setDataEmissao(date)} value={dataEmissao} disabled={stateProtocolo} />
-                        <DatePicker placeholder="Vencimento" locale='pt-BR' format={'DD/MM/YYYY'} allowClear  style={{borderRadius: 20}} onChange={(date)=>setDataVencimento(date)} value={dataVencimento} disabled={stateProtocolo}/>
+                      {dataOneDoc?.d_situacao == 'Vencido' ? null : dataOneDoc?.d_situacao == 'Emitido' ? null : (<>
+                        <Input placeholder="Nº Protocolo" allowClear  style={{borderRadius: 20}} onChange={(e)=>setNumProtocolo(e.target.value)} value={numProtocolo} disabled={dataOneDoc?.d_num_protocolo > 0 ? true : false}/>
+                        {console.log('verificar isso', dataOneDoc)}
+                        
+                        <DatePicker placeholder="Emissão" locale='pt-BR' format={'DD/MM/YYYY'} allowClear  style={{borderRadius: 20}} onChange={(date)=>setDataEmissao(date)} value={dataEmissao} disabled={dataOneDoc?.d_num_protocolo > 0 ? false : true}/>
+                        <DatePicker placeholder="Vencimento" locale='pt-BR' format={'DD/MM/YYYY'} allowClear  style={{borderRadius: 20}} onChange={(date)=>setDataVencimento(date)} value={dataVencimento} disabled={dataOneDoc?.d_num_protocolo > 0 ? false : true} />
                         <Button type="primary" onClick={()=>{handleCloseAllProcss(result?.data?.dc_id)}} shape="round" icon={<Check fontSize="inherit"/>} >{stateProtocolo ? 'Fechar' : 'Finalizar' }</Button>
                       </>)}
                       </>

@@ -110,7 +110,7 @@ export const DocumentShow = () => {
   const [isRefetchingUsers, setIsRefetchingUsers] = useState(false);
   const [isModalCash, setIsModalCash] = useState<boolean>();
   const [numberProtocol, setNumberProtocol] = useState<number>()
-
+  const [dataOneDoc, setDataOneDoc] = useState({})
   
 
   const handleSendComment = async () => {
@@ -386,8 +386,6 @@ const handleUserToggle = (id) => {
       try {
         const dc_id = conditionID;
 
-        console.log('N Protocolo', numProtocolo)
-
         const payload = {
           d_data_emissao: dataEmissao,
           d_data_vencimento: dataVencimento,
@@ -400,7 +398,9 @@ const handleUserToggle = (id) => {
         setDataVencimento(null)
 
        messageApi.success(data?.message)
+       await refetch()
        setNumberProtocol(data?.doc)
+
       } catch (error) {
         
       }
@@ -419,10 +419,25 @@ const handleUserToggle = (id) => {
       console.error("Erro ao obter o status do documento:", error);
     }
   };
+
+    //FAZENDO AQUI A PROCURA PELO DOCUMENTO INDIVIDUAL
+  const handlerDataOneData = async (id: number) =>{
+    try {
+        // Altere para axios.get se a rota suportar o método GET em vez de POST
+      const response = await axios.get(`${API_URL}/document/listar-documentos-conditionId/${id}`);
+      
+      setDataOneDoc(response?.data)
+    } catch (error) {
+        console.error("Erro ao obter o status do documento:", error);
+      }
+  }
+
+
  
   return (
     <Show title={[<><span>{status}</span></>]} canEdit={false} canDelete={false} headerButtons={<RefreshButton onClick={() => atualiza()} />}>
       <List
+        key={data?.data.map(d=>d.id)}
         loading={isInitialLoading || isLoading}
         dataSource={data?.data}
         size="small"
@@ -448,7 +463,8 @@ const handleUserToggle = (id) => {
                           onClick={() => {
                             openModal();
                             hendleOpenModalConditions(item.d_condicionante_id);
-                            verifyStatusDoc(item?.d_condicionante_id)
+                            verifyStatusDoc(item?.d_condicionante_id);
+                            handlerDataOneData(item?.d_condicionante_id)
                           }}
                         >
                           {item.d_condicionante_id && (
@@ -545,6 +561,7 @@ const handleUserToggle = (id) => {
           handleUserListAttr={handleUserListAttr}
           docStatusId={docStatusId}
           numberProtocol={numberProtocol}
+          dataOneDoc={dataOneDoc}
           />
 
       <Modal

@@ -100,7 +100,7 @@ export const Mapsall = () => {
                                     >
                                         <Popup>
                                             <div>
-                                                <h3>{filial.f_nome}</h3>
+                                                <h3>{filial.f_codigo} - <span style={{fontWeight: 'bold', fontSize: 15}}>{filial.f_nome}</span></h3>
                                                 <p><strong>Cidade:</strong> {filial.f_cidade}, {filial.f_uf}</p>
                                                 <p><strong>CNPJ:</strong> {filial.f_cnpj}</p>
 
