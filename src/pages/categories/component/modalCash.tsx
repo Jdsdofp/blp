@@ -1,8 +1,7 @@
-import { MoneyCollectFilled } from "@ant-design/icons";
-import { AttachMoneyOutlined, Money } from "@mui/icons-material";
-import { Col, DatePicker, Form, Input, Modal, Row, Select, Table } from "antd";
+import { Col, DatePicker, Form, Input, Modal, Row, Select, Spin, Table } from "antd";
 
-export const ModalCash = ({ open, close }) => {
+export const ModalCash = ({ open, close, dataOneDoc }) => {
+  
   const data = [
     {
       id: 1,
@@ -104,7 +103,8 @@ export const ModalCash = ({ open, close }) => {
   }, {});
 
   return (
-    <Modal open={open} onCancel={close} title="Valores do documento">
+    <Modal open={open} onCancel={close} title={['Valores Documento ', dataOneDoc?.filiais ? `[ ${dataOneDoc?.filiais?.f_codigo} - ${dataOneDoc?.filiais?.f_nome} ]` : (<><Spin/></>) ]}>
+      
       <Form layout="vertical">
         <Form.Item label="Tipo">
           <Select options={[{ label: 'Taxa', value: 'Taxa' }, { label: 'Serviço', value: 'Serviço' }]} />
@@ -115,6 +115,12 @@ export const ModalCash = ({ open, close }) => {
               <Input placeholder="Desc. Custo" />
             </Form.Item>
           </Col>
+
+          <Col xs={24} sm={12}>
+            <Form.Item label="Titulo/NF" name="d_num_ref">
+              <Input type="number" placeholder="0000000" />
+            </Form.Item>
+          </Col>    
 
           <Col xs={24} sm={12}>
             <Form.Item label="Valor" name="d_orgao_exp">

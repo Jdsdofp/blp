@@ -1,11 +1,11 @@
 import { CommentOutlined, DownOutlined, IssuesCloseOutlined, MessageOutlined, UpOutlined } from "@ant-design/icons"
 import { DateField, EditButton, RefreshButton, Show } from "@refinedev/antd";
 import { useList, useTable } from "@refinedev/core";
-import { List, Card, Row, Col, Modal, Input, Space, Button, Badge, Mentions, Tag, Avatar, message, Form, Popover } from "antd";
+import { List, Card, Row, Col, Modal, Input, Space, Button, Badge, Mentions, Tag, Avatar, message, Form, Popover, Switch } from "antd";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../../authProvider";
-import { ReplyOutlined, Send } from "@mui/icons-material";
+import { Check, Close, ReplyOutlined, Send } from "@mui/icons-material";
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import dayjs from 'dayjs';
@@ -108,10 +108,12 @@ export const DocumentShow = () => {
 
   const [selectedUserIds, setSelectedUserIds] = useState([]);
   const [isRefetchingUsers, setIsRefetchingUsers] = useState(false);
-  const [isModalCash, setIsModalCash] = useState<boolean>();
   const [numberProtocol, setNumberProtocol] = useState<number>()
   const [dataOneDoc, setDataOneDoc] = useState({})
-  
+  const [switchChecked, setSwitchChecked] = useState<boolean>(false);
+
+  //MODEL CASH
+  const [isModalCash, setIsModalCash] = useState<boolean>();
 
   const handleSendComment = async () => {
     try {
@@ -133,11 +135,12 @@ export const DocumentShow = () => {
     await asas();
   }
 
+
   const toggleCondition = async (key: string) => {
     setConditions((prevConditions) => {
       const currentValue = prevConditions[key]?.status;
       let newValue;
-
+  
       if (currentValue === true) {
         newValue = false;
       } else if (currentValue === false) {
@@ -145,41 +148,40 @@ export const DocumentShow = () => {
       } else {
         newValue = true;
       }
-
+  
       const updatedConditions = {
         ...prevConditions,
         [key]: {
+          // Preserva as propriedades anteriores, como `dateCreate`
+          ...prevConditions[key],
           status: newValue,
           date: new Date(),
           users: [userTK],
-          statusProcesso: data?.data.map(d=>d?.d_situacao)[0],
+          statusProcesso: data?.data.map((d) => d?.d_situacao)[0],
         },
-
       };
-
-
+  
       // Certifique-se de que o ID da condicionante está presente
       if (isModalIdCondition && updatedConditions[key]) {
-
         // Chama a API para atualizar a condição via axios
-        axios.put(`${API_URL}/document-condition/fechar-condicionante/${isModalIdCondition}`, {
-          dc_condicoes: {
-            [key]: updatedConditions[key],
-          },
-        })
-          .then(response => {
-            console.log("Condição atualizada com sucesso:", response.data);
+        axios
+          .put(`${API_URL}/document-condition/fechar-condicionante/${isModalIdCondition}`, {
+            dc_condicoes: {
+              [key]: updatedConditions[key],
+            },
           })
-          .catch(error => {
-            console.error("Erro ao atualizar condição:", error);
+          .then((response) => {
+            console.log('Condição atualizada com sucesso:', response.data);
+          })
+          .catch((error) => {
+            console.error('Erro ao atualizar condição:', error);
           });
       }
-
+  
       return updatedConditions;
-
     });
-
   };
+  
 
   const handleSendReply = async () => {
     if (!isReplyingToComment) return;
@@ -254,7 +256,7 @@ export const DocumentShow = () => {
         return 'red-inverse';
       case 'Em processo':
         return 'cyan';
-      case 'Não iniciado':
+      case 'Irregular':
         return 'orange';
       case 'Emitido':
         return 'green';
@@ -319,6 +321,7 @@ const handleUserToggle = (id) => {
                 date: null,
                 users: [userTK],  // Exemplo de usuário. Você pode pegar isso dinamicamente conforme necessário
                 status: false,
+                dateCreate: new Date(),
                 statusProcesso: data?.data.map(d=>d?.d_situacao)[0]
             }
         };
@@ -432,6 +435,37 @@ const handleUserToggle = (id) => {
       }
   }
 
+  const handlerUpdateStateDoc = async (d_id: number) =>{
+      try {
+
+        const payload = {
+          d_situacao: 'Irregular'
+        }
+
+       const response = await axios.put(`${API_URL}/document/atualiza-status-irregular/${d_id}`, payload);
+       
+       console.log(response)
+       messageApi.success(response?.data?.message)
+      } catch (error) {
+        console.log(error)
+      }
+  }
+
+
+
+  useEffect(() => {
+    if (dataOneDoc?.d_situacao === 'Irregular') {
+      setSwitchChecked(true);
+    } else {
+      setSwitchChecked(false);
+    }
+  }, [dataOneDoc?.d_situacao]);
+
+  const handleSwitchChange = (checked) => {
+    setSwitchChecked(checked);
+    handlerUpdateStateDoc(dataOneDoc?.d_id, checked);
+  };
+
 
  
   return (
@@ -493,7 +527,7 @@ const handleUserToggle = (id) => {
                         </Space>,
                       ]}
                     >
-                      <p style={{ fontSize: 12, margin: 0 }}>{item?.filiais?.f_nome}</p>
+                      <p style={{ fontSize: 12, margin: 0 }}>{item?.filiais?.f_codigo} - {item?.filiais?.f_nome}</p>
                       <p style={{ fontSize: 12, margin: 0 }}>{item?.tipo_documentos?.td_desc}</p>
                       <p style={{ fontSize: 10 }}>
                         <DateField value={item?.criado_em} format="DD/MM/YYYY · H:mm:ss" locales="pt-br" style={{ fontSize: 9 }} />
@@ -512,7 +546,8 @@ const handleUserToggle = (id) => {
                             {item?.d_situacao}
                           </Tag>
 
-                          <Button icon={<PaidIcon fontSize="small" htmlColor="green" />} shape="circle" style={{ marginLeft: 160, border: 0 }} onClick={()=>setIsModalCash(true)}/>
+                          <Button icon={<PaidIcon fontSize="small" htmlColor="green" />} shape="circle" style={{ marginLeft: 160, border: 0 }} onClick={async ()=>{await setIsModalCash(true); await handlerDataOneData(item?.d_condicionante_id)}}/>
+                          
                         </Space>
                       </Space>
                     </Card>
@@ -523,8 +558,6 @@ const handleUserToggle = (id) => {
       />
 
 
-
-      {/*MODAL DE CONDICIONANTES*/}
       <ModalConditions 
           isModal={isModal}
           hendleCloseModalConditions={hendleCloseModalConditions}
@@ -797,11 +830,12 @@ const handleUserToggle = (id) => {
                   <Input placeholder="Condição" />
               </Form.Item>
           </Form>
+          <Form.Item><span style={{fontSize: 14}}>Irregular? </span> <Switch size="small" checked={switchChecked} onChange={handleSwitchChange}  /></Form.Item>
           {contextHolder}  
       </Modal>
 
-
-      <ModalCash open={isModalCash} close={()=>setIsModalCash(false)}  /> 
+      
+      <ModalCash open={isModalCash} close={()=>setIsModalCash(false)} dataOneDoc={dataOneDoc}/> 
     </Show>
   );
 };
