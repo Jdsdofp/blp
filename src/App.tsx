@@ -33,6 +33,7 @@ import {
   CategoryEdit,
   DocumentList,
   DocumentShow,
+  ShowDocs,
 } from "./pages/categories";
 import ptBR from 'antd/es/locale/pt_BR';
 import 'dayjs/locale/pt-br'
@@ -51,7 +52,7 @@ import { DocTypeDocCreate } from "./pages/documents/typeDocument/list";
 import { ListCondition } from "./pages/documents/conditinals/list";
 import { CreateCondition } from "./pages/documents/conditinals/create";
 import { CalendarList } from "./pages/calendar/list";
-import { dataProviderCond } from "./contexts/providerData/cond";
+import { Mapsall } from "./pages/maps/list";
 
 
 type Props = {
@@ -153,7 +154,7 @@ function App() {
                   >
                     <Route
                       index
-                      element={<NavigateToResource resource="blog_posts" />}
+                      element={<NavigateToResource resource="document" />}
                     />
                     <Route path="/blog-posts">
                       <Route index element={<BlogPostList />} />
@@ -165,6 +166,11 @@ function App() {
                       <Route index element={<DocumentList />} />
                       <Route path="edit/:id" element={<CategoryEdit />} />
                       <Route path="show" element={<DocumentShow />} />
+                      <Route path="alldocuments/:id" element={<ShowDocs />}/>
+                    </Route>
+                    
+                    <Route path="/mapsall">
+                        <Route index element={<Mapsall />} />
                     </Route>
 
                     <Route path="/calendario">

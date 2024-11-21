@@ -1,5 +1,6 @@
 import { ApartmentOutlined, BranchesOutlined, CalendarOutlined, DashboardFilled, DashboardTwoTone, DashOutlined, ExceptionOutlined, FileSyncOutlined, SafetyCertificateOutlined, SubnodeOutlined, UserSwitchOutlined } from "@ant-design/icons";
-import { CalendarMonthOutlined, Dashboard, DashboardCustomizeOutlined, DashboardCustomizeSharp, DashboardOutlined, DocumentScannerTwoTone, FolderCopyOutlined, TypeSpecimen } from "@mui/icons-material";
+import { CalendarMonthOutlined, Dashboard, DashboardCustomizeOutlined, DashboardCustomizeSharp, DashboardOutlined, DocumentScannerTwoTone, FolderCopyOutlined, MapsHomeWorkTwoTone, TypeSpecimen } from "@mui/icons-material";
+import AddLocationAltIcon from '@mui/icons-material/AddLocationAlt';
 import AddBusinessIcon from '@mui/icons-material/AddBusiness';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import type { IResourceItem } from "@refinedev/core";
@@ -37,6 +38,18 @@ export const resources: IResourceItem[] = [
       canDelete: true,
       label: 'Calendario',
       icon: <CalendarMonthOutlined />
+    },
+  },
+  {
+    name: "maps",
+    list: "/mapsall",
+    create: "/maps/create",
+    edit: "/maps/edit/:id",
+    show: "/maps/show",
+    meta: {
+      canDelete: true,
+      label: 'Maps',
+      icon: <AddLocationAltIcon />
     },
   },
   {

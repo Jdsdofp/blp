@@ -342,16 +342,12 @@ export const AdmBranchlist = () => {
                         <Row gutter={16}>
                             <Col xs={24} sm={12}>
                                 <Form.Item label="Latitude" name="f_latitude">
-                                    <InputMask mask="-99.999999">
-                                        {(inputProps: any) => <Input {...inputProps} placeholder="00.000000" allowClear={{ clearIcon: <ClearOutlined /> }} />}
-                                    </InputMask>
+                                    <Input placeholder="00.000000" allowClear={{ clearIcon: <ClearOutlined /> }} />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} sm={12}>
                                 <Form.Item label="Longitude" name="f_longitude">
-                                    <InputMask mask="-99.999999">
-                                        {(inputProps: any) => <Input {...inputProps} placeholder="00.000000" allowClear={{ clearIcon: <ClearOutlined /> }} />}
-                                    </InputMask>
+                                    <Input placeholder="00.000000" allowClear={{ clearIcon: <ClearOutlined /> }} />
                                 </Form.Item>
                             </Col>
                             

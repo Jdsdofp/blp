@@ -17,6 +17,7 @@ const getResourceUrl = (resource: string, ids: number, id: number): string => {
         conditionalCreate: `${API_URL}/condition/registrar-condicionante`,
         documentCreate: `${API_URL}/document/registrar-documento`,
         listarDocumentos: `${API_URL}/document//listar-documentos`,
+        listarTodosDocumentosFilial: `${API_URL}/document/listar-todos-documentos-filial/${id}`,
         commentCreate: `${API_URL}/comment-document/${id}/registar-comentario`
     };
     

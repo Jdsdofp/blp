@@ -1,5 +1,8 @@
 import {
   List,
+  ListButton,
+  RefreshButton,
+  ShowButton,
   useForm,
   useTable
 } from "@refinedev/antd";
@@ -9,8 +12,9 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import {  CreateNewFolder, OneK } from "@mui/icons-material";
 import TabPane from "antd/lib/tabs/TabPane";
-import { CheckCircleOutlined, DownCircleOutlined, ExceptionOutlined, FolderAddOutlined, IssuesCloseOutlined, UpCircleOutlined } from "@ant-design/icons";
+import { AlertOutlined, CheckCircleOutlined, ClockCircleOutlined, DownCircleOutlined, ExceptionOutlined, ExclamationCircleOutlined, FolderAddOutlined, IssuesCloseOutlined, SearchOutlined, UpCircleOutlined } from "@ant-design/icons";
 import { useInvalidate, useList } from "@refinedev/core";
+import { ColumnType } from "antd/es/table";
 
 interface IDocuments {
   f_id: number;
@@ -52,9 +56,10 @@ export const DocumentList = () => {
   const [subList, setSubList] = useState(false)
   const [conditionsStatus, setConditionsStatus] = useState<{[key: string]: boolean}>({})
   const [userTK, setUserTK] = useState<any>(JSON.parse(localStorage.getItem('refine-user'))?.id)
-  const navigate = useNavigate()
-  
-  
+  const navigate = useNavigate();
+  const [searchText, setSearchText] = useState('')
+  const [seachedColumn, setSearchedColumn] = useState('');
+  const [selectedUFs, setSelectedUFs] = useState<string[]>([]);
   
   const { data: listTypeDocument } = useList({ resource: 'type-document', meta: { endpoint: 'listar-tipo-documentos' }, liveMode: 'auto',  });
   const { data: condtionsResult } = useList({ resource: 'condition', meta: { endpoint: 'listar-condicionantes' } });
@@ -108,21 +113,102 @@ export const DocumentList = () => {
 
 
 
-  const { tableProps } = useTable({
+  const { tableProps, tableQueryResult } = useTable({
     resource: 'document', meta: { endpoint: 'listar-documentos-filais' },
     syncWithLocation: false,
+    liveMode: "auto"
   });
 
+
+
+  const getColumnSearchProps = (title, dataIndex: keyof IDocuments): ColumnType<IDocuments> => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }: FilterConfirmProps) => (
+      <div style={{ padding: 8 }}>
+        <Input
+          placeholder={`Buscar ${title}`}
+          value={selectedKeys[0]}
+          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          style={{ marginBottom: 8, display: "block" }}
+        />
+        <Button
+          type="primary"
+          onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          icon={<SearchOutlined />}
+          size="small"
+          style={{ width: 90 }}
+        >
+          Buscar
+        </Button>
+        <Button
+          onClick={() => handleReset(clearFilters)}
+          size="small"
+          style={{ width: 90 }}
+        >
+          Limpar
+        </Button>
+      </div>
+    ),
+    filterIcon: (filtered: boolean) => (
+      <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
+    ),
+    onFilter: (value, record) =>
+      record[dataIndex]
+        .toString()
+        .toLowerCase()
+        .includes((value as string).toLowerCase()),
+    onFilterDropdownVisibleChange: (visible) => {
+      if (visible) {
+        setTimeout(() => setSearchText(""), 100);
+      }
+    },
+    render: (text) =>
+      searchedColumn === dataIndex ? (
+        <span style={{ backgroundColor: "#ffc069", padding: 0 }}>{text}</span>
+      ) : (
+        text
+      ),
+  });
+
+  const handleSearch = (selectedKeys: React.Key[], confirm: () => void, dataIndex: keyof IDocuments) => {
+    confirm();
+    setSearchText(selectedKeys[0] as string);
+    setSearchedColumn(dataIndex);
+  };
+  
+  const handleReset = (clearFilters: () => void) => {
+    clearFilters();
+    setSearchText("");
+  };
+
+
+  const uniqueUFs = Array.from(new Set(tableQueryResult.data?.data.map((uf) => uf?.f_uf)))
+  .map((uf) => ({ text: uf, value: uf }));
+
+  const uniqueCity = Array.from(new Set(tableQueryResult.data?.data.map((city) => city?.f_cidade)))
+  .map((city) => ({ text: city, value: city }));
+
+    // Obter situações únicas para filtro
+    const uniqueSituations = Array.from(
+      new Set(
+        tableQueryResult.data?.data
+          .flatMap((item) => item.documentos)
+          .filter((doc) => doc.d_situacao)
+          .map((doc) => doc.d_situacao)
+      )
+    ).map((situacao) => ({ text: situacao, value: situacao }));
+
+  
 
   const columns: TableProps<IDocuments>['columns'] = [
     {
       key: 'filiais',
-      title: 'Sitação Imovel',
-      width: '7%',
+      title: '#',
+      width: 8,
       align: 'center',
       render: (_, record) => (
         <>
-          <Popover title={record.f_ativo ? (<Tag color="success" style={{ width: '100%' }}>Ativa</Tag>) : (<Tag color="error" style={{ width: '100%' }}>Desativada</Tag>)}
+          <Popover title={record.f_ativo ? (<Tag color="success" style={{ width: '100%' }}>Ativada</Tag>) : (<Tag color="error" style={{ width: '100%' }}>Desativada</Tag>)}
             arrowContent>
             <StoreIcon color={record.f_ativo ? 'success' : 'error'} fontSize="small" style={{ cursor: 'pointer' }} />
           </Popover>
@@ -135,16 +221,19 @@ export const DocumentList = () => {
       key: 'd_id',
       title: 'Nº Loja',
       align: 'center',
-      width: '6%',
+      width: '5%',
+      ...getColumnSearchProps("Cod", "f_codigo"),
       sorter: (a, b) => a.f_codigo - b.f_codigo,
-      render: (_, { f_codigo }) => (
-        <a style={{ fontSize: '12px' }}>#{f_codigo}</a>
-      )
+      render: (_, { f_codigo, f_id }) => (
+        <a style={{ fontSize: '12px' }} onClick={()=> navigate(`alldocuments/${f_id}`)}>#{f_codigo}</a>
+      ),
+      
     },
 
     {
       key: 'filiais',
       title: 'Filial',
+      ...getColumnSearchProps("Filial", "f_nome"),
       render: (_, record) => (
         record.f_nome
       )
@@ -153,6 +242,7 @@ export const DocumentList = () => {
     {
       key: 'filiais',
       title: 'CNPJ',
+      ...getColumnSearchProps("CNPJ", "f_cnpj"),
       render: (_, record) => (
         formatCNPJ(record.f_cnpj)
       )
@@ -161,6 +251,8 @@ export const DocumentList = () => {
     {
       key: 'filiais',
       title: 'Cidade',
+      filters: uniqueCity,
+      onFilter: (value, record) => record.f_cidade === value,
       render: (_, record) => (
         record.f_cidade
       )
@@ -169,6 +261,10 @@ export const DocumentList = () => {
     {
       key: 'filiais',
       title: 'UF',
+      align: 'center',
+      filters: uniqueUFs,
+      onFilter: (value, record) => record.f_uf === value,
+      width: 50,
       render: (_, record) => (
         record.f_uf
       )
@@ -177,9 +273,16 @@ export const DocumentList = () => {
     {
       key: 'documentos',
       title: 'Status',
-      render: (_, { documentos, f_id }: any) => {
-
-        const statusCount = documentos.reduce((acc: any, d: any) => {
+      width: 366,
+      align: 'center',
+      filters: uniqueSituations,
+      onFilter: (value, record) => {
+        // Verifica se a situação do documento contém o valor filtrado
+        return record.documentos.some(doc => doc.d_situacao === value);
+      },
+      render: (_, { documentos, f_id }) => {
+        // Contagem de status por filial
+        const statusCount = documentos.reduce((acc, d) => {
           if (acc[d.d_situacao]) {
             acc[d.d_situacao].count += 1;
           } else {
@@ -187,40 +290,36 @@ export const DocumentList = () => {
           }
           return acc;
         }, {});
-
-
-        const getColor = (status: any) => {
+  
+        const getColor = (status) => {
           switch (status) {
-            case 'Vencido':
-              return 'red-inverse';
-            case 'Em processo':
-              return 'cyan';
-            case 'Não iniciado':
-              return 'orange';
-            case 'Emitido':
-              return 'green';
-            default:
-              return 'default';
+            case 'Vencido': return 'red-inverse';
+            case 'Em processo': return 'cyan';
+            case 'Não iniciado': return 'orange';
+            case 'Emitido': return 'green';
+            default: return 'default';
           }
         };
-
-        const handleTagClick = (status: any, f_id: any) => {
-          {
-            navigate(`/document/show/?status=${status}&filialId=${f_id}`);
-          }
+  
+        const handleTagClick = (status, f_id) => {
+          navigate(`/document/show/?status=${status}&filialId=${f_id}`);
         };
-
+  
         return (
           <>
             {Object.keys(statusCount).map((status) => (
               <Tag
-                style={{ cursor: 'pointer', borderRadius: 20 }}
+                style={{ cursor: 'pointer', borderRadius: 30 }}
                 color={getColor(status)}
                 key={status}
                 onClick={() => handleTagClick(status, f_id)}
               >
                 <Badge count={statusCount[status].count} size="small" color={getColor(status)}>
-                  {status}
+                  {status === 'Vencido' && <AlertOutlined />}
+                  {status === 'Em processo' && <ClockCircleOutlined />}
+                  {status === 'Não iniciado' && <ExclamationCircleOutlined />}
+                  {status === 'Emitido' && <CheckCircleOutlined />}
+                  <span style={{ fontSize: 10, marginLeft: 4 }}>{status}</span>
                 </Badge>
               </Tag>
             ))}
@@ -301,7 +400,7 @@ const handleCondicoes = (value: any, option: any) => {
 
   // Inicializa o status das condições como 'false' (unchecked) e data como null
   const initialStatus = conditions.reduce((acc: any, cond: string) => {
-    acc[cond] = { status: false, date: null, users: [userTK] }; // Inicializa cada condição com status false e data null
+    acc[cond] = { status: false, date: null, users: [userTK], statusProcesso: 'Não iniciado' }; // Inicializa cada condição com status false e data null
     return acc;
   }, {});
 
@@ -314,11 +413,9 @@ const handleCondicoes = (value: any, option: any) => {
 
 
 
-
-
   return (
     <>
-      <List>
+      <List canCreate={false} headerButtons={<RefreshButton  hideText shape="circle"/>}>
         <Table {...tableProps} rowKey="id" columns={columns} size="small"  bordered/>
       </List>
 

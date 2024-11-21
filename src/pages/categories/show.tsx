@@ -1,17 +1,19 @@
-import { CheckCircleOutlined, CloseCircleOutlined, CloseCircleTwoTone, CommentOutlined, DownOutlined, ExclamationCircleOutlined, IssuesCloseOutlined, MessageOutlined, SaveOutlined, UpOutlined } from "@ant-design/icons"
-import { CloneButton, DateField, EditButton, RefreshButton, Show } from "@refinedev/antd";
-import { useList, useTable } from "@refinedev/core";
-import { List, Card, Row, Col, Modal, Popover, Spin, DatePicker, Input, Space, Button, Badge, Mentions, Tag, Avatar, Switch, message } from "antd";
-import { useEffect, useState } from "react";
+import { CommentOutlined, DownOutlined, IssuesCloseOutlined, MessageOutlined, UpOutlined } from "@ant-design/icons"
+import { DateField, EditButton, RefreshButton, Show } from "@refinedev/antd";
+import { useActiveAuthProvider, useList, useTable } from "@refinedev/core";
+import { List, Card, Row, Col, Modal, Input, Space, Button, Badge, Mentions, Tag, Avatar, message, Form, Popover } from "antd";
+import { useContext, useEffect, useState } from "react";
 import axios from "axios";
-import { API_URL } from "../../authProvider";
-import { Check, Close, CloseFullscreen, Money, ReplyOutlined, Send } from "@mui/icons-material";
+import { API_URL, authProvider } from "../../authProvider";
+import { ReplyOutlined, Send } from "@mui/icons-material";
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import PaidIcon from '@mui/icons-material/Paid';
 import 'dayjs/locale/pt-br';
+import { ModalConditions } from "./component/modalCondition";
+import EqualizerIcon from '@mui/icons-material/Equalizer';
 dayjs.extend(relativeTime);
 dayjs.locale('pt-br');
 
@@ -47,18 +49,20 @@ export const DocumentShow = () => {
   const [isModal, setIsModal] = useState<boolean>(false);
   const [isModalIdCondition, setIsModalIdCondition] = useState<any>();
   const [isModalComment, setIsModalComment] = useState<boolean>(false);
-  const [isDocComment, setIsDocComment] = useState({})
+  const [isDocComment, setIsDocComment] = useState({});
   const [isIdDoComment, setIsIdDoComment] = useState<number>()
   const [checkCondicionante, setCheckCondicionante] = useState<boolean>(true);
   const [conditions, setConditions] = useState<{ [key: string]: boolean | null }>({});
   const [expanded, setExpanded] = useState(false);
-  const [userTK, setUserTK] = useState<any>(JSON.parse(localStorage.getItem('refine-user')).id)
+  const [userTK, setUserTK] = useState<any>(JSON.parse(localStorage.getItem('refine-user')).id);
   const [replyValue, setReplyValue] = useState<string>('');
   const [isReplyingToComment, setIsReplyingToComment] = useState<number | null>(null);
-  const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
   const [ messageApi, contextHolder ] = message.useMessage();
+  const [isMdAddCond, setIsMdAddCond] = useState(false);
+  const [conditionUsers, setConditionUsers] = useState<number[]>([]); // Inicializa como array vazio
+ 
 
-
+  const [form] = Form.useForm();
 
   const { data, isInitialLoading, isLoading, refetch } = useList({
     resource: 'document',
@@ -90,10 +94,19 @@ export const DocumentShow = () => {
 
   const [commentValue, setCommentValue] = useState<string>('');
   const [commentStatusValue, setCommentStatusValue] = useState<string>('');
-  const [visiblePopover, setVisiblePopover] = useState({}); // Armazena a visibilidade do popover por condição
+  const [visiblePopover, setVisiblePopover] = useState({});
   const [searchTerm, setSearchTerm] = useState('');
   const [numProtocolo, setNumProtocolo] = useState('');
   const [dataProtocolo, setDataProtocolo] = useState(null);
+  const [dataEmissao, setDataEmissao] = useState(null);
+  const [dataVencimento, setDataVencimento] = useState(null);
+  const [userList, setUserList] = useState([]);
+  const [loadingListUserAttr, setLoadingListUserAttr] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [docStatusId, setDocStatusId] = useState<any>()
+
+  const [selectedUserIds, setSelectedUserIds] = useState([]);
+  const [isRefetchingUsers, setIsRefetchingUsers] = useState(false);
 
   const handleSendComment = async () => {
     try {
@@ -110,8 +123,6 @@ export const DocumentShow = () => {
       console.error("Erro ao enviar comentário:", error);
     }
   };
-
-  
 
   const refreshCondition = async () =>{
     await asas();
@@ -135,7 +146,8 @@ export const DocumentShow = () => {
         [key]: {
           status: newValue,
           date: new Date(),
-          users: [userTK]
+          users: [userTK],
+          statusProcesso: data?.data.map(d=>d?.d_situacao)[0],
         },
 
       };
@@ -229,21 +241,77 @@ export const DocumentShow = () => {
     }
   };
 
-  
-   // Filtra os usuários com base no termo de busca
-   const filteredUsuarios = tableQueryResult.data?.data.filter((user) =>
-    user.u_nome.toLowerCase().includes(searchTerm.toLowerCase())
-);
+  // Filtra os usuários com base no termo de busca
+  const filteredUsuarios = userList.filter((user) =>
+    user?.u_nome.toLowerCase().includes(searchTerm.toLowerCase())
+);  
 
-  const handleUserToggle = (userId: number) => {
-    setSelectedUserIds((prevSelected) => {
-        if (prevSelected.includes(userId)) {
-            return prevSelected.filter(id => id !== userId); // Remove se já estiver selecionado
-        } else {
-            return [...prevSelected, userId]; // Adiciona se não estiver
-        }
-    });
+const handleUserToggle = (id) => {
+  setUsers(prevUsers => {
+      const updatedUsers = prevUsers.map(user =>
+          user.u_id === id ? { ...user, u_atribuido: !user.u_atribuido } : user
+      );
+
+      // Atualiza a lista de IDs dos usuários selecionados
+      const newSelectedUserIds = updatedUsers
+          .filter(user => user.u_atribuido)
+          .map(user => user.u_id);
+
+      setSelectedUserIds(newSelectedUserIds); // Atualiza o estado com os IDs selecionados
+      return updatedUsers; // Retorna a lista atualizada
+  });
+};
+  
+  // Função para chamar a API e listar os usuários
+  const handleUserListAttr = async (dc_id, condicaoNome) => {
+    try {
+      setLoadingListUserAttr(true);
+
+      const payload = {
+        nome: condicaoNome
+      }
+
+      // Chamada à rota passando o id da condição e o nome da condição
+      const response = await axios.post(`${API_URL}/document-condition/listar-usuarios-atribuidos-condicao/${dc_id}`, payload);
+
+      // Define a lista de usuários no estado
+      setUserList(response.data);
+      setUsers(response.data)
+    } catch (error) {
+      console.error("Erro ao buscar usuários", error);
+    } finally {
+      setLoadingListUserAttr(false);
+    }
   };
+
+  const handleSubmitAddConditions = async () => {
+    try {
+        // Pega os valores do formulário
+        const values = await form.validateFields();
+        const dc_id = isModalIdCondition;
+        
+        // Estrutura o payload para envio
+        const payload = {
+            novaCondicao: values?.c_condicao,  // Supondo que você está adicionando uma nova condição
+            detalhesCondicao: {
+                date: null,
+                users: [userTK],  // Exemplo de usuário. Você pode pegar isso dinamicamente conforme necessário
+                status: false,
+                statusProcesso: data?.data.map(d=>d?.d_situacao)[0]
+            }
+        };
+
+        // Envia os dados para o backend
+        const response = await axios.put(`${API_URL}/document-condition/adicionar-condicoes/${dc_id}`, payload);
+
+        messageApi.success(response?.data?.message);
+        await refreshCondition()
+        form.resetFields()
+    } catch (error) {
+      messageApi.error(error?.response?.data?.message);
+    }
+  };
+
 
   const handleSubmit = async (conditionKey) => {
     try {
@@ -258,20 +326,17 @@ export const DocumentShow = () => {
         const dc_id = isModalIdCondition; // Substitua pelo valor correto de 'dc_id'
 
         // Envia a requisição para o backend com o parâmetro 'dc_id' na URL
-       const {data} = await axios.patch(`${API_URL}/document-condition/atribuir-usuarios-condicao/${dc_id}`, payload);
+        const { data } = await axios.patch(`${API_URL}/document-condition/atribuir-usuarios-condicao/${dc_id}`, payload);
 
-
-        // Ações adicionais após o envio, como manter o modal aberto e limpar a lista de usuários selecionados
+        // Ações adicionais após o envio
         setSelectedUserIds([]); // Limpa a lista de IDs de usuários selecionados
-        setCheckCondicionante(true); // Atualize qualquer estado necessário
         messageApi.success(data?.message); // Feedback ao usuário
-        
-        await refreshCondition()
+        await refreshCondition();
     } catch (error) {
         console.error('Erro ao enviar os dados:', error);
         message.error('Erro ao atribuir usuários. Por favor, tente novamente.');
     }
-  };
+};
 
   const handleCloseProcss = async (conditionID: number)=>{
  
@@ -285,14 +350,56 @@ export const DocumentShow = () => {
 
         // Envia a requisição para o backend com o parâmetro 'dc_id' na URL
        const {data} = await axios.put(`${API_URL}/document-condition/fechar-processo-condicionante/${dc_id}`, payload);
-       console.log(data)
+       setNumProtocolo('')
+       setDataProtocolo(null)
+       messageApi.success(data?.message)
       } catch (error) {
         console.log('Erro ao requisiatar ', error)
       }
 
 
   }
+  
+  const handleCloseAllProcss = async (conditionID: number)=>{
+      console.log('ID', conditionID)
+      console.log('Emissao', dataEmissao)
+      console.log('Vencimento', dataVencimento)
 
+      try {
+        const dc_id = conditionID;
+
+        const payload = {
+          d_data_emissao: dataEmissao,
+          d_data_vencimento: dataVencimento
+        }
+
+        const {data} = await axios.put(`${API_URL}/document-condition/fechar-processo/${dc_id}`, payload);
+        
+        setDataEmissao(null)
+        setDataVencimento(null)
+
+       messageApi.success(data?.message)
+
+      } catch (error) {
+        
+      }
+  }
+
+
+  const verifyStatusDoc = async (id) => {
+    console.log("ID do documento:", id); // Verifique se o ID está sendo passado corretamente
+  
+    try {
+      // Altere para axios.get se a rota suportar o método GET em vez de POST
+      const response = await axios.get(`${API_URL}/document/listar-status-id/${id}`);
+  
+      // Log para verificar a resposta da API
+      setDocStatusId(response.data);
+      // Manipule o status do documento conforme necessário, por exemplo, atualizar o estado
+    } catch (error) {
+      console.error("Erro ao obter o status do documento:", error);
+    }
+  };
  
   return (
     <Show title={[<><span>{status}</span></>]} canEdit={false} canDelete={false} headerButtons={<RefreshButton onClick={() => atualiza()} />}>
@@ -322,10 +429,11 @@ export const DocumentShow = () => {
                           onClick={() => {
                             openModal();
                             hendleOpenModalConditions(item.d_condicionante_id);
+                            verifyStatusDoc(item?.d_condicionante_id)
                           }}
                         >
                           {item.d_condicionante_id && (
-                            <IssuesCloseOutlined style={{ color: '#ebc334', fontSize: 19, cursor: 'pointer' }} hidden={item?.d_num_protocolo.length} />
+                            <IssuesCloseOutlined style={{ color: '#ebc334', fontSize: 19, cursor: 'pointer' }} />
                           )}
                         </span>
                       }
@@ -346,6 +454,7 @@ export const DocumentShow = () => {
                               }}
                             />
                           </Badge>
+                          <Button icon={<EqualizerIcon fontSize="inherit" htmlColor="#F23847"/>} shape="circle" size="small"/>
                         </Space>,
                       ]}
                     >
@@ -368,7 +477,7 @@ export const DocumentShow = () => {
                             {item?.d_situacao}
                           </Tag>
 
-                          <Button icon={<PaidIcon fontSize="small" />} shape="circle" style={{ marginLeft: 160, border: 0 }} />
+                          <Button icon={<PaidIcon fontSize="small" htmlColor="green" />} shape="circle" style={{ marginLeft: 160, border: 0 }} />
                         </Space>
                       </Space>
                     </Card>
@@ -378,156 +487,45 @@ export const DocumentShow = () => {
         )}
       />
 
-      <Modal  
-          open={isModal}
-          onCancel={() => { hendleCloseModalConditions(); setCheckCondicionante(true)}}
-          okButtonProps={{ disabled: checkCondicionante, onClick: () => { setCheckCondicionante(true); setNumProtocolo('')}}}
-          cancelButtonProps={{ hidden: true }}
-          footer={[Object.entries(conditions || {}).filter(([key, value]) => value?.status === false).length >= 1 ? null : (
-              <Space>
-                   <Tag color='red-inverse' style={{ fontSize: 10, borderRadius: 20 }}>{result?.data?.status}</Tag>
-                  <Input placeholder="Nº Protocolo" allowClear  style={{borderRadius: 20}} onChange={(e)=>setNumProtocolo(e.target.value)} value={numProtocolo}/>
-                  <DatePicker placeholder="Data Protocolo" locale='pt-BR' format={'DD/MM/YYYY'} allowClear  style={{borderRadius: 20}} onChange={(date) => setDataProtocolo(date)} value={dataProtocolo}/>
-                  <Button type="primary" onClick={()=>handleCloseProcss(result?.data?.dc_id)} shape="round" icon={<Check fontSize="inherit"/>} >Fechar</Button>
-              </Space>
-          )]}
-      >
-          <Card
-              title={['Condicionante ', <IssuesCloseOutlined style={{ color: 'gray' }} />]}
-              size="small"
-          >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                  <h4 style={{ paddingLeft: 5 }}>Condição</h4>
-                  <h4>Status | Atribuir</h4>
-              </div>
-
-              <div style={{ maxHeight: '300px', overflowY: 'auto', padding: 5, borderTop: '1px solid #575757', scrollbarColor: '#888 #f1f1f1', scrollbarWidth: 'thin' }}>
-                  <table style={{ width: '100%' }}>
-                    {car ? (
-                      <Spin />
-                    ) : (
-                      <tbody>
-                        {Object.entries(conditions || {}).map(([key, value]) => (
-                          <tr key={key}>
-                            <td style={{ borderBottom: '1px solid #8B41F2' }}>
-                              <p style={{ textTransform: 'capitalize' }}>{key}</p>
-                            </td>
-                            <td style={{ borderBottom: '1px solid #8B41F2', paddingRight: 10 }} align="center">
-                              {value?.status === true ? (
-                                <Popover content={`OK - ${new Date(value?.date).toLocaleString()}`}>
-                                  <Button disabled={value?.users?.includes(userTK) ? false : true} shape="circle" style={{border: 'none', height: '30px'}}>
-                                    <CheckCircleOutlined
-                                      
-                                      onClick={() => {
-                                        
-                                        toggleCondition(key);
-                                        hendleCheck();
-                                      }}
-                                      style={{ color: value?.users?.includes(userTK) ? 'green' : 'gray', cursor: 'pointer' }}
-                                    />
-                                  </Button>
-                                </Popover>
-                              ) : value?.status === false ? (
-                                <Popover content={`Pendente - ${new Date(value?.date).toLocaleString()}`}>
-                                  <Button disabled={value?.users?.includes(userTK) ? false : true} shape="circle" style={{border: 'none', height: '30px'}}>
-                                    <CloseCircleOutlined
-                                      
-                                      onClick={() => {
-                                        toggleCondition(key);
-                                        hendleCheck();
-                                      }}
-                                      style={{ color: value?.users?.includes(userTK) ? 'red' : 'gray  ', cursor: 'pointer' }}
-                                    />
-                                  </Button>
-                                </Popover>
-                              ) : (
-                                <Popover content={`N/A - ${new Date(value?.date).toLocaleString()}`}>
-                                  <Button disabled={value?.users?.includes(userTK) ? false : true} shape="circle" style={{border: 'none', height: '30px'}}>
-                                      <ExclamationCircleOutlined
-                                          
-                                            onClick={() => {
-                                              toggleCondition(key);
-                                              hendleCheck();
-                                            }}
-                                            style={{ color: value?.users?.includes(userTK) ? 'orange' : 'gray', cursor: 'pointer' }}
-                                          />
-                                  </Button>
-                                </Popover>
-                              )}
-                            </td>
-                            <td style={{ borderBottom: '1px solid #8B41F2' }} align="center">
-                              <Popover
-                                title={[
-                                  <div style={{ position: 'relative' }}>
-                                    Atribuir Condições
-                                    <Button
-                                     
-                                      shape="circle"
-                                      size="small"
-                                      style={{ left: 85 }}
-                                      icon={<Close fontSize="inherit" />}
-                                      onClick={() => setVisiblePopover(false)}
-                                    />
-                                  </div>
-                                ]}
-                                trigger="click"
-                                placement="bottomLeft"
-                                visible={visiblePopover[key]}
-                                onVisibleChange={(visible) => setVisiblePopover((prev) => ({ ...prev, [key]: visible }))}
-                                content={
-                                  <div>
-                                    <Search
-                                      placeholder="Buscar usuário"
-                                      onChange={(e) => setSearchTerm(e.target.value)}
-                                      style={{ marginBottom: 8, width: '100%' }}
-                                      allowClear
-                                    />
-                                    <List
-                                      size="small"
-                                      style={{ maxHeight: 300, overflowY: 'auto' }}
-                                      dataSource={filteredUsuarios}
-                                      renderItem={(item) => (
-                                        <List.Item>
-                                          <h5>{item?.u_nome}</h5>
-                                          <Switch
-                                            size="small"
-                                            checked={selectedUserIds.includes(item.u_id)}
-                                            onChange={() => handleUserToggle(item.u_id, key)}
-                                          />
-                                        </List.Item>
-                                      )}
-                                    />
-                                    <Button
-                                    
-                                      type="primary"
-                                      size="small"
-                                      shape="round"
-                                      onClick={() => {handleSubmit(key); refreshCondition(); 
-                                        setVisiblePopover(false)}}
-                                      disabled={selectedUserIds.length === 0}
-                                      loading={isRefetching}
-                                    >
-                                      Atribuir
-                                    </Button>
-                                    {contextHolder}
-                                  </div>
-                                }
-                              >
-                                 {value?.users?.includes(userTK) ? (<GroupAddIcon fontSize="inherit" style={{ cursor: 'pointer' }} />):null}
-                              
-                              </Popover>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    )}
-                  </table>
-                </div>
-
-          </Card>
-      </Modal>
 
 
+      {/*MODAL DE CONDICIONANTES*/}
+      <ModalConditions 
+          isModal={isModal}
+          hendleCloseModalConditions={hendleCloseModalConditions}
+          checkCondicionante={checkCondicionante}
+          setCheckCondicionante={setCheckCondicionante}
+          numProtocolo={numProtocolo}
+          setNumProtocolo={setNumProtocolo}
+          dataProtocolo={dataProtocolo}
+          setDataProtocolo={setDataProtocolo}
+          dataEmissao={dataEmissao}
+          setDataEmissao={setDataEmissao}
+          dataVencimento={dataVencimento}
+          setDataVencimento={setDataVencimento}
+          handleCloseProcss={handleCloseProcss}
+          handleCloseAllProcss={handleCloseAllProcss}
+          conditions={conditions}
+          car={car}
+          result={result}
+          data={data}
+          toggleCondition={toggleCondition}
+          hendleCheck={hendleCheck}
+          users={users}
+          handleUserToggle={handleUserToggle}
+          handleSubmit={handleSubmit}
+          refreshCondition={refreshCondition}
+          selectedUserIds={selectedUserIds}
+          isRefetching={isRefetching}
+          visiblePopover={visiblePopover}
+          setVisiblePopover={setVisiblePopover}
+          userTK={userTK}
+          setIsMdAddCond={setIsMdAddCond}
+          isModalIdCondition={isModalIdCondition}
+          contextHolder={contextHolder}
+          handleUserListAttr={handleUserListAttr}
+          docStatusId={docStatusId}
+          />
 
       <Modal
         title={[<MessageOutlined />, ` Interações`]}
@@ -760,7 +758,25 @@ export const DocumentShow = () => {
         </Card>
       </Modal>
 
-
+      <Modal 
+          title='Adicionar Condição' 
+          centered
+          open={isMdAddCond}
+          onCancel={() => setIsMdAddCond(false)}
+          onOk={handleSubmitAddConditions}
+      >
+          <Form form={form} layout="vertical">   
+              <Form.Item
+                  name="c_condicao" 
+                  label="Condição"
+                  style={{ width: "400px" }}
+                  rules={[{ required: true, message: 'Insira uma condição' }]}
+              >
+                  <Input placeholder="Condição" />
+              </Form.Item>
+          </Form>
+          {contextHolder}  
+      </Modal>
     </Show>
   );
 };

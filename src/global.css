@@ -1,3 +1,6 @@
+/* Adicione isso no seu arquivo CSS global (por exemplo, App.css) */
+@import url('https://unpkg.com/leaflet/dist/leaflet.css');
+
 /* global.css */
 ::selection {
     background: #976DF2; /* cor de fundo para o texto selecionado */
