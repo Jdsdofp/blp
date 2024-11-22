@@ -112,6 +112,7 @@ export const DocumentShow = () => {
   const [dataOneDoc, setDataOneDoc] = useState({})
   const [switchChecked, setSwitchChecked] = useState<boolean>(false);
 
+
   //MODEL CASH
   const [isModalCash, setIsModalCash] = useState<boolean>();
 
@@ -155,7 +156,7 @@ export const DocumentShow = () => {
           // Preserva as propriedades anteriores, como `dateCreate`
           ...prevConditions[key],
           status: newValue,
-          date: new Date(),
+          date: new Date().toISOString().slice(0, 10),
           users: [userTK],
           statusProcesso: data?.data.map((d) => d?.d_situacao)[0],
         },
@@ -321,7 +322,7 @@ const handleUserToggle = (id) => {
                 date: null,
                 users: [userTK],  // Exemplo de usuário. Você pode pegar isso dinamicamente conforme necessário
                 status: false,
-                dateCreate: new Date(),
+                dateCreate: new Date().toISOString().slice(0, 10),
                 statusProcesso: data?.data.map(d=>d?.d_situacao)[0]
             }
         };
@@ -466,6 +467,16 @@ const handleUserToggle = (id) => {
     handlerUpdateStateDoc(dataOneDoc?.d_id, checked);
   };
 
+    const listDebits = async (d_id: number) =>{
+    try {
+      
+      const response = await axios.get(`${API_URL}/debit/listar-custo-documento/${d_id}`)
+      setListDebit(response?.data)
+
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
  
   return (
@@ -531,7 +542,12 @@ const handleUserToggle = (id) => {
                       <p style={{ fontSize: 12, margin: 0 }}>{item?.tipo_documentos?.td_desc}</p>
                       <p style={{ fontSize: 10 }}>
                         <DateField value={item?.criado_em} format="DD/MM/YYYY · H:mm:ss" locales="pt-br" style={{ fontSize: 9 }} />
+                      <br/>  
+                       Em processo há 10 dias
                       </p>
+                        
+
+
                       <Space direction="vertical">
                         <Tag style={{ borderRadius: 20, padding: 3 }}>
                           <Avatar shape="circle" icon={String(item?.usuario?.u_nome).toUpperCase()[0]} size="small" />{' '}
@@ -545,9 +561,7 @@ const handleUserToggle = (id) => {
                           <Tag color={getColor(item?.d_situacao)} style={{ fontSize: 10, borderRadius: 20 }}>
                             {item?.d_situacao}
                           </Tag>
-
-                          <Button icon={<PaidIcon fontSize="small" htmlColor="green" />} shape="circle" style={{ marginLeft: 160, border: 0 }} onClick={async ()=>{await setIsModalCash(true); await handlerDataOneData(item?.d_condicionante_id)}}/>
-                          
+                          <Button icon={<PaidIcon fontSize="small" htmlColor="green" />} shape="circle" style={{ marginLeft: 160, border: 0 }} onClick={async ()=>{await setIsModalCash(true); await handlerDataOneData(item?.d_condicionante_id); await listDebits(dataOneDoc?.d_id)}}/>
                         </Space>
                       </Space>
                     </Card>
@@ -835,7 +849,7 @@ const handleUserToggle = (id) => {
       </Modal>
 
       
-      <ModalCash open={isModalCash} close={()=>setIsModalCash(false)} dataOneDoc={dataOneDoc}/> 
+      <ModalCash open={isModalCash} close={()=>setIsModalCash(false)} dataOneDoc={dataOneDoc} listDebit={listDebit} listDebits={listDebits}/> 
     </Show>
   );
 };

@@ -1,6 +1,32 @@
 import { Col, DatePicker, Form, Input, Modal, Row, Select, Spin, Table } from "antd";
+import axios from "axios";
+import { API_URL } from "../../../authProvider";
 
-export const ModalCash = ({ open, close, dataOneDoc }) => {
+export const ModalCash = ({ open, close, dataOneDoc, listDebit, listDebits }) => {
+
+  const [form] = Form.useForm()
+
+  const handlerCreateBebit = async (d_id: number) =>{
+    try {
+      const values = await form.validateFields()
+      
+      const payload = {
+        dd_descricao: values?.dd_descricao,
+        dd_valor: values?.dd_valor,
+        dd_data_entrada: values?.dd_data_entrada,
+        dd_data_vencimento: values?.dd_data_vencimento,
+        dd_tipo: values?.d_tipo_doc_id,
+        d_num_ref: values?.d_num_ref
+    }
+
+      const response = await axios.post(`${API_URL}/debit/registrar-custo/${d_id}`, payload)
+      console.log(response)
+    } catch (error) {
+      console.log('Erro de cadastro de custo', error)
+    }
+  }
+
+
   
   const data = [
     {
@@ -93,8 +119,9 @@ export const ModalCash = ({ open, close, dataOneDoc }) => {
     }
   ];
 
+
   // Calculando os totais por tipo
-  const totalsByType = data.reduce((acc, d) => {
+  const totalsByType = listDebit.reduce((acc, d) => {
     if (!acc[d.tipo]) {
       acc[d.tipo] = 0;
     }
@@ -103,15 +130,17 @@ export const ModalCash = ({ open, close, dataOneDoc }) => {
   }, {});
 
   return (
-    <Modal open={open} onCancel={close} title={['Valores Documento ', dataOneDoc?.filiais ? `[ ${dataOneDoc?.filiais?.f_codigo} - ${dataOneDoc?.filiais?.f_nome} ]` : (<><Spin/></>) ]}>
+    <Modal open={open} onCancel={close} okButtonProps={{onClick: async ()=>{await handlerCreateBebit(dataOneDoc?.d_id); await listDebits(dataOneDoc?.d_id)}}} title={['Valores Documento ', dataOneDoc?.filiais ? `[ ${dataOneDoc?.filiais?.f_codigo} - ${dataOneDoc?.filiais?.f_nome} ]` : (<><Spin/></>) ]}>
       
-      <Form layout="vertical">
-        <Form.Item label="Tipo">
+      <Form layout="vertical" form={form}>
+
+        <Form.Item label="Tipo" name="d_tipo_doc_id">
           <Select options={[{ label: 'Taxa', value: 'Taxa' }, { label: 'Serviço', value: 'Serviço' }]} />
         </Form.Item>
+
         <Row gutter={16}>
           <Col xs={24} sm={12}>
-            <Form.Item label="Descrição Custo" name="d_tipo_doc_id">
+            <Form.Item label="Descrição Custo" name="dd_descricao">
               <Input placeholder="Desc. Custo" />
             </Form.Item>
           </Col>
@@ -123,19 +152,19 @@ export const ModalCash = ({ open, close, dataOneDoc }) => {
           </Col>    
 
           <Col xs={24} sm={12}>
-            <Form.Item label="Valor" name="d_orgao_exp">
+            <Form.Item label="Valor" name="dd_valor">
               <Input type="number" placeholder="Valor R$" />
             </Form.Item>
           </Col>
 
           <Col xs={24} sm={12}>
-            <Form.Item label="Data Entrada">
+            <Form.Item label="Data Entrada" name="dd_data_entrada">
               <DatePicker placeholder="Entrada" format="DD/MM/YYYY" />
             </Form.Item>
           </Col>
 
           <Col xs={24} sm={12}>
-            <Form.Item label="Data Vencimento">
+            <Form.Item label="Data Vencimento" name="dd_data_vencimento">
               <DatePicker placeholder="Vencimento" format="DD/MM/YYYY" />
             </Form.Item>
           </Col>
@@ -156,7 +185,7 @@ export const ModalCash = ({ open, close, dataOneDoc }) => {
               </div>
               <div>
                 <span>Total Geral: </span><br/>
-                <span>R$ {data.reduce((acc, d) => acc + d.custo, 0).toFixed(2)}</span>
+                <span>R$ {listDebit.reduce((acc, d) => acc + d.custo, 0).toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -166,13 +195,13 @@ export const ModalCash = ({ open, close, dataOneDoc }) => {
         scroll={{ x: 10, y: 200 }}
         bordered
         sticky={true}
-        dataSource={data}
+        dataSource={listDebit}
       >
-        <Table.Column title={<span style={{ fontSize: '10px' }}>Tipo</span>} align="center" dataIndex="tipo" render={(_, data) => (<p style={{ fontSize: '10px' }}>{data?.tipo}</p>)} />
-        <Table.Column title={<span style={{ fontSize: '10px' }}>Desc</span>} dataIndex="desc" render={(_, data) => (<p style={{ fontSize: '10px' }}>{data?.desc}</p>)} />
-        <Table.Column title={<span style={{ fontSize: '10px' }}>Entrada</span>} align="center" dataIndex="entrada" render={(_, data) => (<p style={{ fontSize: '10px' }}>{data?.dataEntrada}</p>)} />
-        <Table.Column title={<span style={{ fontSize: '10px' }}>Vencimento</span>} align="center" dataIndex="vencimento" render={(_, data) => (<p style={{ fontSize: '10px' }}>{data?.dataVencimento}</p>)} />
-        <Table.Column title={<span style={{ fontSize: '10px' }}>Custo</span>} align="center" dataIndex="custo" render={(_, data) => (<p style={{ fontSize: '10px' }}>R$ {data?.custo}</p>)} />
+        <Table.Column title={<span style={{ fontSize: '10px' }}>Tipo</span>} align="center" dataIndex="tipo" render={(_, listDebit) => (<p style={{ fontSize: '10px' }}>{listDebit?.dd_tipo}</p>)} />
+        <Table.Column title={<span style={{ fontSize: '10px' }}>Desc</span>} dataIndex="desc" render={(_, listDebit) => (<p style={{ fontSize: '10px' }}>{listDebit?.dd_descricao}</p>)} />
+        <Table.Column title={<span style={{ fontSize: '10px' }}>Entrada</span>} align="center" dataIndex="entrada" render={(_, listDebit) => (<p style={{ fontSize: '10px' }}>{listDebit?.dd_data_entrada}</p>)} />
+        <Table.Column title={<span style={{ fontSize: '10px' }}>Vencimento</span>} align="center" dataIndex="vencimento" render={(_, listDebit) => (<p style={{ fontSize: '10px' }}>{listDebit?.dd_data_vencimento}</p>)} />
+        <Table.Column title={<span style={{ fontSize: '10px' }}>Custo</span>} align="center" dataIndex="custo" render={(_, listDebit) => (<p style={{ fontSize: '10px' }}>R$ {listDebit?.dd_valor}</p>)} />
       </Table>
     </Modal>
   );

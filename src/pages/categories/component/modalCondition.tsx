@@ -3,6 +3,7 @@ import { CheckCircleOutlined, CloseCircleOutlined, ExclamationCircleOutlined, Is
 import { Check, Close } from "@mui/icons-material";
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import { Button, Card, Checkbox, DatePicker, Input, List, Modal, Popover, Space, Spin, Tag } from "antd";
+import moment from "moment";
 
 
 const { Search } = Input;
@@ -64,7 +65,8 @@ export const ModalConditions = ({
 
   return (
 
-        <Modal  
+        <Modal
+          styles={{body: {padding: 0, margin: -19}}}  
           open={isModal}
           onCancel={() => { hendleCloseModalConditions(); setCheckCondicionante(true); setNumProtocolo('')}}
           okButtonProps={{ disabled: checkCondicionante, onClick: () => { setCheckCondicionante(true); setNumProtocolo('')}}}
@@ -118,32 +120,42 @@ export const ModalConditions = ({
                         {Object.entries(conditions || {}).map(([key, value]) => (
                           <tr key={key}>
                             <td style={{ borderBottom: '1px solid #8B41F2' }}>
-                              <p style={{ textTransform: 'capitalize', color: value.status == false && dataOneDoc?.d_situacao == 'Irregular' ? 'red' : null }}>{key}</p>
+                              <p style={{ textTransform: 'capitalize', color: value.status == false && dataOneDoc?.d_situacao == 'Irregular' ? 'red' : null, fontSize: 11 }}>{key}</p>
                             </td>
 
                             <td style={{ borderBottom: '1px solid #8B41F2', textAlign: 'center', paddingRight: 60 }}>
-                            {value?.dateCreate ? (
-                              (() => {
-                                const dateCreate = new Date(value.dateCreate);
-                                const dateFinal = value.date ? new Date(value.date) : new Date(); // Usa a data atual se não houver data de finalização
+                              {value?.dateCreate ? (
+                                (() => {
+                                  // Criar objetos Moment a partir das datas já no formato YYYY-MM-DD
+                                  const dateCreate = moment(value.dateCreate, 'YYYY-MM-DD');
+                                  const dateFinal = value.dateFinal ? moment(value.dateFinal, 'YYYY-MM-DD') : moment(); // Se não houver dateFinal, usa a data de hoje
 
-                                // Cálculo da diferença em milissegundos e conversão para dias completos
-                                const differenceInTime = dateFinal - dateCreate;
-                                const differenceInDays = Math.floor(differenceInTime / (1000 * 60 * 60 * 24));
+                                  // Verifica se as duas datas são do mesmo dia
+                                  if (dateCreate.isSame(dateFinal, 'day')) {
+                                    return (
+                                      <span style={{ fontSize: 12 }}>
+                                        0 Dia
+                                      </span>
+                                    );
+                                  }
 
-                                // Retorna 0 dias caso a diferença seja menor que um dia completo
-                                return (
-                                  <span>
-                                    {differenceInDays === 0
-                                      ? <><span style={{fontSize: 12}}>0 Dia</span></> 
-                                      : <><span style={{fontSize: 12}}>{`${differenceInDays} ${differenceInDays === 1 ? "Dia" : "Dias"}`}</span></>}
-                                  </span>
-                                );
-                              })()
-                            ) : (
-                              <span>N/A</span> // Caso a data de criação esteja ausente
-                            )}
-                          </td>
+                                  // Calculando a diferença de dias
+                                  const differenceInDays = dateFinal.diff(dateCreate, 'days'); // Calcula a diferença apenas em dias
+
+                                  // Retorna o resultado formatado
+                                  return (
+                                    <span style={{ fontSize: 12 }}>
+                                      {differenceInDays === 0
+                                        ? '0 Dia' // Se a diferença for 0, retorna 0 Dia
+                                        : `${differenceInDays} ${differenceInDays === 1 ? 'Dia' : 'Dias'}`}
+                                    </span>
+                                  );
+                                })()
+                              ) : (
+                                <span>N/A</span>
+                              )}
+                            </td>
+
 
 
                             <td style={{ borderBottom: '1px solid #8B41F2', paddingRight: 35 }} align="center">

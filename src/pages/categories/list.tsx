@@ -457,7 +457,7 @@ const handleCondicoes = (value: any, option: any) => {
   
   // Inicializa o status das condições como 'false' (unchecked) e data como null
   const initialStatus = conditions.reduce((acc: any, cond: string) => {
-    acc[cond] = { status: false, dateCreate: new Date(), date: null, users: [userTK], statusProcesso: 'Não iniciado' };
+    acc[cond] = { status: false, dateCreate: new Date().toISOString().slice(0, 10), date: null, users: [userTK], statusProcesso: 'Não iniciado' };
     return acc;
   }, {});
 
