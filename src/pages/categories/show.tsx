@@ -14,6 +14,7 @@ import PaidIcon from '@mui/icons-material/Paid';
 import 'dayjs/locale/pt-br';
 import { ModalConditions } from "./component/modalCondition";
 import EqualizerIcon from '@mui/icons-material/Equalizer';
+import { ModalCash } from "./component/modalCash";
 dayjs.extend(relativeTime);
 dayjs.locale('pt-br');
 
@@ -59,6 +60,7 @@ export const DocumentShow = () => {
   const [isReplyingToComment, setIsReplyingToComment] = useState<number | null>(null);
   const [ messageApi, contextHolder ] = message.useMessage();
   const [isMdAddCond, setIsMdAddCond] = useState(false);
+  const [usersComments, setUsersComments] = useState<[]>();
   const [conditionUsers, setConditionUsers] = useState<number[]>([]); // Inicializa como array vazio
  
 
@@ -107,6 +109,10 @@ export const DocumentShow = () => {
 
   const [selectedUserIds, setSelectedUserIds] = useState([]);
   const [isRefetchingUsers, setIsRefetchingUsers] = useState(false);
+  const [isModalCash, setIsModalCash] = useState<boolean>();
+  const [numberProtocol, setNumberProtocol] = useState<number>()
+  const [dataOneDoc, setDataOneDoc] = useState({})
+  
 
   const handleSendComment = async () => {
     try {
@@ -218,9 +224,26 @@ export const DocumentShow = () => {
   }
 
   const hendleOpenModalComments = (item: any) => {
-    setIsDocComment(item)
-    setIsModalComment(true)
-  };
+    setIsDocComment(item);
+    setIsModalComment(true);
+    setUsersComments(tableQueryResult.data.data)
+  }; 
+
+  const usersCommentsAttr = usersComments?.map((result)=>({ 
+         value: result?.u_nome, 
+         label: (
+           <div style={{ display: 'flex', alignItems: 'center' }}>
+             <Avatar 
+               size="small" 
+               style={{ marginRight: 8, backgroundColor: '#ffbf00' }} 
+               icon={String(result?.u_nome).toUpperCase()[0]}
+               src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${result?.u_nome}`}
+             />
+             {result?.u_nome}
+           </div>
+         ),
+      }))
+
 
   const hendleCloseModalComments = () => {
     setIsModalComment(false)
@@ -339,13 +362,12 @@ const handleUserToggle = (id) => {
 };
 
   const handleCloseProcss = async (conditionID: number)=>{
- 
+
       try {
         const dc_id = conditionID; // Substitua pelo valor correto de 'dc_id'
 
         const payload = {
-          d_data_pedido: dataProtocolo,
-          d_num_protocolo: numProtocolo
+          d_data_pedido: dataProtocolo
         }
 
         // Envia a requisição para o backend com o parâmetro 'dc_id' na URL
@@ -359,18 +381,16 @@ const handleUserToggle = (id) => {
 
 
   }
+
   
   const handleCloseAllProcss = async (conditionID: number)=>{
-      console.log('ID', conditionID)
-      console.log('Emissao', dataEmissao)
-      console.log('Vencimento', dataVencimento)
-
       try {
         const dc_id = conditionID;
 
         const payload = {
           d_data_emissao: dataEmissao,
-          d_data_vencimento: dataVencimento
+          d_data_vencimento: dataVencimento,
+          d_num_protocolo: numProtocolo
         }
 
         const {data} = await axios.put(`${API_URL}/document-condition/fechar-processo/${dc_id}`, payload);
@@ -379,16 +399,16 @@ const handleUserToggle = (id) => {
         setDataVencimento(null)
 
        messageApi.success(data?.message)
+       await refetch()
+       setNumberProtocol(data?.doc)
 
       } catch (error) {
         
       }
   }
 
-
   const verifyStatusDoc = async (id) => {
-    console.log("ID do documento:", id); // Verifique se o ID está sendo passado corretamente
-  
+    
     try {
       // Altere para axios.get se a rota suportar o método GET em vez de POST
       const response = await axios.get(`${API_URL}/document/listar-status-id/${id}`);
@@ -400,10 +420,25 @@ const handleUserToggle = (id) => {
       console.error("Erro ao obter o status do documento:", error);
     }
   };
+
+    //FAZENDO AQUI A PROCURA PELO DOCUMENTO INDIVIDUAL
+  const handlerDataOneData = async (id: number) =>{
+    try {
+        // Altere para axios.get se a rota suportar o método GET em vez de POST
+      const response = await axios.get(`${API_URL}/document/listar-documentos-conditionId/${id}`);
+      
+      setDataOneDoc(response?.data)
+    } catch (error) {
+        console.error("Erro ao obter o status do documento:", error);
+      }
+  }
+
+
  
   return (
     <Show title={[<><span>{status}</span></>]} canEdit={false} canDelete={false} headerButtons={<RefreshButton onClick={() => atualiza()} />}>
       <List
+        key={data?.data.map(d=>d.id)}
         loading={isInitialLoading || isLoading}
         dataSource={data?.data}
         size="small"
@@ -429,7 +464,8 @@ const handleUserToggle = (id) => {
                           onClick={() => {
                             openModal();
                             hendleOpenModalConditions(item.d_condicionante_id);
-                            verifyStatusDoc(item?.d_condicionante_id)
+                            verifyStatusDoc(item?.d_condicionante_id);
+                            handlerDataOneData(item?.d_condicionante_id)
                           }}
                         >
                           {item.d_condicionante_id && (
@@ -477,7 +513,7 @@ const handleUserToggle = (id) => {
                             {item?.d_situacao}
                           </Tag>
 
-                          <Button icon={<PaidIcon fontSize="small" htmlColor="green" />} shape="circle" style={{ marginLeft: 160, border: 0 }} />
+                          <Button icon={<PaidIcon fontSize="small" htmlColor="green" />} shape="circle" style={{ marginLeft: 160, border: 0 }} onClick={()=>setIsModalCash(true)}/>
                         </Space>
                       </Space>
                     </Card>
@@ -525,6 +561,9 @@ const handleUserToggle = (id) => {
           contextHolder={contextHolder}
           handleUserListAttr={handleUserListAttr}
           docStatusId={docStatusId}
+          numberProtocol={numberProtocol}
+          dataOneDoc={dataOneDoc}
+          handlerDataOneData={handlerDataOneData}
           />
 
       <Modal
@@ -733,23 +772,7 @@ const handleUserToggle = (id) => {
               cols={60}
               autoSize
               placeholder="Comente sobre e use @ para mencionar alguém"
-              options={[
-                { value: 'Lores Lenne', label: 'Lores Lenne' },
-                { value: 'Aless', label: 'Aless' },
-                { 
-                  value: 'Marinas', 
-                  label: (
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <Avatar 
-                        size="small" 
-                        style={{ marginRight: 8, backgroundColor: '#ffbf00' }} 
-                        icon={String('Marinas').toUpperCase()[0]} 
-                      />
-                      Marinas
-                    </div>
-                  ),
-                },
-              ]}  
+              options={usersCommentsAttr}
               onChange={(value) => setCommentValue(value)}
             />
             <Button type="primary" shape="circle" icon={<Send />} onClick={handleSendComment} />
@@ -777,6 +800,9 @@ const handleUserToggle = (id) => {
           </Form>
           {contextHolder}  
       </Modal>
+
+
+      <ModalCash open={isModalCash} close={()=>setIsModalCash(false)}  /> 
     </Show>
   );
 };

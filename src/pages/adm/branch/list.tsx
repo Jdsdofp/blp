@@ -231,8 +231,8 @@ export const AdmBranchlist = () => {
     
     return (
         <>
-            <List breadcrumb createButtonProps={{ children: "Nova Filial", onClick: ()=>{setIsModal(true)}, icon: <BranchesOutlined /> }} >
-                <Table columns={columns} dataSource={branchsResult.data?.data} scroll={{ x: 'max-content' }} size='small' loading={branchsResult.isLoading}/>
+            <List breadcrumb createButtonProps={{ children: "Nova Filial", onClick: ()=>{setIsModal(true)}, icon: <BranchesOutlined /> }} headerProps={{subTitle: <span style={{fontSize: 10}}>Total.: {branchsResult.data?.total}</span>}} >
+                <Table columns={columns} dataSource={branchsResult.data?.data} scroll={{ x: 'max-content' }} size='small' loading={branchsResult.isLoading} bordered />
             </List>
 
             <Modal 

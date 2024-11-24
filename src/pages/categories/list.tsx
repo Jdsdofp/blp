@@ -6,15 +6,17 @@ import {
   useForm,
   useTable
 } from "@refinedev/antd";
-import { Table, TableProps, Popover, Tag, Badge, Modal, Button, Tabs, Row, Col, Form, Select, Input, DatePicker } from "antd";
+import { Table, TableProps, Popover, Tag, Badge, Modal, Button, Tabs, Row, Col, Form, Select, Input, DatePicker, Card, Space } from "antd";
 import StoreIcon from '@mui/icons-material/Store';
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {  CreateNewFolder, OneK } from "@mui/icons-material";
 import TabPane from "antd/lib/tabs/TabPane";
 import { AlertOutlined, CheckCircleOutlined, ClockCircleOutlined, DownCircleOutlined, ExceptionOutlined, ExclamationCircleOutlined, FolderAddOutlined, IssuesCloseOutlined, SearchOutlined, UpCircleOutlined } from "@ant-design/icons";
 import { useInvalidate, useList } from "@refinedev/core";
 import { ColumnType } from "antd/es/table";
+import axios from "axios";
+import { API_URL } from "../../authProvider";
 
 interface IDocuments {
   f_id: number;
@@ -27,6 +29,7 @@ interface IDocuments {
   f_codigo: number;
 
 }
+
 
 interface IDocument {
   d_filial_id: number;
@@ -54,6 +57,7 @@ export const DocumentList = () => {
   const [islistModalConditions, setIsListModalConditions] = useState([])
   const [tabCond, setTabCond] = useState(true)
   const [subList, setSubList] = useState(false)
+  const [idCondition, setIdCondition] = useState<any>()
   const [conditionsStatus, setConditionsStatus] = useState<{[key: string]: boolean}>({})
   const [userTK, setUserTK] = useState<any>(JSON.parse(localStorage.getItem('refine-user'))?.id)
   const navigate = useNavigate();
@@ -70,7 +74,7 @@ export const DocumentList = () => {
     action: 'create',
     redirect: 'create',
     successNotification(data) {
-      form.resetFields();
+      form.resetFields(['d_data_pedido', 'd_data_emissao', 'd_data_vencimento', 'd_tipo_doc_id', 'd_orgao_exp', 'd_anexo', 'd_num_protocolo', 'd_sitaucao', 'criado_em']);
       setIsListModalConditions([]);
       setSubList(false);
       return{
@@ -110,7 +114,7 @@ export const DocumentList = () => {
     ...cond
   }))
 
-
+  
 
 
   const { tableProps, tableQueryResult } = useTable({
@@ -119,7 +123,13 @@ export const DocumentList = () => {
     liveMode: "auto"
   });
 
-
+  const situacaoCount = tableQueryResult.data?.data
+    .flatMap(doc => doc?.documentos) // Achata e mapeia os documentos
+    .reduce((acc, doc) => {
+        // Incrementa o contador para cada d_situacao
+        acc[doc?.d_situacao] = (acc[doc?.d_situacao] || 0) + 1;
+        return acc;
+    }, {});
 
   const getColumnSearchProps = (title, dataIndex: keyof IDocuments): ColumnType<IDocuments> => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }: FilterConfirmProps) => (
@@ -199,12 +209,10 @@ export const DocumentList = () => {
     ).map((situacao) => ({ text: situacao, value: situacao }));
 
   
-
   const columns: TableProps<IDocuments>['columns'] = [
     {
       key: 'filiais',
       title: '#',
-      width: 8,
       align: 'center',
       render: (_, record) => (
         <>
@@ -221,7 +229,6 @@ export const DocumentList = () => {
       key: 'd_id',
       title: 'Nº Loja',
       align: 'center',
-      width: '5%',
       ...getColumnSearchProps("Cod", "f_codigo"),
       sorter: (a, b) => a.f_codigo - b.f_codigo,
       render: (_, { f_codigo, f_id }) => (
@@ -273,12 +280,12 @@ export const DocumentList = () => {
     {
       key: 'documentos',
       title: 'Status',
-      width: 366,
       align: 'center',
       filters: uniqueSituations,
       onFilter: (value, record) => {
         // Verifica se a situação do documento contém o valor filtrado
         return record.documentos.some(doc => doc.d_situacao === value);
+
       },
       render: (_, { documentos, f_id }) => {
         // Contagem de status por filial
@@ -290,7 +297,11 @@ export const DocumentList = () => {
           }
           return acc;
         }, {});
-  
+    
+        // Ordem desejada dos status
+        const statusOrder = ['Vencido', 'Não iniciado', 'Em processo', 'Emitido'];
+    
+        // Função para definir a cor de cada status
         const getColor = (status) => {
           switch (status) {
             case 'Vencido': return 'red-inverse';
@@ -300,33 +311,36 @@ export const DocumentList = () => {
             default: return 'default';
           }
         };
-  
+    
         const handleTagClick = (status, f_id) => {
           navigate(`/document/show/?status=${status}&filialId=${f_id}`);
         };
-  
+    
         return (
           <>
-            {Object.keys(statusCount).map((status) => (
-              <Tag
+            {statusOrder
+              .filter(status => statusCount[status]) // Filtra apenas os status existentes
+              .map((status) => (
+                <Tag
                 style={{ cursor: 'pointer', borderRadius: 30 }}
                 color={getColor(status)}
                 key={status}
                 onClick={() => handleTagClick(status, f_id)}
-              >
-                <Badge count={statusCount[status].count} size="small" color={getColor(status)}>
-                  {status === 'Vencido' && <AlertOutlined />}
-                  {status === 'Em processo' && <ClockCircleOutlined />}
-                  {status === 'Não iniciado' && <ExclamationCircleOutlined />}
-                  {status === 'Emitido' && <CheckCircleOutlined />}
-                  <span style={{ fontSize: 10, marginLeft: 4 }}>{status}</span>
-                </Badge>
-              </Tag>
-            ))}
+                >
+                  <Badge count={statusCount[status].count} size="small" color={getColor(status)}>
+                    {status === 'Vencido' && <AlertOutlined />}
+                    {status === 'Em processo' && <ClockCircleOutlined />}
+                    {status === 'Não iniciado' && <ExclamationCircleOutlined />}
+                    {status === 'Emitido' && <CheckCircleOutlined />}
+                    <span style={{ fontSize: 10, marginLeft: 4 }}>{status}</span>
+                  </Badge>
+                </Tag>
+              ))}
           </>
         );
       }
     },
+    
 
     {
       key: 'actions',
@@ -340,21 +354,23 @@ export const DocumentList = () => {
 
 
 
-  const hendleModal = (record: any) => {
+const hendleModal = (record: any) => {
+  if (record) {
+    setIsModal(true);
+    setIsListModal(record);
 
-    if (record) {
-      setIsModal(true)
+    const filialId = record.f_id;
 
-      //console.log(record)
-      setIsListModal(record)
-      form.setFieldsValue({
-        d_filial_id: record.f_id
-      });
-    } else {
-      setIsListModal([])
+    form.setFieldsValue({
+      d_filial_id: filialId,
+    });
 
-    }
+  } else {
+    setIsListModal([]);
   }
+};
+
+  
 
   const hendleCondicionante = (value: any, option: any) => {
     setTabCond(option.td_requer_condicao)
@@ -394,29 +410,93 @@ const handleConditionCheck = (condition: string) => {
 };
 
 
-// Função para capturar as condições ao selecionar uma condicionante
-const handleCondicoes = (value: any, option: any) => {
-  const conditions = option.c_condicao;
 
-  // Inicializa o status das condições como 'false' (unchecked) e data como null
-  const initialStatus = conditions.reduce((acc: any, cond: string) => {
-    acc[cond] = { status: false, date: null, users: [userTK], statusProcesso: 'Não iniciado' }; // Inicializa cada condição com status false e data null
-    return acc;
-  }, {});
+//procurar e setar as condicoes via axios corretas...
+const verifyConditionsSys = async (id) => {
+  try {
+    // Altere para axios.get se a rota suportar o método GET em vez de POST
+    const response = await axios.get(`${API_URL}/condition/listar-condicionante/${id}`);
 
-  setConditionsStatus(initialStatus);
+    // Processar as condições retornadas (caso a resposta seja adequada)
+    if (response.data && response.data.conditions) {
+      const conditions = response.data.conditions; // Exemplo de como acessar as condições
 
-  // Atualiza o campo d_condicoes no formulário com o formato inicial
-  form.setFieldsValue({ d_condicoes: initialStatus });
-  setIsListModalConditions(conditions);
+      return conditions;
+    } else {
+      console.error("Nenhuma condição encontrada");
+      return [];
+    }
+  } catch (error) {
+    console.error("Erro ao obter as condições:", error);
+    return [];
+  }
 };
 
 
 
+
+// Função para capturar as condições ao selecionar uma condicionante
+const handleCondicoes = (value: any, option: any) => {
+  const conditions = option.c_condicao;
+  setIdCondition(value)
+  
+  // Inicializa o status das condições como 'false' (unchecked) e data como null
+  const initialStatus = conditions.reduce((acc: any, cond: string) => {
+    acc[cond] = { status: false, date: null, users: [userTK], statusProcesso: 'Não iniciado' };
+    return acc;
+  }, {});
+
+
+  // Limpa o estado anterior e atualiza o campo d_condicoes no formulário
+  setConditionsStatus({});
+  form.setFieldsValue({ d_condicoes: '' });
+
+  // Se houver novas condições, define o novo estado
+  if (conditions.length > 0) {
+    setConditionsStatus(initialStatus);
+    form.setFieldsValue({ d_condicoes: initialStatus });
+  } else {
+    setIsListModalConditions([]);
+  }
+
+  // Atualiza a lista modal com as novas condições ou esvazia se não houver
+  setIsListModalConditions(conditions.length ? conditions : []);
+};
+
+
+
+
+
+const colorsCards = (status: any) => {
+  switch (status) {
+    case 'Vencido':
+      return 'rgba(255, 0, 0, 0.3)';  // Vermelho com 30% de opacidade
+    case 'Em processo':
+      return 'rgba(0, 255, 255, 0.3)';  // Ciano com 30% de opacidade
+    case 'Não iniciado':
+      return 'rgba(255, 165, 0, 0.3)';  // Laranja com 30% de opacidade
+    case 'Emitido':
+      return 'rgba(0, 255, 0, 0.3)';  // Verde com 30% de opacidade
+    default:
+      return 'rgba(169, 169, 169, 0.3)';  // Cor padrão (cinza claro) com 30% de opacidade
+  }
+};
+
   return (
     <>
-      <List canCreate={false} headerButtons={<RefreshButton  hideText shape="circle"/>}>
-        <Table {...tableProps} rowKey="id" columns={columns} size="small"  bordered/>
+      <List canCreate={false} headerButtons={<RefreshButton  hideText shape="circle"/>} >
+      <Space align="baseline" wrap>
+        {situacaoCount && Object.entries(situacaoCount).length > 0 ? (
+            Object.entries(situacaoCount).map(([situacao, count]) => (
+                <Card size="small" hoverable title={situacao} bordered={false} style={{ width: 200, textAlign: 'center' }} key={situacao} styles={{body: {background: colorsCards(situacao), marginBottom: 10}}}>
+                    <h4 style={{fontSize: 20}}>{count}</h4>
+                </Card>
+            ))
+        ) : (
+            <p>Nenhuma situação encontrada.</p>
+        )}
+    </Space>
+        <Table {...tableProps} tableLayout="auto" rowKey="id" columns={columns} size="small" sticky scroll={{y: 600 }} bordered={true}/>
       </List>
 
       <Modal open={isModal} onCancel={() => {form.resetFields(); setIsModal(false); setSubList(false); setIsListModalConditions([]); setTabCond(true)}} okButtonProps={saveButtonProps}>
@@ -432,8 +512,10 @@ const handleCondicoes = (value: any, option: any) => {
             <TabPane tab={[' Cadastro de Documento ']} icon={<FolderAddOutlined />} key="1">
               <Row gutter={16}>
                 <Col xs={24} sm={12}>
+                
                   <Form.Item name="d_filial_id">
-                    <span>Filial: <a>{islistModal.f_nome}</a></span>
+                    <Input value={islistModal?.f_id} hidden/>
+                    <span>Filial: <a>{islistModal?.f_nome}</a></span>
                   </Form.Item>
                 </Col>
                 <Form.Item name="d_num_protocolo" hidden={tabCond}>
@@ -490,7 +572,8 @@ const handleCondicoes = (value: any, option: any) => {
                   <Col xs={24} sm={12}>
 
                     <Form.Item label="Condicionante" name="dc_id">
-                      <Select options={listarCondicionantes} onChange={(value, option) => handleCondicoes(value, option)} />
+                      <Select options={listarCondicionantes} onChange={(value, option) => {handleCondicoes(value, option); verifyConditionsSys(value)}} />
+
                     </Form.Item>
 
                     <Tag
@@ -525,8 +608,9 @@ const handleCondicoes = (value: any, option: any) => {
 
                     ) : null
                   }
-                    <Form.Item name="d_condicoes" hidden>
-                     <Input />
+                    <Form.Item hidden name="d_condicoes">
+                     <Input/>
+
                    </Form.Item>
              </TabPane>
             ) : ''}
