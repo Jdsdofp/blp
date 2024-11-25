@@ -113,8 +113,8 @@ export const ModalConditions = ({
 
               <div style={{ maxHeight: '300px', overflowY: 'auto', padding: 5, borderTop: '1px solid #575757', scrollbarColor: '#888 #f1f1f1', scrollbarWidth: 'thin' }}>
                   <table style={{ width: '100%' }}>
-                    {car ? (
-                      <Spin />
+                    {Object.entries(conditions).length === 0 ? (
+                      <Spin style={{padding: 20, position: 'relative', left: 200, height: 100}}  />
                     ) : (
                       <tbody>
                         {Object.entries(conditions || {}).map(([key, value]) => (
@@ -128,7 +128,7 @@ export const ModalConditions = ({
                                 (() => {
                                   // Criar objetos Moment a partir das datas já no formato YYYY-MM-DD
                                   const dateCreate = moment(value.dateCreate, 'YYYY-MM-DD');
-                                  const dateFinal = value.dateFinal ? moment(value.dateFinal, 'YYYY-MM-DD') : moment(); // Se não houver dateFinal, usa a data de hoje
+                                  const dateFinal = value?.date ? moment(value?.date, 'YYYY-MM-DD') : moment(); // Se não houver dateFinal, usa a data de hoje
 
                                   // Verifica se as duas datas são do mesmo dia
                                   if (dateCreate.isSame(dateFinal, 'day')) {

@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Badge, Col, DatePicker, Form, Input, Modal, Row, Select, Switch, Table, Tabs, Tag } from 'antd';
+import { Badge, Button, Col, DatePicker, Form, Input, message, Modal, Row, Select, Space, Switch, Table, Tabs, Tag } from 'antd';
 import type { TableProps } from 'antd';
-import { DateField, List, useForm } from '@refinedev/antd';
-import { ClearOutlined } from '@ant-design/icons';
+import { DateField, Edit, EditButton, List, useForm } from '@refinedev/antd';
+import { ClearOutlined, EditFilled } from '@ant-design/icons';
 import { useInvalidate, useList } from '@refinedev/core';
-import {  Check, DocumentScanner } from '@mui/icons-material';
+import {  Check, DocumentScanner, EditAttributes, EditAttributesOutlined, Save, SaveAlt } from '@mui/icons-material';
+import axios from 'axios';
+import { API_URL } from '../../../authProvider';
 
 interface ITypeDoc {
     td_id: number;
@@ -17,9 +19,25 @@ interface ITypeDoc {
 
 export const DocTypeDocCreate = () => {
     const [isModal, setIsModal] = useState(false)
+    const [ messageApi, contextHolder ] = message.useMessage();
 
-    const {data: typeDocsResult, isLoading} = useList({resource: 'type-document', meta: {endpoint: 'listar-tipo-documentos'}, liveMode: 'auto'})
+    //variaveis de estado
+    const [idTdDesc, setIdTdDesc] = useState<number | null>(null)
+    const [valueInputTdDesc, setValueInputTdDesc] = useState<any>('')
+    const [resultReturn, setResultReturn] = useState<boolean | null>(null)
 
+    const {data: typeDocsResult, isLoading, refetch} = useList({resource: 'type-document', meta: {endpoint: 'listar-tipo-documentos'}, liveMode: 'auto'})
+
+
+    const handlerInputDesc = (record: any) =>{
+        setIdTdDesc(record?.td_id)
+        setValueInputTdDesc(record?.td_desc)
+    }
+
+    const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setValueInputTdDesc(e.target.value);
+    };
+   
 
     
     const invalid = useInvalidate()
@@ -42,7 +60,26 @@ export const DocTypeDocCreate = () => {
             invalidates: ['all']
         })
     }})
+
+
+    const updateTitleTypeDoc = async (data: any) => {
+        try {
+            const payload = { td_desc: valueInputTdDesc };
+
+            const response = await axios.put(
+                `${API_URL}/type-document/editar-descrica-tipo-doc/${data?.td_id}`,
+                payload
+            );
+
+            messageApi.info(response?.data?.message);
+            setResultReturn(response?.data?.tp_doc?.td_id); // Armazena o ID retornado
+            setIdTdDesc(null); // Sai do modo de edição
+        } catch (error) {
+            console.log('log de erro front', error);
+        }
+    };
           
+
     const columns: TableProps<ITypeDoc>['columns'] = [
 
         {
@@ -58,11 +95,37 @@ export const DocTypeDocCreate = () => {
         {
             key: 'td_desc',
             title: 'Tipo Documento',
-            render: (_, record: any)=>(
-                <span>
-                    {record?.td_desc}
-                </span>
-            )
+            render: (_, record: any) => (
+                <Space>
+                    {idTdDesc === record?.td_id ? (
+                        <>
+                            <Input
+                                value={valueInputTdDesc}
+                                onChange={handleChangeInput}
+                            />
+                            <Button
+                                size="small"
+                                shape="circle"
+                                onClick={async () => {
+                                    await updateTitleTypeDoc(record);
+                                    await refetch();
+                                }}
+                                icon={<Save fontSize="inherit" />}
+                            />
+                        </>
+                    ) : (
+                        <>
+                            <span>{record?.td_desc}</span>
+                            <Button
+                                size="small"
+                                shape="circle"
+                                onClick={() => handlerInputDesc(record)}
+                                icon={<EditFilled />}
+                            />
+                        </>
+                    )}
+                </Space>
+            ),
         },
 
         {
@@ -104,6 +167,7 @@ export const DocTypeDocCreate = () => {
         <>
             <List breadcrumb createButtonProps={{ children: "Novo Tipo Doc", onClick: ()=>{setIsModal(true)}, icon: <DocumentScanner fontSize='small' /> }} >
                 <Table columns={columns} scroll={{ x: 'max-content' }} size='small' dataSource={typeDocsResult?.data} loading={isLoading} />
+                {contextHolder}
             </List>
 
             <Modal 
