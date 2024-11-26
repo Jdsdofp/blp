@@ -3,6 +3,7 @@ import { CheckCircleOutlined, CloseCircleOutlined, ExclamationCircleOutlined, Is
 import { Check, Close } from "@mui/icons-material";
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import { Button, Card, Checkbox, DatePicker, Input, List, Modal, Popover, Space, Spin, Tag } from "antd";
+import moment from "moment";
 
 
 const { Search } = Input;
@@ -62,13 +63,10 @@ export const ModalConditions = ({
   }, [hasProtocol]); // O useEffect dispara apenas quando d_num_protocolo muda
   
 
-  console.log('Data multi', dataApi)
-  
-
   return (
 
-
-        <Modal  
+        <Modal
+          styles={{body: {padding: 0, margin: -19}}}  
           open={isModal}
           onCancel={() => { hendleCloseModalConditions(); setCheckCondicionante(true); setNumProtocolo('')}}
           okButtonProps={{ disabled: checkCondicionante, onClick: () => { setCheckCondicionante(true); setNumProtocolo('')}}}
@@ -81,17 +79,17 @@ export const ModalConditions = ({
                   {dataOneDoc?.d_situacao == 'Não iniciado' ? (
                       <>
                         <DatePicker placeholder="Data Protocolo" name="d_data" locale='pt-BR' format={'DD/MM/YYYY'} allowClear  style={{borderRadius: 20}} onChange={(date) => setDataProtocolo(date)} value={dataProtocolo}/>
-                        <Button type="primary" onClick={()=>{handleCloseProcss(result?.data?.dc_id)}} shape="round" icon={<Check fontSize="inherit"/>} >Fechar</Button>
+                        <Button type="primary" onClick={()=>{handleCloseProcss(result?.data?.dc_id); handlerDataOneData(result?.data?.dc_id)}} shape="round" icon={<Check fontSize="inherit"/>} >Fechar</Button>
                       </>
                   ) : (
                       <>
                       {dataOneDoc?.d_situacao == 'Vencido' ? null : dataOneDoc?.d_situacao == 'Emitido' ? null : (<>
-                        <Input placeholder="Nº Protocolo" allowClear  style={{borderRadius: 20}} onChange={(e)=>setNumProtocolo(e.target.value)} value={numProtocolo} disabled={dataOneDoc?.d_num_protocolo > 0 ? true : false}/>
-                       
+
+                        <Input placeholder="Nº Protocolo" allowClear  style={{borderRadius: 20}} onChange={(e)=>setNumProtocolo(e.target.value)} value={numProtocolo} hidden={dataOneDoc?.d_num_protocolo > 0 ? true : false }/>
                         
                         <DatePicker placeholder="Emissão" locale='pt-BR' format={'DD/MM/YYYY'} allowClear  style={{borderRadius: 20}} onChange={(date)=>setDataEmissao(date)} value={dataEmissao} disabled={dataOneDoc?.d_num_protocolo > 0 ? false : true}/>
                         <DatePicker placeholder="Vencimento" locale='pt-BR' format={'DD/MM/YYYY'} allowClear  style={{borderRadius: 20}} onChange={(date)=>setDataVencimento(date)} value={dataVencimento} disabled={dataOneDoc?.d_num_protocolo > 0 ? false : true} />
-                        <Button type="primary" onClick={()=>{handleCloseAllProcss(result?.data?.dc_id); setNumProtocolo('')}} shape="round" icon={<Check fontSize="inherit"/>} >{stateProtocolo ? 'Fechar' : 'Finalizar' }</Button>
+                        <Button type="primary" onClick={async ()=>{await handleCloseAllProcss(result?.data?.dc_id); await handlerDataOneData(result?.data?.dc_id)}} shape="round" icon={<Check fontSize="inherit"/>} >{stateProtocolo ? 'Fechar' : 'Finalizar' }</Button>
                       </>)}
                       </>
                   )}
@@ -104,10 +102,14 @@ export const ModalConditions = ({
               size="small"
           >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                  
-                  <h4 style={{ paddingLeft: 5 }}>Condição</h4>
-                  <h4>Status | Atribuir</h4>
+              <h4 style={{ margin: 0 }}>Condição</h4>
+              
+              <div style={{ display: 'flex', justifyContent: 'space-between', width: '50%' }}>
+                <h4 style={{ margin: 0 }}>Tempo Execução</h4>
+                <h4 style={{ margin: 0 }}>Status | Atribuir</h4>
               </div>
+            </div>
+
 
               <div style={{ maxHeight: '300px', overflowY: 'auto', padding: 5, borderTop: '1px solid #575757', scrollbarColor: '#888 #f1f1f1', scrollbarWidth: 'thin' }}>
                   <table style={{ width: '100%' }}>
@@ -118,9 +120,47 @@ export const ModalConditions = ({
                         {Object.entries(conditions || {}).map(([key, value]) => (
                           <tr key={key}>
                             <td style={{ borderBottom: '1px solid #8B41F2' }}>
-                              <p style={{ textTransform: 'capitalize' }}>{key}</p>
+                              <p style={{ textTransform: 'capitalize', color: value.status == false && dataOneDoc?.d_situacao == 'Irregular' ? 'red' : null, fontSize: 11 }}>{key}</p>
                             </td>
-                            <td style={{ borderBottom: '1px solid #8B41F2', paddingRight: 10 }} align="center">
+
+                            <td style={{ borderBottom: '1px solid #8B41F2', textAlign: 'center', paddingRight: 60 }}>
+                              {value?.dateCreate ? (
+                                (() => {
+                                  // Criar objetos Moment a partir das datas já no formato YYYY-MM-DD
+                                  const dateCreate = moment(value.dateCreate, 'YYYY-MM-DD');
+                                  const dateFinal = value?.date ? moment(value?.date, 'YYYY-MM-DD') : moment(); // Se não houver dateFinal, usa a data de hoje
+                                  
+                                  console.log('Data final (date)', value?.date)
+
+                                  // Verifica se as duas datas são do mesmo dia
+                                  if (dateCreate.isSame(dateFinal, 'day')) {
+                                    return (
+                                      <span style={{ fontSize: 12 }}>
+                                        0 Dia
+                                      </span>
+                                    );
+                                  }
+
+                                  // Calculando a diferença de dias
+                                  const differenceInDays = dateFinal.diff(dateCreate, 'days'); // Calcula a diferença apenas em dias
+
+                                  // Retorna o resultado formatado
+                                  return (
+                                    <span style={{ fontSize: 12 }}>
+                                      {differenceInDays === 0
+                                        ? '0 Dia' // Se a diferença for 0, retorna 0 Dia
+                                        : `${differenceInDays} ${differenceInDays === 1 ? 'Dia' : 'Dias'}`}
+                                    </span>
+                                  );
+                                })()
+                              ) : (
+                                <span>N/A</span>
+                              )}
+                            </td>
+
+
+
+                            <td style={{ borderBottom: '1px solid #8B41F2', paddingRight: 35 }} align="center">
                               {value?.status === true ? (
                                 <Popover content={`OK - ${new Date(value?.date).toLocaleString()}`}>
                                   <Button disabled={value?.users?.includes(userTK) && value?.statusProcesso ==  docStatusId ? false : true}  shape="circle" style={{border: 'none', height: '30px'}}>
@@ -164,6 +204,7 @@ export const ModalConditions = ({
                                 </Popover>
                               )}
                             </td>
+
                             <td style={{ borderBottom: '1px solid #8B41F2' }} align="center">
                               <Popover
                                 title={[
@@ -229,6 +270,21 @@ export const ModalConditions = ({
                       </tbody>
                     )}
                   </table>
+                </div>
+                  {/* Calcular e exibir o total de dias */}
+                <div style={{ marginTop: '10px', textAlign: 'right' }}>
+                  <span>Total de dias: {
+                    Object.entries(conditions || {}).reduce((totalDays, [key, value]) => {
+                      const dateCreate = new Date(value.dateCreate);
+                      const dateFinal = value?.date ? new Date(value.date) : new Date(); // Usa a data atual se não houver data de finalização
+
+                      // Cálculo da diferença em milissegundos e conversão para dias completos
+                      const differenceInTime = dateFinal - dateCreate;
+                      const differenceInDays = Math.floor(differenceInTime / (1000 * 60 * 60 * 24));
+
+                      return totalDays + differenceInDays;
+                    }, 0)} Dias
+                  </span>
                 </div>
                 {data?.data.map((d)=>d?.d_situacao)[0] == 'Vencido' ? null : data?.data.map((d)=>d?.d_situacao)[0] == 'Emitido' ? null : (<>
                         <Button type="dashed" style={{marginTop: 10, fontSize: 12}} onClick={()=>setIsMdAddCond(true)}><PlusCircleOutlined /> Adicionar Itens</Button>

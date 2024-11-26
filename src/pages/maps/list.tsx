@@ -55,7 +55,7 @@ export const Mapsall = () => {
             return 'red-inverse';
           case 'Em processo':
             return 'cyan';
-          case 'Não iniciado':
+          case 'Irregular':
             return 'orange';
           case 'Emitido':
             return 'green';

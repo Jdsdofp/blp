@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {  CreateNewFolder, OneK } from "@mui/icons-material";
 import TabPane from "antd/lib/tabs/TabPane";
-import { AlertOutlined, CheckCircleOutlined, ClockCircleOutlined, DownCircleOutlined, ExceptionOutlined, ExclamationCircleOutlined, FolderAddOutlined, IssuesCloseOutlined, SearchOutlined, UpCircleOutlined } from "@ant-design/icons";
+import { AlertOutlined, CheckCircleOutlined, ClockCircleOutlined, DownCircleOutlined, ExceptionOutlined, ExclamationCircleOutlined, FolderAddOutlined, IssuesCloseOutlined, SearchOutlined, StopOutlined, UpCircleOutlined } from "@ant-design/icons";
 import { useInvalidate, useList } from "@refinedev/core";
 import { ColumnType } from "antd/es/table";
 import axios from "axios";
@@ -283,30 +283,27 @@ export const DocumentList = () => {
       align: 'center',
       filters: uniqueSituations,
       onFilter: (value, record) => {
-        // Verifica se a situação do documento contém o valor filtrado
         return record.documentos.some(doc => doc.d_situacao === value);
-
       },
       render: (_, { documentos, f_id }) => {
-        // Contagem de status por filial
-        const statusCount = documentos.reduce((acc, d) => {
-          if (acc[d.d_situacao]) {
-            acc[d.d_situacao].count += 1;
+        // Contagem de status por filial com lista de tipos de documentos
+        const statusCount = documentos.reduce((acc, doc) => {
+          if (acc[doc.d_situacao]) {
+            acc[doc.d_situacao].count += 1;
+            acc[doc.d_situacao].documents.push(doc.tipo_documentos?.td_desc || 'Tipo não especificado'); // Adiciona o tipo do documento
           } else {
-            acc[d.d_situacao] = { count: 1 };
+            acc[doc.d_situacao] = { count: 1, documents: [doc.tipo_documentos?.td_desc || 'Tipo não especificado'] };
           }
           return acc;
         }, {});
     
-        // Ordem desejada dos status
-        const statusOrder = ['Vencido', 'Não iniciado', 'Em processo', 'Emitido'];
+        const statusOrder = ['Vencido', 'Não iniciado', 'Irregular', 'Em processo', 'Emitido'];
     
-        // Função para definir a cor de cada status
         const getColor = (status) => {
           switch (status) {
             case 'Vencido': return 'red-inverse';
             case 'Em processo': return 'cyan';
-            case 'Não iniciado': return 'orange';
+            case 'Irregular': return 'orange';
             case 'Emitido': return 'green';
             default: return 'default';
           }
@@ -319,27 +316,45 @@ export const DocumentList = () => {
         return (
           <>
             {statusOrder
-              .filter(status => statusCount[status]) // Filtra apenas os status existentes
+              .filter(status => statusCount[status])
               .map((status) => (
                 <Tag
-                style={{ cursor: 'pointer', borderRadius: 30 }}
-                color={getColor(status)}
-                key={status}
-                onClick={() => handleTagClick(status, f_id)}
+                  style={{ cursor: 'pointer', borderRadius: 30 }}
+                  color={getColor(status)}
+                  key={status}
+                  onClick={() => handleTagClick(status, f_id)}
                 >
-                  <Badge count={statusCount[status].count} size="small" color={getColor(status)}>
-                    {status === 'Vencido' && <AlertOutlined />}
-                    {status === 'Em processo' && <ClockCircleOutlined />}
-                    {status === 'Não iniciado' && <ExclamationCircleOutlined />}
-                    {status === 'Emitido' && <CheckCircleOutlined />}
-                    <span style={{ fontSize: 10, marginLeft: 4 }}>{status}</span>
-                  </Badge>
+                  <Popover
+                    content={
+                      statusCount[status].documents.length > 0 ? (
+                        <ul>
+                          {statusCount[status].documents.map((docType, index) => (
+                            <li key={index}>{docType}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <div>Nenhum tipo de documento encontrado</div>
+                      )
+                    }
+                  >
+                    <Badge count={statusCount[status].count} size="small" color={getColor(status)}>
+                      {status === 'Vencido' && <AlertOutlined />}
+                      {status === 'Em processo' && <ClockCircleOutlined />}
+                      {status === 'Não iniciado' && <ExclamationCircleOutlined />}
+                      {status === 'Irregular' && <StopOutlined />}
+                      {status === 'Emitido' && <CheckCircleOutlined />}
+                      <span style={{ fontSize: 10, marginLeft: 4 }}>{status}</span>
+                    </Badge>
+                  </Popover>
                 </Tag>
               ))}
           </>
         );
-      }
+      },
     },
+    
+    
+    
     
 
     {
@@ -442,7 +457,7 @@ const handleCondicoes = (value: any, option: any) => {
   
   // Inicializa o status das condições como 'false' (unchecked) e data como null
   const initialStatus = conditions.reduce((acc: any, cond: string) => {
-    acc[cond] = { status: false, date: null, users: [userTK], statusProcesso: 'Não iniciado' };
+    acc[cond] = { status: false, dateCreate: new Date().toISOString().slice(0, 10), date: null, users: [userTK], statusProcesso: 'Não iniciado' };
     return acc;
   }, {});
 
@@ -473,7 +488,7 @@ const colorsCards = (status: any) => {
       return 'rgba(255, 0, 0, 0.3)';  // Vermelho com 30% de opacidade
     case 'Em processo':
       return 'rgba(0, 255, 255, 0.3)';  // Ciano com 30% de opacidade
-    case 'Não iniciado':
+    case 'Irregular':
       return 'rgba(255, 165, 0, 0.3)';  // Laranja com 30% de opacidade
     case 'Emitido':
       return 'rgba(0, 255, 0, 0.3)';  // Verde com 30% de opacidade
