@@ -117,7 +117,6 @@ export const DocumentShow = () => {
   //MODEL CASH
   const [isModalCash, setIsModalCash] = useState<boolean>();
   const [listDebit, setListDebit] = useState([])
-  const [idCondtionCash, setIdCondtionCash] = useState()
 
   const handleSendComment = async () => {
     try {
@@ -470,6 +469,7 @@ const handleUserToggle = (id) => {
     handlerUpdateStateDoc(dataOneDoc?.d_id, checked);
   };
 
+
   const listDebits = async (d_id: number) =>{
     try {
       
@@ -565,8 +565,7 @@ const handleUserToggle = (id) => {
                           <Tag color={getColor(item?.d_situacao)} style={{ fontSize: 10, borderRadius: 20 }}>
                             {item?.d_situacao}
                           </Tag>
-                          <Button icon={<PaidIcon fontSize="small" htmlColor="green" />} shape="circle" style={{ marginLeft: 160, border: 0 }} onClick={async ()=>{await setIsModalCash(true); await handlerDataOneData(item?.d_condicionante_id); await listDebits(item?.d_condicionante_id); await setIdCondtionCash(item?.d_condicionante_id)}}/>
-                          
+                          <Button icon={<PaidIcon fontSize="small" htmlColor="green" />} shape="circle" style={{ marginLeft: 160, border: 0 }} onClick={async ()=>{await setIsModalCash(true); await handlerDataOneData(item?.d_condicionante_id); await listDebits(item?.d_condicionante_id)}}/>
                         </Space>
                       </Space>
                     </Card>
@@ -853,8 +852,9 @@ const handleUserToggle = (id) => {
           {contextHolder}  
       </Modal>
 
+    
       
-      <ModalCash open={isModalCash} close={()=>setIsModalCash(false)} dataOneDoc={dataOneDoc} listDebit={listDebit} listDebits={listDebits} idCondtionCash={idCondtionCash} /> 
+      <ModalCash open={isModalCash} close={()=>setIsModalCash(false)} dataOneDoc={dataOneDoc} listDebits={listDebits} listDebit={listDebit}/> 
     </Show>
   );
 };

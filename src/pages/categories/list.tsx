@@ -122,6 +122,7 @@ export const DocumentList = () => {
     syncWithLocation: false,
     liveMode: "auto"
   });
+  const data = tableQueryResult.data?.data || [];
 
   const situacaoCount = tableQueryResult.data?.data
     .flatMap(doc => doc?.documentos) // Achata e mapeia os documentos
@@ -191,17 +192,18 @@ export const DocumentList = () => {
     setSearchText("");
   };
 
+  
 
-  const uniqueUFs = Array.from(new Set(tableQueryResult.data?.data.map((uf) => uf?.f_uf)))
+  const uniqueUFs = Array.from(new Set(data.map((uf) => uf?.f_uf)))
   .map((uf) => ({ text: uf, value: uf }));
 
-  const uniqueCity = Array.from(new Set(tableQueryResult.data?.data.map((city) => city?.f_cidade)))
+  const uniqueCity = Array.from(new Set(data.map((city) => city?.f_cidade)))
   .map((city) => ({ text: city, value: city }));
 
     // Obter situações únicas para filtro
     const uniqueSituations = Array.from(
       new Set(
-        tableQueryResult.data?.data
+        data
           .flatMap((item) => item.documentos)
           .filter((doc) => doc.d_situacao)
           .map((doc) => doc.d_situacao)
@@ -287,15 +289,17 @@ export const DocumentList = () => {
       },
       render: (_, { documentos, f_id }) => {
         // Contagem de status por filial com lista de tipos de documentos
-        const statusCount = documentos.reduce((acc, doc) => {
-          if (acc[doc.d_situacao]) {
-            acc[doc.d_situacao].count += 1;
-            acc[doc.d_situacao].documents.push(doc.tipo_documentos?.td_desc || 'Tipo não especificado'); // Adiciona o tipo do documento
+        const statusCount = (documentos || []).reduce((acc, doc) => {
+          const situacao = doc?.d_situacao || 'Não especificado';
+          if (acc[situacao]) {
+            acc[situacao].count += 1;
+            acc[situacao].documents.push(doc.tipo_documentos?.td_desc || 'Tipo não especificado');
           } else {
-            acc[doc.d_situacao] = { count: 1, documents: [doc.tipo_documentos?.td_desc || 'Tipo não especificado'] };
+            acc[situacao] = { count: 1, documents: [doc.tipo_documentos?.td_desc || 'Tipo não especificado'] };
           }
           return acc;
         }, {});
+        
     
         const statusOrder = ['Vencido', 'Não iniciado', 'Irregular', 'Em processo', 'Emitido'];
     
@@ -312,7 +316,13 @@ export const DocumentList = () => {
         const handleTagClick = (status, f_id) => {
           navigate(`/document/show/?status=${status}&filialId=${f_id}`);
         };
-    
+        
+         // Se houver um filtro aplicado, filtra os status que coincidem
+        const filteredStatuses = statusOrder.filter(status => 
+          statusCount[status] && statusCount[status].documents.length > 0
+        );
+
+
         return (
           <>
             {statusOrder
@@ -511,7 +521,7 @@ const colorsCards = (status: any) => {
             <p>Nenhuma situação encontrada.</p>
         )}
     </Space>
-        <Table {...tableProps} tableLayout="auto" rowKey="id" columns={columns} size="small" sticky scroll={{y: 600 }} bordered={true}/>
+        <Table  {...tableProps} tableLayout="auto" rowKey="id" columns={columns} size="small" sticky scroll={{y: 600 }} bordered={true}/>
       </List>
 
       <Modal open={isModal} onCancel={() => {form.resetFields(); setIsModal(false); setSubList(false); setIsListModalConditions([]); setTabCond(true)}} okButtonProps={saveButtonProps}>
