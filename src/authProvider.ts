@@ -3,8 +3,10 @@ import { Alert, MessageArgsProps } from "antd";
 import axios from "axios";
 import { useState } from "react";
 
-//'http://10.11.3.42:8080' roda primeiro o back
-export const API_URL = 'http://localhost:8080';
+
+//'http://localhost:8080' roda primeiro o back
+const url = ['http://localhost:8080', 'http://10.11.3.42:8080']
+export const API_URL = 'http://10.11.3.42:8080';
 export const TOKEN_KEY = "refine-auth";
 export const USER = "refine-user";
 export const FRIST_LOGIN = "refine-FRIST-LOG";

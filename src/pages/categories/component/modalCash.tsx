@@ -137,7 +137,7 @@ const totalGeral = listDebit?.reduce((acc, d) => acc + parseFloat(d.dd_valor || 
         bordered
         sticky={true}
         dataSource={dataResult}
-        loading={loadingData}
+        
       >
         <Table.Column title={<span style={{ fontSize: '10px' }}>Tipo</span>} align="center" dataIndex="tipo" render={(_, dataResult) => (<p style={{ fontSize: '10px' }}>{dataResult?.dd_tipo || null}</p>)} />
         <Table.Column title={<span style={{ fontSize: '10px' }}>Desc</span>} dataIndex="desc" render={(_, dataResult) => (<p style={{ fontSize: '10px', verticalAlign: 'center' }}>{dataResult?.dd_descricao || null}</p>)} />

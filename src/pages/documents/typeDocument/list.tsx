@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Badge, Button, Col, DatePicker, Form, Input, message, Modal, Row, Select, Space, Spin, Switch, Table, Tabs, Tag } from 'antd';
 import type { TableProps } from 'antd';
 import { DateField, Edit, EditButton, List, useForm } from '@refinedev/antd';
 import { ClearOutlined, ClockCircleFilled, EditFilled } from '@ant-design/icons';
 import { useInvalidate, useList } from '@refinedev/core';
-import {  Check, CloseFullscreen, CloseSharp, DocumentScanner, EditAttributes, EditAttributesOutlined, Save, SaveAlt } from '@mui/icons-material';
+import {  Check, CloseFullscreen, CloseSharp, Delete, DocumentScanner, EditAttributes, EditAttributesOutlined, Save, SaveAlt } from '@mui/icons-material';
 import axios from 'axios';
 import { API_URL } from '../../../authProvider';
 
@@ -12,8 +12,9 @@ interface ITypeDoc {
     td_id: number;
     td_desc: string;
     td_ativo: boolean;
-    td_requer_condicao: boolean;
+    td_requer_condicao: boolean[];
     criado_em: Date;
+    td_em_uso: Boolean;
   }
 
 
@@ -25,15 +26,28 @@ export const DocTypeDocCreate = () => {
     const [idTdDesc, setIdTdDesc] = useState<number | null>(null)
     const [valueInputTdDesc, setValueInputTdDesc] = useState<any>('')
     const [resultReturn, setResultReturn] = useState<boolean | null>(null)
-
+    const [stateIdSwitch, setStateIdSwitch] = useState<boolean>()
     const {data: typeDocsResult, isLoading, refetch} = useList({resource: 'type-document', meta: {endpoint: 'listar-tipo-documentos'}, liveMode: 'auto'})
 
+    //variaveis de estado capture width magic...
+    const spanRef = useRef({}); // Referências individuais para cada registro
+    const [spanWidth, setSpanWidth] = useState({}); // Largura armazenada por ID
 
-    const handlerInputDesc = (record: any) =>{
-        setIdTdDesc(record?.td_id)
+
+
+    const handlerInputDesc = (record) => {
         setValueInputTdDesc(record?.td_desc)
-    }
-
+        if (record) {
+            // Obtém a largura do elemento relacionado ao registro
+            const width = spanRef.current[record.td_id]?.getBoundingClientRect().width || 100;
+            setSpanWidth((prev) => ({
+                ...prev,
+                [record.td_id]: width, // Armazena a largura calculada
+            }));
+        }
+        setIdTdDesc(record?.td_id || null); // Atualiza o ID atual para edição
+    };
+    
     const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         setValueInputTdDesc(e.target.value);
     };
@@ -79,14 +93,64 @@ export const DocTypeDocCreate = () => {
         }
     };
     
-    const updateReqConditionTypeDoc = async (data: any) =>{
+    const updateReqConditionTypeDoc = async (data: any, checked: boolean) =>{
         try {
+            //console.log('Verificando o state de checked\n', checked)
+            //console.log('Verificando o ID\n', data?.td_id)
             
-            console.log('Data', data?.td_id)
+            const payload = {
+                state: checked
+            }
+            const response = await axios.put(`${API_URL}/type-document/editar-req-condicionante-tipo-doc/${data?.td_id}`, payload)
+            messageApi.warning(`${response.data?.tp_doc.td_desc}, ${response?.data?.message}`)
+            
+
+            
+            setStateIdSwitch(response?.data?.tp_doc.td_id === data?.td_id)
+            
         } catch (error) {
             console.log('Log de erro', error)
         }
     }
+
+    useEffect(() => {
+        if (stateIdSwitch) {
+            setStateIdSwitch(true);
+        } else {
+            setStateIdSwitch(false);
+        }
+      }, [stateIdSwitch]);
+
+
+      useEffect(() => {
+        if (spanRef?.current?.clientWidth) {
+            // Obtém a largura quando o componente renderiza
+            setSpanWidth(spanRef.current.getBoundingClientRect().width);
+        }
+    }, [valueInputTdDesc]); // Atualiza quando os dados mudam
+
+   
+    const hendleSwittchChangeTypeDoc = async (checked: boolean, record: any) => {
+        try {
+            await updateReqConditionTypeDoc(record, checked);
+            refetch(); // Recarrega os dados da API para refletir as mudanças
+        } catch (error) {
+            messageApi.error("Erro ao atualizar switch");
+        }
+    };
+
+
+    const hendlerDeleteTypeDoc = async (record: any) =>{
+        try {
+            const response = await axios.delete(`${API_URL}/type-document/deletar-tipo-documento/${record?.td_id}`)
+            //messageApi.error(`${response.data?.tp_doc.td_desc}, ${response?.data?.message}`)
+            messageApi.error(`${response?.data?.message}`)
+            await refetch()
+        } catch (error) {
+            
+        }
+    }
+
 
     const columns: TableProps<ITypeDoc>['columns'] = [
 
@@ -110,6 +174,7 @@ export const DocTypeDocCreate = () => {
                             <Input
                                 onLoad={()=>(<Spin/>)}
                                 size='small'
+                                style={{ width: spanWidth[record?.td_id]+20 || "auto" }}
                                 value={valueInputTdDesc}
                                 onChange={handleChangeInput}
                             />
@@ -130,14 +195,39 @@ export const DocTypeDocCreate = () => {
                             />
                         </>
                     ) : (
-                        <>
-                            <span>{record?.td_desc}</span>
-                            <Button
-                                size="small"
-                                shape="circle"
-                                onClick={() => handlerInputDesc(record)}
-                                icon={<EditFilled />}
-                            />
+                        <>  
+                            <p
+                                ref={(el) => {
+                                    if (el) spanRef.current[record.td_id] = el;
+                                }}
+                            >
+                                {record?.td_desc}
+                            </p>
+                            <Space>
+
+
+                                {/* BOTÃO DE EDITAR */}
+                                <Button
+                                    size="small"
+                                    shape="circle"
+                                    onClick={() => handlerInputDesc(record)}
+                                    icon={<EditFilled />}
+                                />
+                                {/* BOTÃO DE EDITAR */}
+
+
+                                {/* BOTÃO DE DELETAR CONDICIONANDO!!! */}
+                                <Button
+                                    size="small"
+                                    shape="circle"
+                                    disabled={record?.td_em_uso}
+                                    onClick={()=>hendlerDeleteTypeDoc(record)}
+                                    icon={<Delete fontSize='inherit' htmlColor={record?.td_em_uso ? 'gray' : 'red' } />}
+                                />
+                                {/* BOTÃO DE DELETAR CONDICIONANDO!!! */}
+
+
+                            </Space>
                         </>
                     )}
                 </Space>
@@ -155,12 +245,19 @@ export const DocTypeDocCreate = () => {
         {
             key: 'td_requer_condicao',
             title: 'Req. Condicionante',
-            render: (_, record)=>(
-                <>
-                    <Switch size='small' onClick={()=>updateReqConditionTypeDoc(record)} checkedChildren='Sim' unCheckedChildren='Não' defaultChecked/>
+            render: (_, record) => (
+                <>  
+                    <Switch
+                        size="small"
+                        onChange={(checked) => hendleSwittchChangeTypeDoc(checked, record)}
+                        checkedChildren="Sim"
+                        unCheckedChildren="Não"
+                        checked={record?.td_requer_condicao || false} // Usa o valor do backend
+                    />
                 </>
             )
-        },
+        }
+        ,
 
         {
             key: 'td_ativo',
@@ -178,7 +275,6 @@ export const DocTypeDocCreate = () => {
 
     const hadleCancel = () =>{
         setIsModal(false)
-    
     }
     
     return (
