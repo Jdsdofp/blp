@@ -76,7 +76,7 @@ export const DocumentShow = () => {
     endpoint: "listar-usuarios"
   } })
 
-  const { data: result, isLoading: car, refetch: asas, isRefetching } = useList<ICondition>({
+  const { data: result, isLoading: car, refetch: asas, isRefetching, } = useList<ICondition>({
     resource: 'document-condition',
     meta: { endpoint: `listar-documento-condicionante/${isModalIdCondition}` },
     liveMode: 'auto',
@@ -117,6 +117,8 @@ export const DocumentShow = () => {
   //MODEL CASH
   const [isModalCash, setIsModalCash] = useState<boolean>();
   const [listDebit, setListDebit] = useState([])
+  const [loadingDataDebit, setLoadingDataDebit] = useState(true)
+
 
   const handleSendComment = async () => {
     try {
@@ -271,9 +273,9 @@ export const DocumentShow = () => {
   // Filtra os usuários com base no termo de busca
   const filteredUsuarios = userList.filter((user) =>
     user?.u_nome.toLowerCase().includes(searchTerm.toLowerCase())
-);  
+  );  
 
-const handleUserToggle = (id) => {
+  const handleUserToggle = (id) => {
   setUsers(prevUsers => {
       const updatedUsers = prevUsers.map(user =>
           user.u_id === id ? { ...user, u_atribuido: !user.u_atribuido } : user
@@ -287,7 +289,7 @@ const handleUserToggle = (id) => {
       setSelectedUserIds(newSelectedUserIds); // Atualiza o estado com os IDs selecionados
       return updatedUsers; // Retorna a lista atualizada
   });
-};
+  };
   
   // Função para chamar a API e listar os usuários
   const handleUserListAttr = async (dc_id, condicaoNome) => {
@@ -364,7 +366,7 @@ const handleUserToggle = (id) => {
         console.error('Erro ao enviar os dados:', error);
         message.error('Erro ao atribuir usuários. Por favor, tente novamente.');
     }
-};
+  };
 
   const handleCloseProcss = async (conditionID: number)=>{
 
@@ -472,8 +474,9 @@ const handleUserToggle = (id) => {
 
   const listDebits = async (d_id: number) =>{
     try {
-      
+      setLoadingDataDebit(true)
       const response = await axios.get(`${API_URL}/debit/listar-custo-documento/${d_id}`)
+      setLoadingDataDebit(false)
       setListDebit(response?.data)
 
     } catch (error) {
@@ -854,7 +857,7 @@ const handleUserToggle = (id) => {
 
     
       
-      <ModalCash open={isModalCash} close={()=>setIsModalCash(false)} dataOneDoc={dataOneDoc} listDebits={listDebits} listDebit={listDebit}/> 
+      <ModalCash open={isModalCash} close={()=>setIsModalCash(false)} dataOneDoc={dataOneDoc} listDebits={listDebits} listDebit={listDebit} loadingDataDebit={loadingDataDebit}/> 
     </Show>
   );
 };

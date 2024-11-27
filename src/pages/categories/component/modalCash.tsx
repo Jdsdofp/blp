@@ -5,9 +5,8 @@ import { useEffect, useState } from "react";
 import { DateField } from "@refinedev/antd";
 
 
-export const ModalCash = ({ open, close, dataOneDoc, listDebits, listDebit }) => {
+export const ModalCash = ({ open, close, dataOneDoc, listDebits, listDebit, loadingDataDebit }) => {
   const [dataResult, setDataResult] = useState([])
-  const [loadingData, setLoadingData] = useState(false)
   const [ messageApi, contextHolder ] = message.useMessage();
 
   const [form] = Form.useForm()
@@ -35,16 +34,7 @@ export const ModalCash = ({ open, close, dataOneDoc, listDebits, listDebit }) =>
     }
   }
 
-
-  useEffect(() => {
-    if (listDebit.length === 0) {
-      setLoadingData(true);
-      }
-      else {
-        setLoadingData(false);
-      }
-    }, [listDebit]);
-
+  console.info('State load', loadingDataDebit)
   useEffect(()=>{
     if(listDebit.length >0){
       setDataResult(listDebit)
@@ -111,7 +101,7 @@ const totalGeral = listDebit?.reduce((acc, d) => acc + parseFloat(d.dd_valor || 
       </Form>
         <Table
         size="small"
-        loading={!listDebit ? true : false}
+        loading={loadingDataDebit}
         footer={() => (
           <div style={{ paddingRight: 20, marginTop: 1 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: '10px' }}>
@@ -137,7 +127,6 @@ const totalGeral = listDebit?.reduce((acc, d) => acc + parseFloat(d.dd_valor || 
         bordered
         sticky={true}
         dataSource={dataResult}
-        
       >
         <Table.Column title={<span style={{ fontSize: '10px' }}>Tipo</span>} align="center" dataIndex="tipo" render={(_, dataResult) => (<p style={{ fontSize: '10px' }}>{dataResult?.dd_tipo || null}</p>)} />
         <Table.Column title={<span style={{ fontSize: '10px' }}>Desc</span>} dataIndex="desc" render={(_, dataResult) => (<p style={{ fontSize: '10px', verticalAlign: 'center' }}>{dataResult?.dd_descricao || null}</p>)} />
