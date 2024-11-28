@@ -270,23 +270,46 @@ export const ModalConditions = ({
                   </table>
                 </div>
                   {/* Calcular e exibir o total de dias */}
-                <div style={{ marginTop: '10px', textAlign: 'right' }}>
-                  <span>Total de dias: {
-                    Object.entries(conditions || {}).reduce((totalDays, [key, value]) => {
-                      const dateCreate = new Date(value.dateCreate);
-                      const dateFinal = value?.date ? new Date(value.date) : new Date(); // Usa a data atual se não houver data de finalização
+                  {result?.data?.dc_status_doc_ref == 'Não iniciado' ? (
+                      <div style={{ marginTop: '10px', textAlign: 'right' }}>
+                      <span>
+                        Total de dias: {
+                          Object.entries(conditions || {}).reduce((maxDays, [key, value]) => {
+                            // Converter a data de criação para o formato 'YYYY-MM-DD'
+                            const data_criado_em = new Date(result?.data.dc_criado_em);
+                            const formattedDateCreate = data_criado_em.toISOString().split('T')[0];  // 'YYYY-MM-DD'
+                              
+                            // Obter a data mais recente entre 'date' e a data atual
+                            const dateFinal = value?.date ? new Date(value.date) : new Date();
+                            const formattedDateFinal = dateFinal.toISOString().split('T')[0];  // 'YYYY-MM-DD'
+  
+                            // Mostrar as datas formatadas para debug
+                            console.log(`Data de Criação: ${formattedDateCreate}`);
+                            console.log(`Data Final: ${formattedDateFinal}`);
+  
+                            // Calcular a diferença de dias entre a data criada e a data final
+                            const dateCreate = new Date(formattedDateCreate);
+                            const dateFinish = new Date(formattedDateFinal);
+  
+                            const differenceInTime = dateFinish - dateCreate;
+                            const differenceInDays = Math.floor(differenceInTime / (1000 * 60 * 60 * 24));
+  
+                            // Retorna o maior valor entre o atual e o acumulado
+                            return Math.max(maxDays, differenceInDays);
+                          }, 0)
+                        } <span style={{ marginLeft: 3 }}>Dias</span>
+                      </span>
+                    </div>
+                  ) : null}
 
-                      // Cálculo da diferença em milissegundos e conversão para dias completos
-                      const differenceInTime = dateFinal - dateCreate;
-                      const differenceInDays = Math.floor(differenceInTime / (1000 * 60 * 60 * 24));
 
-                      return totalDays + differenceInDays;
-                    }, 0)} Dias
-                  </span>
-                </div>
-                {data?.data.map((d)=>d?.d_situacao)[0] == 'Vencido' ? null : data?.data.map((d)=>d?.d_situacao)[0] == 'Emitido' ? null : (<>
+                { 
+                  data?.data.map((d)=>d?.d_situacao)[0] == 'Vencido' ? null : data?.data.map((d)=>d?.d_situacao)[0] == 'Emitido' ? null : (
+                      <>
                         <Button type="dashed" style={{marginTop: 10, fontSize: 12}} onClick={()=>setIsMdAddCond(true)}><PlusCircleOutlined /> Adicionar Itens</Button>
-                </>)}
+                      </>
+                  )
+                }
           </Card>
       </Modal>
     )

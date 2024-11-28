@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Badge, Button, Col, DatePicker, Form, Input, message, Modal, Row, Select, Space, Spin, Switch, Table, Tabs, Tag } from 'antd';
+import { Badge, Button, Col, DatePicker, Form, Input, message, Modal, Popconfirm, Row, Select, Space, Spin, Switch, Table, Tabs, Tag } from 'antd';
 import type { TableProps } from 'antd';
 import { DateField, Edit, EditButton, List, useForm } from '@refinedev/antd';
 import { ClearOutlined, ClockCircleFilled, EditFilled } from '@ant-design/icons';
@@ -89,7 +89,7 @@ export const DocTypeDocCreate = () => {
             setResultReturn(response?.data?.tp_doc?.td_id); // Armazena o ID retornado
             setIdTdDesc(null); // Sai do modo de edição
         } catch (error) {
-            console.log('log de erro front', error);
+            messageApi.error(error?.response?.data?.message);
         }
     };
     
@@ -217,13 +217,20 @@ export const DocTypeDocCreate = () => {
 
 
                                 {/* BOTÃO DE DELETAR CONDICIONANDO!!! */}
-                                <Button
-                                    size="small"
-                                    shape="circle"
-                                    disabled={record?.td_em_uso}
-                                    onClick={()=>hendlerDeleteTypeDoc(record)}
-                                    icon={<Delete fontSize='inherit' htmlColor={record?.td_em_uso ? 'gray' : 'red' } />}
-                                />
+                                <Popconfirm
+                                    title="Tem certeza que dejesa deletar"
+                                    onConfirm={()=>hendlerDeleteTypeDoc(record)}
+                                    okText="Sim"
+                                    cancelText="Não"
+                                    placement='rightTop'
+                                >
+                                    <Button
+                                        size="small"
+                                        shape="circle"
+                                        disabled={record?.td_em_uso}
+                                        icon={<Delete fontSize='inherit' htmlColor={record?.td_em_uso ? 'gray' : 'red' } />}
+                                    />
+                                </Popconfirm>
                                 {/* BOTÃO DE DELETAR CONDICIONANDO!!! */}
 
 

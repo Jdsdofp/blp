@@ -23,6 +23,7 @@ interface ICondition {
   dc_id: number;
   dc_condicoes: { [key: string]: { status: boolean | null; date: Date | null;  users: [number]} };
   status: string;
+  dc_criado_em: Date
 }
 
 interface IComments {
@@ -61,7 +62,7 @@ export const DocumentShow = () => {
   const [ messageApi, contextHolder ] = message.useMessage();
   const [isMdAddCond, setIsMdAddCond] = useState(false);
   const [usersComments, setUsersComments] = useState<[]>();
-  const [conditionUsers, setConditionUsers] = useState<number[]>([]); // Inicializa como array vazio
+  const [conditionUsers, setConditionUsers] = useState<number[]>([]);
  
 
   const [form] = Form.useForm();
@@ -550,7 +551,25 @@ export const DocumentShow = () => {
                       <p style={{ fontSize: 10 }}>
                         <DateField value={item?.criado_em} format="DD/MM/YYYY · H:mm:ss" locales="pt-br" style={{ fontSize: 9 }} />
                       <br/>  
-                       Em processo há 10 dias
+                      
+                      {item.d_data_pedido === "1970-01-01" ? null : (
+                      <span>
+                        {item.d_data_emissao !== "1970-01-01" ? 'Durou'  : 'há dias:'} {
+                          (() => {
+                            const datePedido = new Date(item.d_data_pedido);
+                            const dateEmissao =
+                              item.d_data_emissao === "1970-01-01"
+                                ? new Date() // Usa a data atual se d_data_emissao for inválida
+                                : new Date(item.d_data_emissao);
+
+                            // Cálculo da diferença em milissegundos e conversão para dias completos
+                            const differenceInTime = dateEmissao - datePedido;
+                            const differenceInDays = Math.floor(differenceInTime / (1000 * 60 * 60 * 24));
+
+                            return differenceInDays;
+                          })()
+                        } <span style={{ marginLeft: 3 }}>Dias</span>
+                      </span>)}
                       </p>
                         
 
@@ -617,7 +636,7 @@ export const DocumentShow = () => {
           numberProtocol={numberProtocol}
           dataOneDoc={dataOneDoc}
           handlerDataOneData={handlerDataOneData}
-          />
+      />
 
       <Modal
         title={[<MessageOutlined />, ` Interações`]}
@@ -626,159 +645,159 @@ export const DocumentShow = () => {
         centered
         footer={
           <List
-                  loading={carComment}
-                  dataSource={comments?.data}
-                  renderItem={(item, index) => {
-                    const hasMoreResponses = item.cd_resposta && item.cd_resposta.length > 1;
-                    return (
-                      <List.Item style={{ padding: '12px 0', borderBottom: '1px solid #f0f0f0' }}>
-                        <List.Item.Meta
-                          avatar={
-                            <Avatar
-                              src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${index}`}
-                              style={{ marginRight: '8px' }}
-                            />
-                          }
-                          title={
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                              <a style={{ fontWeight: 'bold', color: '#8B41F2' }}>
-                                {userTK === item.usuario.u_nome ? 'Você' : item.usuario.u_nome} -
-                                 <Tag color={getColor(item?.cd_situacao_comentario)} style={{ fontSize: 8, borderRadius: 8, marginLeft: 8 }} >{item?.cd_situacao_comentario}</Tag>
-                              </a>
-                              <span style={{ fontSize: '12px', color: '#888' }}>{dayjs(item.criado_em).fromNow()}</span>
-                            </div>
-                          }
-                          description={
-                            <>
-                              <p style={{ marginTop: '4px', textAlign: 'justify', fontSize: 11 }}>
-                                {item.cd_msg}
-                              </p>
-                              <ReplyOutlined
-                                onClick={() => {
-                                  setReplyValue(`@${item.usuario?.u_nome} `); 
-                                  setIsReplyingToComment(item.cd_id);
-                                }}
-                                style={{ cursor: 'pointer', color: 'GrayText' }}
-                                fontSize="inherit"
-                              />
-                              {/* Campo de resposta e botão de envio */}
-                              {isReplyingToComment === item.cd_id && (
-                                <div style={{ marginTop: '8px' }}>
-                                      <Input.TextArea
-                                        value={replyValue} // Isso já deve ter o nome do usuário configurado
-                                        onChange={(e) => setReplyValue(e.target.value)} // Permite que o usuário edite o texto
-                                        placeholder="Digite sua resposta aqui..."
-                                      />
-                                  <Button
-                                    type="primary"
-                                    size="small"
-                                    shape="round"
-                                    onClick={handleSendReply}
-                                    style={{ marginTop: '4px' }}
-                                  >
-                                    Enviar Resposta
-                                  </Button>
-                                </div>
-                              )}
-                              {/* Renderizando respostas com a linha vertical de ligação */}
-                              {item.cd_resposta && item.cd_resposta.length > 0 && (
-                                <div style={{  marginTop: '8px', position: 'relative' }}>
-                                  {/* Linha vertical que conecta o comentário principal às respostas */}
-                                  <div
-                                    style={{
-                                      position: 'absolute',
-                                      top: '0',
-                                      left: '16px',
-                                      width: '15px',
-                                      height: item.cd_resposta.length > 1 ? '98%' : '40%',
-                                      borderLeft: '1px solid #8B41F2',
-                                      borderBottom: '1px solid #8B41F2',
-                                      borderBottomLeftRadius: '10px',
-                                    }}
-                                  ></div>
-                                  <div style={{ marginLeft: '24px', paddingLeft: '10px' }}>
-                                  <List
-                                      dataSource={expanded ? item.cd_resposta : [item.cd_resposta[0]]}
-                                      renderItem={(response) => (
-                                        <List.Item style={{ padding: '2px 0' }}>
-                                          <List.Item.Meta
-                                            avatar={
-                                              <Avatar
-                                                src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${response?.autor}`}
-                                                size='small'
-                                              />
-                                            }
-                                            title={
-                                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                <a style={{ fontWeight: 'bold', color: '#8B41F2', fontSize: 9 }}>
-                                                  {userTK === response?.autor ? 'Você' : response?.autor}
-                                                </a>
-                                              </div>
-                                            }
-                                            description={
-                                              <div style={{ padding: '4px', borderRadius: '4px' }}>
-                                                <p
-                                                  style={{
-                                                    textAlign: 'justify',
-                                                    margin: 0,
-                                                    fontSize: '9px',
-                                                    fontFamily: 'Arial, sans-serif',
-                                                    whiteSpace: 'normal',
-                                                    wordBreak: 'break-word',  // Quebra palavras longas
-                                                    overflowWrap: 'break-word', // Permite que palavras longas quebrem
-                                                    lineHeight: '1.2',
-                                                    maxWidth: '100%',  // Para garantir que o texto não extrapole o contêiner
-                                                  }}
-                                                >
-                                                  {response?.msg}
-                                                </p>
-                                              </div>
-                                            }
-                                            
-                                          />
-                                        </List.Item>
-                                      )}
-                                    />
-
-
-                                    {hasMoreResponses && (
-                                      <div
-                                        onClick={() => setExpanded(!expanded)}
-                                        style={{ cursor: 'pointer', color: '#8B41F2', marginLeft: '8px', fontSize: 12 }}
-                                      >
-                                        {expanded ? (
-                                          <>
-                                            <UpOutlined style={{ marginRight: 4 }} />
-                                            Recolher respostas
-                                          </>
-                                        ) : (
-                                          <>
-                                            <DownOutlined style={{ marginRight: 4 }} />
-                                            Mostrar {item.cd_resposta.length - 1} resposta(s) adicional(is)
-                                          </>
-                                        )}
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              )}
-                            </>
-                          }
+            loading={carComment}
+            dataSource={comments?.data}
+            renderItem={(item, index) => {
+              const hasMoreResponses = item.cd_resposta && item.cd_resposta.length > 1;
+              return (
+                <List.Item style={{ padding: '12px 0', borderBottom: '1px solid #f0f0f0' }}>
+                  <List.Item.Meta
+                    avatar={
+                      <Avatar
+                        src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${index}`}
+                        style={{ marginRight: '8px' }}
+                      />
+                    }
+                    title={
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <a style={{ fontWeight: 'bold', color: '#8B41F2' }}>
+                          {userTK === item.usuario.u_nome ? 'Você' : item.usuario.u_nome} -
+                          <Tag color={getColor(item?.cd_situacao_comentario)} style={{ fontSize: 8, borderRadius: 8, marginLeft: 8 }} >{item?.cd_situacao_comentario}</Tag>
+                        </a>
+                        <span style={{ fontSize: '12px', color: '#888' }}>{dayjs(item.criado_em).fromNow()}</span>
+                      </div>
+                    }
+                    description={
+                      <>
+                        <p style={{ marginTop: '4px', textAlign: 'justify', fontSize: 11 }}>
+                          {item.cd_msg}
+                        </p>
+                        <ReplyOutlined
+                          onClick={() => {
+                            setReplyValue(`@${item.usuario?.u_nome} `);
+                            setIsReplyingToComment(item.cd_id);
+                          }}
+                          style={{ cursor: 'pointer', color: 'GrayText' }}
+                          fontSize="inherit"
                         />
-                     </List.Item>
-                );
-              }}
-              size="small"
-              style={{
-                maxHeight: 400,
-                overflowY: 'auto',
-                scrollbarColor: '#888 #f1f1f1',
-                scrollbarWidth: 'thin',
-                padding: '0 10px',
-                borderRadius: '8px',
-                boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
-              }}
-        />
+                        {/* Campo de resposta e botão de envio */}
+                        {isReplyingToComment === item.cd_id && (
+                          <div style={{ marginTop: '8px' }}>
+                            <Input.TextArea
+                              value={replyValue} // Isso já deve ter o nome do usuário configurado
+                              onChange={(e) => setReplyValue(e.target.value)} // Permite que o usuário edite o texto
+                              placeholder="Digite sua resposta aqui..."
+                            />
+                            <Button
+                              type="primary"
+                              size="small"
+                              shape="round"
+                              onClick={handleSendReply}
+                              style={{ marginTop: '4px' }}
+                            >
+                              Enviar Resposta
+                            </Button>
+                          </div>
+                        )}
+                        {/* Renderizando respostas com a linha vertical de ligação */}
+                        {item.cd_resposta && item.cd_resposta.length > 0 && (
+                          <div style={{ marginTop: '8px', position: 'relative' }}>
+                            {/* Linha vertical que conecta o comentário principal às respostas */}
+                            <div
+                              style={{
+                                position: 'absolute',
+                                top: '0',
+                                left: '16px',
+                                width: '15px',
+                                height: item.cd_resposta.length > 1 ? '98%' : '40%',
+                                borderLeft: '1px solid #8B41F2',
+                                borderBottom: '1px solid #8B41F2',
+                                borderBottomLeftRadius: '10px',
+                              }}
+                            ></div>
+                            <div style={{ marginLeft: '24px', paddingLeft: '10px' }}>
+                              <List
+                                dataSource={expanded ? item.cd_resposta : [item.cd_resposta[0]]}
+                                renderItem={(response) => (
+                                  <List.Item style={{ padding: '2px 0' }}>
+                                    <List.Item.Meta
+                                      avatar={
+                                        <Avatar
+                                          src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${response?.autor}`}
+                                          size='small'
+                                        />
+                                      }
+                                      title={
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                          <a style={{ fontWeight: 'bold', color: '#8B41F2', fontSize: 9 }}>
+                                            {userTK === response?.autor ? 'Você' : response?.autor}
+                                          </a>
+                                        </div>
+                                      }
+                                      description={
+                                        <div style={{ padding: '4px', borderRadius: '4px' }}>
+                                          <p
+                                            style={{
+                                              textAlign: 'justify',
+                                              margin: 0,
+                                              fontSize: '9px',
+                                              fontFamily: 'Arial, sans-serif',
+                                              whiteSpace: 'normal',
+                                              wordBreak: 'break-word',  // Quebra palavras longas
+                                              overflowWrap: 'break-word', // Permite que palavras longas quebrem
+                                              lineHeight: '1.2',
+                                              maxWidth: '100%',  // Para garantir que o texto não extrapole o contêiner
+                                            }}
+                                          >
+                                            {response?.msg}
+                                          </p>
+                                        </div>
+                                      }
+
+                                    />
+                                  </List.Item>
+                                )}
+                              />
+
+
+                              {hasMoreResponses && (
+                                <div
+                                  onClick={() => setExpanded(!expanded)}
+                                  style={{ cursor: 'pointer', color: '#8B41F2', marginLeft: '8px', fontSize: 12 }}
+                                >
+                                  {expanded ? (
+                                    <>
+                                      <UpOutlined style={{ marginRight: 4 }} />
+                                      Recolher respostas
+                                    </>
+                                  ) : (
+                                    <>
+                                      <DownOutlined style={{ marginRight: 4 }} />
+                                      Mostrar {item.cd_resposta.length - 1} resposta(s) adicional(is)
+                                    </>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    }
+                  />
+                </List.Item>
+              );
+            }}
+            size="small"
+            style={{
+              maxHeight: 400,
+              overflowY: 'auto',
+              scrollbarColor: '#888 #f1f1f1',
+              scrollbarWidth: 'thin',
+              padding: '0 10px',
+              borderRadius: '8px',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+            }}
+          />
 
         }
        >

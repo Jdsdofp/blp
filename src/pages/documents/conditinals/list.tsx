@@ -1,18 +1,18 @@
 import React, { useRef, useState } from 'react';
-import { Badge, Button,Form, Input, message, Modal, Space, Table, Tabs, Tag } from 'antd';
+import { Badge, Button,Form, Input, message, Modal, Popconfirm, Space, Table, Tabs, Tag } from 'antd';
 import type { TableProps } from 'antd';
 import { List, useForm } from '@refinedev/antd';
 import {  DeleteOutlined, EditFilled, IssuesCloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { useInvalidate, useTable } from '@refinedev/core';
 import AssignmentTurnedInOutlinedIcon from '@mui/icons-material/AssignmentTurnedInOutlined';
-import { CloseSharp, Delete, Edit, Save } from '@mui/icons-material';
+import { Add, CloseSharp, Delete, Edit, Save } from '@mui/icons-material';
 import axios from 'axios';
 import { API_URL } from '../../../authProvider';
 
 interface IConditions {
     c_id: number;
     c_tipo: string;
-    c_condicao: []
+    c_condicao: [];
   }
 
 
@@ -28,9 +28,11 @@ export const ListCondition = () => {
 
     //VARIAVEIS CRUD LIST CONDITIONS
     const [valueInputCondition, setValueInputCondition] = useState<any>('');
-    const [valueInputConditionOne, setValueInputConditionOne] = useState<any>('')
-
-
+    const [valueInputConditionOne, setValueInputConditionOne] = useState<any>('');
+    const [idConditionModal, setIdConditionModal] = useState<number | null>();
+    const [titleTypeModal, setTitleTypeModal] = useState<any>();
+    const [isModalAddNewsConditions, setIsModalAddNewsConditions] = useState<boolean>(false);
+    const [condicoes, setCondicoes] = useState([]);
 
 
 
@@ -128,18 +130,79 @@ export const ListCondition = () => {
     //configuração de atualizar condição especifica {
         const updateConditionOne = async (data: any) =>{
             try {
-                console.log('Data for update', valueInputCondition)
-                console.log('Data referer send', data)
+
+                const payload = {
+                    c_condicao_atualizada: valueInputCondition, 
+                    c_condicao_atual: data
+                }
+
+                const response = await axios.patch(`${API_URL}/condition/editar-condicao/${idConditionModal}`, payload)
+                
+                setListCond(response?.data?.condicoes)
+                messageApi.info(response?.data?.message)
                 await condtionsResult.refetch()
+
             } catch (error) {
                 console.info('Log of error:', error)
             }
         }
     //} configuração de atualizar condição especifica
 
-    
+        const deleteConditionOne = async (data: any) =>{
+            try {
+                console.info('Condição recebida: ', data)
+                console.info('Id da condição: ', idConditionModal)
 
-    
+                const payload = {
+                    c_condicao: data?.c_condicao
+                }
+
+                const response = await axios.delete(`${API_URL}/condition/deletar-condicao/${idConditionModal}`, payload)
+                await setListCond(response?.data?.condicoes)
+                await condtionsResult.refetch()
+                messageApi.error(response?.data?.message)
+            } catch (error) {
+                console.log('Log de erro: ', error)
+            }
+        }
+
+    // configuração de adicionar novas condições a condicionante {
+        
+    // Adicionar nova condição
+        const addCondition = () => {
+            setCondicoes((prev) => [...prev, ""]);
+        };
+
+        // Remover condição pelo índice
+        const removeCondition = (index) => {
+            setCondicoes((prev) => prev.filter((_, i) => i !== index));
+        };
+
+        // Atualizar o valor de uma condição específica
+        const handleConditionChange = (index, value) => {
+            const updatedConditions = [...condicoes];
+            updatedConditions[index] = value;
+            setCondicoes(updatedConditions);
+        };
+
+        // Envio dos dados
+        const addNewCondition = async () => {            
+            try {
+                const payload = {
+                    c_condicao: condicoes
+                }
+                
+                const response = await axios.put(`${API_URL}/condition/adicionar-condicoes/${idConditionModal}`, payload)
+                await setListCond(response.data?.c_condicao)
+                await condtionsResult.refetch()
+                await setCondicoes([])
+                await messageApi.info(response.data?.message)
+            } catch (error) {
+                console.log('Log de erro:', error)
+            }
+        };
+
+    //  } configuração de adicionar novas condições a condicionante   
 
 
     const columns: TableProps<IConditions>['columns'] = [
@@ -198,13 +261,21 @@ export const ListCondition = () => {
                             {/* BOTÃO DE EDITAR */}
 
                             {/* BOTÃO DE DELETAR CONDICIONANDO!!! */}
-                            <Button
-                                size="small"
-                                shape="circle"
-                                onClick={()=>deleteCondition(record)}
-                                icon={<Delete fontSize='inherit' htmlColor={ 'red' } />}
-                            />
-                            {/* BOTÃO DE DELETAR CONDICIONANDO!!! */} 
+                            <Popconfirm
+                                title="Tem certeza que deseja deletar esta condicionanante?"
+                                onConfirm={() => deleteCondition(record)} // Ação ao confirmar
+                                okText="Sim"
+                                cancelText="Não"
+                                placement="topRight"
+                            >
+                                <Button
+                                    size="small"
+                                    shape="circle"
+                                    icon={<Delete fontSize="inherit" htmlColor="red" />}
+                                />
+                            </Popconfirm>
+                            {/* BOTÃO DE DELETAR CONDICIONANDO!!! */}
+ 
                         </>
                     )}
                 </Space>
@@ -217,7 +288,7 @@ export const ListCondition = () => {
             key: 'c_condicao',
             title: 'Condições',
             render: (_, record)=>(
-                <Tag style={{cursor: 'pointer', borderRadius: 50}} color='cyan' onClick={()=>handleModalList(record.c_condicao)}><AssignmentTurnedInOutlinedIcon fontSize='small'/> {record.c_condicao.length}</Tag>
+                <Tag style={{cursor: 'pointer', borderRadius: 50}} color='cyan' onClick={async ()=>{await handleModalList(record.c_condicao, record.c_tipo); await setIdConditionModal(record?.c_id)}}><AssignmentTurnedInOutlinedIcon fontSize='small'/> {record.c_condicao.length}</Tag>
             )
         }
     ]
@@ -229,12 +300,21 @@ export const ListCondition = () => {
     
     }
 
+    const handlerCancelModalNewsAddConditions = () =>{
+        setIsModalAddNewsConditions(false)
+        form?.resetFields()
+    
+    }
 
-    const handleModalList = (c_codicao: any) =>{
+
+    const handleModalList = (c_codicao: any, c_tipo: any) =>{
         setModalList(true)
         setListCond(c_codicao)
+        setTitleTypeModal(c_tipo)
     }
     
+
+
     const { TabPane } = Tabs;
    
 
@@ -285,13 +365,16 @@ export const ListCondition = () => {
                                                     rules={[{ required: true }]}  
                                                 >  
                                                     <Input placeholder="Condição" />  
-                                                </Form.Item>  
-                                                <Button  
-                                                    danger  
-                                                    onClick={() => remove(field.name)}  
-                                                    style={{ marginTop: "5px" }}  
-                                                    icon={<DeleteOutlined />}  
-                                                />  
+                                                </Form.Item>
+                                                
+                                                <Popconfirm title="Tem">
+                                                    <Button  
+                                                        danger  
+                                                        onClick={() => remove(field.name)}  
+                                                        style={{ marginTop: "5px" }}  
+                                                        icon={<DeleteOutlined />}  
+                                                    />  
+                                                </Popconfirm>  
                                             </Space>  
                                         );  
                                     })}  
@@ -317,9 +400,55 @@ export const ListCondition = () => {
             </Modal>
 
 
+            <Modal
+                title="Incluir nova condição"
+                open={isModalAddNewsConditions}
+                onCancel={handlerCancelModalNewsAddConditions}
+                onOk={addNewCondition}
+                centered
+             >
+                {/* Lista de condições */}
+                <div style={{ maxHeight: "300px", overflowY: "auto" }}>
+                    {condicoes.map((condicao, index) => (
+                        <div 
+                            key={index} 
+                            style={{ 
+                                display: "flex", 
+                                alignItems: "center", 
+                                marginBottom: "10px" 
+                            }}
+                        >
+                            <Input
+                                placeholder={`Condição ${index + 1}`}
+                                value={condicao}
+                                onChange={(e) => handleConditionChange(index, e.target.value)}
+                                style={{ flex: 1, marginRight: "10px" }} // Faz o input ocupar o máximo de espaço
+                            />
+                            <Button
+                                danger
+                                icon={<DeleteOutlined />}
+                                onClick={() => removeCondition(index)}
+                            />
+                        </div>
+                    ))}
+                </div>
+                {/* Botão para adicionar nova condição */}
+                <Button
+                    type="dashed"
+                    block
+                    style={{ marginTop: "10px" }}
+                    icon={<PlusOutlined />}
+                    onClick={addCondition}
+                >
+                    Adicionar Condição
+                </Button>
+            </Modal>
+
+
             <Modal open={modalList} onCancel={() => setModalList(false)} styles={{ body: { paddingTop: '28px' } }} okButtonProps={{ hidden: true }} cancelButtonProps={{ hidden: true }}>
                 <Table dataSource={listCond} size='small' bordered scroll={{ x: true }}>
-                    <Table.Column title='Condição' key="condition" render={(_, record) =>
+                    
+                    <Table.Column title={`Condições - [ ${titleTypeModal} ]`} key="condition" render={(_, record) =>
                     (<>
                         <Space>
                             {record === valueInputConditionOne ? (
@@ -358,12 +487,32 @@ export const ListCondition = () => {
                                         icon={<Edit fontSize="inherit" />}
                                         onClick={async () => { await setValueInputCondition(record); await setValueInputConditionOne(record) }} // Define o valor para edição
                                     />
+
+                                    {/* BOTÃO DE DELETAR CONDICIONANDO!!! */}
+
+                                    <Popconfirm
+                                        title="Tem certeza que deseja deletar esta condição?"
+                                        onConfirm={()=>deleteConditionOne(record)}
+                                        okText="Sim"
+                                        cancelText="Não"
+                                        placement='topRight'
+                                    >
+                                        <Button
+                                            size="small"
+                                            shape="circle"
+                                            icon={<Delete fontSize='inherit' htmlColor={'red'} />}
+                                        />
+                                    </Popconfirm>
+                                    {/* BOTÃO DE DELETAR CONDICIONANDO!!! */} 
+                                    
                                 </>
                             )}
                         </Space>
                     </>
                     )} />
+
                 </Table>
+                    <Button icon={<Add/>} onClick={()=>setIsModalAddNewsConditions(true)}/>
             </Modal>
 
         </>
