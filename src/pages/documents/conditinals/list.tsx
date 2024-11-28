@@ -124,14 +124,21 @@ export const ListCondition = () => {
         }
 
     // }configuração de delete da condicionante
-    
-    const handleChangeInputCondition = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setValueInputConditionOne(e.target.value);
-    };
+        
+    //configuração de atualizar condição especifica {
+        const updateConditionOne = async (data: any) =>{
+            try {
+                console.log('Data for update', valueInputCondition)
+                console.log('Data referer send', data)
+                await condtionsResult.refetch()
+            } catch (error) {
+                console.info('Log of error:', error)
+            }
+        }
+    //} configuração de atualizar condição especifica
 
     
-    
-    console.log('Valor da state:', valueInputCondition)
+
     
 
 
@@ -231,7 +238,7 @@ export const ListCondition = () => {
     const { TabPane } = Tabs;
    
 
-    
+    //console.info('Valor recebido da valueInputConditionOne: ', valueInputConditionOne)
     return (
         <>
             <List title='Condição' breadcrumb createButtonProps={{ children: "Nova condição", onClick: ()=>{setIsModal(true)}, icon: <IssuesCloseOutlined /> }} >
@@ -310,53 +317,53 @@ export const ListCondition = () => {
             </Modal>
 
 
-            <Modal open={modalList} onCancel={()=>setModalList(false)} styles={{body: {paddingTop: '28px'}}} okButtonProps={{hidden: true}} cancelButtonProps={{hidden: true}}>
-                        <Table dataSource={listCond} size='small' bordered scroll={{x: true}}>
-                            <Table.Column title='Condição' key="condition" render={(_, record, index)=>
-                                (<> 
-                                    <Space>
-            {record === valueInputCondition ? (
-                <>
-                    {/* Input editável */}
-                    <Input
-                        size="small"
-                        value={valueInputCondition}
-                        onChange={(e) => setValueInputCondition(e.target.value)} // Atualiza o estado com o valor do input
-                    />
-                    <Button
-                        size="small"
-                        shape="circle"
-                        icon={<Save fontSize="inherit" />}
-                        onClick={() => {
-                            // Aqui você pode enviar o valor atualizado para o backend
-                            console.log("Valor atualizado:", valueInputCondition);
-                            // Feche o modo de edição
-                            setValueInputCondition('');
-                        }}
-                    />
-                    <Button
-                        size="small"
-                        shape="circle"
-                        icon={<CloseSharp fontSize="inherit" />}
-                        onClick={() => setValueInputCondition('')} // Cancela a edição
-                    />
-                </>
-            ) : (
-                <>
-                    {/* Valor exibido */}
-                    <span style={{ marginRight: 5 }}>{record}</span>
-                    <Button
-                        shape="circle"
-                        size="small"
-                        icon={<Edit fontSize="inherit" />}
-                        onClick={() => setValueInputCondition(record)} // Define o valor para edição
-                    />
-                </>
-            )}
-        </Space>
-                                    </>
-                                )}/>
-                        </Table>
+            <Modal open={modalList} onCancel={() => setModalList(false)} styles={{ body: { paddingTop: '28px' } }} okButtonProps={{ hidden: true }} cancelButtonProps={{ hidden: true }}>
+                <Table dataSource={listCond} size='small' bordered scroll={{ x: true }}>
+                    <Table.Column title='Condição' key="condition" render={(_, record) =>
+                    (<>
+                        <Space>
+                            {record === valueInputConditionOne ? (
+                                <>
+                                    <Input
+                                        size="small"
+                                        value={valueInputCondition}
+                                        onChange={(e) => setValueInputCondition(e.target.value)} // Atualiza o estado com o valor do input
+                                    />
+                                    <Button
+                                        size="small"
+                                        shape="circle"
+                                        icon={<Save fontSize="inherit" />}
+                                        onClick={async () => {
+                                            await updateConditionOne(valueInputConditionOne);
+                                            await setValueInputCondition('');
+                                            await setValueInputConditionOne('');
+                                        }}
+                                    />
+                                    <Button
+                                        size="small"
+                                        shape="circle"
+                                        icon={<CloseSharp fontSize="inherit" />}
+                                        onClick={() => {
+                                            setValueInputCondition('');
+                                            setValueInputConditionOne('')
+                                        }}
+                                    />
+                                </>
+                            ) : (
+                                <>
+                                    <span style={{ marginRight: 5 }}>{record}</span>
+                                    <Button
+                                        shape="circle"
+                                        size="small"
+                                        icon={<Edit fontSize="inherit" />}
+                                        onClick={async () => { await setValueInputCondition(record); await setValueInputConditionOne(record) }} // Define o valor para edição
+                                    />
+                                </>
+                            )}
+                        </Space>
+                    </>
+                    )} />
+                </Table>
             </Modal>
 
         </>
