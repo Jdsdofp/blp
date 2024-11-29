@@ -507,15 +507,25 @@ const colorsCards = (status: any) => {
   }
 };
 
+const totalDocumentos = tableQueryResult?.data?.data?.reduce((total, filial) => {
+  return total + (filial.documentos?.length || 0);
+}, 0);
+
+
   return (
     <>
       <List canCreate={false} headerButtons={<RefreshButton  hideText shape="circle"/>} >
       <Space align="baseline" wrap>
+            <Card size="small" hoverable title='Documento cadastrados' bordered={false} style={{ width: 200, textAlign: 'center' }}  styles={{body: {background: '#976DF2', marginBottom: 10}}}>
+                    <h4 style={{fontSize: 20}}>{totalDocumentos}</h4>
+                   
+            </Card>
         {situacaoCount && Object.entries(situacaoCount).length > 0 ? (
             Object.entries(situacaoCount).map(([situacao, count]) => (
-                <Card size="small" hoverable title={situacao} bordered={false} style={{ width: 200, textAlign: 'center' }} key={situacao} styles={{body: {background: colorsCards(situacao), marginBottom: 10}}}>
+              <>                <Card size="small" hoverable title={situacao} bordered={false} style={{ width: 200, textAlign: 'center' }} key={situacao} styles={{body: {background: colorsCards(situacao), marginBottom: 10}}}>
                     <h4 style={{fontSize: 20}}>{count}</h4>
                 </Card>
+              </>
             ))
         ) : (
             <p>Nenhuma situação encontrada.</p>

@@ -1,4 +1,4 @@
-import { CommentOutlined, DownOutlined, IssuesCloseOutlined, MessageOutlined, UpOutlined } from "@ant-design/icons"
+import { CommentOutlined, DownOutlined, IssuesCloseOutlined, MessageOutlined, ReconciliationOutlined, UpOutlined } from "@ant-design/icons"
 import { DateField, EditButton, RefreshButton, Show } from "@refinedev/antd";
 import { useList, useTable } from "@refinedev/core";
 import { List, Card, Row, Col, Modal, Input, Space, Button, Badge, Mentions, Tag, Avatar, message, Form, Popover, Switch } from "antd";
@@ -113,12 +113,13 @@ export const DocumentShow = () => {
   const [numberProtocol, setNumberProtocol] = useState<number>()
   const [dataOneDoc, setDataOneDoc] = useState({})
   const [switchChecked, setSwitchChecked] = useState<boolean>(false);
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   //MODEL CASH
   const [isModalCash, setIsModalCash] = useState<boolean>();
   const [listDebit, setListDebit] = useState([])
   const [loadingDataDebit, setLoadingDataDebit] = useState(true)
+
 
 
   const handleSendComment = async () => {
@@ -527,7 +528,6 @@ export const DocumentShow = () => {
                       }
                       actions={[
                         <Space>
-                          <EditButton hideText shape="circle" size="small" />
                           <Badge count={item?.d_comentarios?.length || null} size="small">
                             <Button
                               icon={<CommentOutlined />}
@@ -543,6 +543,7 @@ export const DocumentShow = () => {
                             />
                           </Badge>
                           <Button icon={<EqualizerIcon fontSize="inherit" htmlColor="#F23847"/>} shape="circle" size="small"/>
+                          <Button size="small" shape="circle" icon={<ReconciliationOutlined />} />
                         </Space>,
                       ]}
                     >
@@ -873,10 +874,9 @@ export const DocumentShow = () => {
           <Form.Item><span style={{fontSize: 14}}>Irregular? </span> <Switch size="small" checked={switchChecked} onChange={handleSwitchChange}  /></Form.Item>
           {contextHolder}  
       </Modal>
-
-    
       
       <ModalCash open={isModalCash} close={()=>setIsModalCash(false)} dataOneDoc={dataOneDoc} listDebits={listDebits} listDebit={listDebit} loadingDataDebit={loadingDataDebit}/> 
+      
     </Show>
   );
 };

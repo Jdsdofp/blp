@@ -1,9 +1,11 @@
 import React, {useEffect, useState} from "react";
-import { CheckCircleOutlined, CloseCircleOutlined, ExclamationCircleOutlined, IssuesCloseOutlined, PlusCircleOutlined } from "@ant-design/icons";
-import { Check, Close } from "@mui/icons-material";
+import { CheckCircleOutlined, CloseCircleOutlined, ConsoleSqlOutlined, ExclamationCircleOutlined, IssuesCloseOutlined, PlusCircleOutlined, SaveOutlined, UploadOutlined } from "@ant-design/icons";
+import { Check, Close, DocumentScanner, DocumentScannerOutlined, Save, UploadFile } from "@mui/icons-material";
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
-import { Button, Card, Checkbox, DatePicker, Input, List, Modal, Popover, Space, Spin, Tag } from "antd";
+import { Button, Card, Checkbox, DatePicker, Input, List, Modal, Popover, Upload, Space, Spin, Tag, message } from "antd";
 import moment from "moment";
+import axios from "axios";
+import { API_URL } from "../../../authProvider";
 
 
 const { Search } = Input;
@@ -46,11 +48,13 @@ export const ModalConditions = ({
     dataOneDoc,
     handlerDataOneData
 }) =>{
-    
+  
+  const [messageApi] = message.useMessage()
   const [dataApi, setDataApi] = useState<any>()
   const [stateProtocolo, setStateProtocolo] = useState<boolean>()
   const hasProtocol = numberProtocol?.d_num_protocolo;
-  
+  const [file, setFile] = useState(null);
+  const [loadFile, setLoadFile] = useState(false)
   
 
   useEffect(() => {
@@ -62,6 +66,45 @@ export const ModalConditions = ({
      // Atualiza apenas com base no número de protocolo
   }, [hasProtocol]); // O useEffect dispara apenas quando d_num_protocolo muda
   
+ 
+  
+  // Capturar o arquivo selecionado
+  const handleFileChange = ({ file }) => {
+    setFile(file); // Salva o arquivo real no estado
+  };
+
+  
+  const handleUpload = async (id, file) => {
+    if (!file) {
+      console.log("Por favor, selecione um arquivo antes de salvar.");
+      return;
+    }
+
+    console.log('Arquivo da handler', file)
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("d_id", id);
+
+    try {
+      setLoadFile(true)
+      const response = await axios.post(`${API_URL}/storage/upload/${id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      setLoadFile(false)
+      if (response.data.success) {
+        messageApi.info("PDF enviado com sucesso!");
+      } else {
+        console.log(response.data.error || "Falha ao enviar o PDF.");
+      }
+    } catch (error) {
+      console.error("Erro no envio:", error);
+    }
+  };
+
 
   return (
 
@@ -86,7 +129,7 @@ export const ModalConditions = ({
                       {dataOneDoc?.d_situacao == 'Vencido' ? null : dataOneDoc?.d_situacao == 'Emitido' ? null : (<>
 
                         <Input placeholder="Nº Protocolo" allowClear  style={{borderRadius: 20}} onChange={(e)=>setNumProtocolo(e.target.value)} value={numProtocolo} hidden={dataOneDoc?.d_num_protocolo > 0 ? true : false }/>
-                        
+                         
                         <DatePicker placeholder="Emissão" locale='pt-BR' format={'DD/MM/YYYY'} allowClear  style={{borderRadius: 20}} onChange={(date)=>setDataEmissao(date)} value={dataEmissao} disabled={dataOneDoc?.d_num_protocolo > 0 ? false : true}/>
                         <DatePicker placeholder="Vencimento" locale='pt-BR' format={'DD/MM/YYYY'} allowClear  style={{borderRadius: 20}} onChange={(date)=>setDataVencimento(date)} value={dataVencimento} disabled={dataOneDoc?.d_num_protocolo > 0 ? false : true} />
                         <Button type="primary" onClick={async ()=>{await handleCloseAllProcss(result?.data?.dc_id); await handlerDataOneData(result?.data?.dc_id)}} shape="round" icon={<Check fontSize="inherit"/>} >{stateProtocolo ? 'Fechar' : 'Finalizar' }</Button>
@@ -305,9 +348,46 @@ export const ModalConditions = ({
 
                 { 
                   data?.data.map((d)=>d?.d_situacao)[0] == 'Vencido' ? null : data?.data.map((d)=>d?.d_situacao)[0] == 'Emitido' ? null : (
-                      <>
-                        <Button type="dashed" style={{marginTop: 10, fontSize: 12}} onClick={()=>setIsMdAddCond(true)}><PlusCircleOutlined /> Adicionar Itens</Button>
-                      </>
+                    <>
+                    <Space align="end">
+                      <Button
+                        type="dashed"
+                        style={{ marginTop: 10, fontSize: 12 }}
+                        onClick={() => setIsMdAddCond(true)}
+                      >
+                        <PlusCircleOutlined /> Adicionar Itens
+                      </Button>
+              
+                      {dataOneDoc?.d_num_protocolo > 0 ? (
+                        <>
+                          <Upload
+                            onChange={handleFileChange} // Captura o arquivo selecionado
+                            beforeUpload={() => false} // Evita upload automático pelo Ant Design
+                            
+                          >
+                            <Button
+                              type="dashed"
+                              shape="circle"
+                              icon={<UploadOutlined />}
+                              disabled={!dataOneDoc?.d_num_protocolo}
+                              hidden={dataOneDoc?.d_anexo}
+                            />
+                          </Upload>
+                        </>
+                      ) : null}
+                    </Space>
+              
+                    <Button
+                      loading={loadFile}
+                      type="text"
+                      size="small"
+                      shape="circle"
+                      icon={<SaveOutlined />}
+                      disabled={!dataOneDoc?.d_num_protocolo}
+                      onClick={() => handleUpload(dataOneDoc?.d_id, file)} // Envia o arquivo e o ID
+                      hidden={dataOneDoc?.d_anexo}
+                    />
+                  </>
                   )
                 }
           </Card>
