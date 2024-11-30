@@ -151,6 +151,14 @@ export const DocTypeDocCreate = () => {
         }
     }
 
+   const updateStateTpCond = async (data: any, td_id: number) =>{
+        try {
+            console.info('Data of response: ', data);
+            console.info('ID params: ', td_id)
+        } catch (error) {
+            console.log('Log of errors: ', error)
+        }
+   }
 
     const columns: TableProps<ITypeDoc>['columns'] = [
 
@@ -271,8 +279,8 @@ export const DocTypeDocCreate = () => {
             title: 'Status',
             align: 'center',
             width: '80px',
-            render: (_, {td_ativo})=>(
-                <Tag color={td_ativo ? 'green' : 'error'} style={{fontSize: 10}}> <Badge color={td_ativo ? 'green': 'red'}/> {td_ativo ? 'Ativo' : 'Desativado'}</Tag>
+            render: (_, {td_ativo, td_id})=>(
+                <Tag color={td_ativo ? 'green' : 'error'} style={{fontSize: 10}} onClick={ ()=>  updateStateTpCond(td_ativo, td_id)}> <Badge color={td_ativo ? 'green': 'red'}/> {td_ativo ? 'Ativo' : 'Desativado'}</Tag>
             )
         }
     ]
