@@ -1,7 +1,7 @@
-import { CommentOutlined, DownOutlined, IssuesCloseOutlined, MessageOutlined, UpOutlined } from "@ant-design/icons"
+import { CommentOutlined, DownOutlined, IssuesCloseOutlined, MessageOutlined, ReconciliationOutlined, UpOutlined } from "@ant-design/icons"
 import { DateField, EditButton, RefreshButton, Show } from "@refinedev/antd";
 import { useList, useTable } from "@refinedev/core";
-import { List, Card, Row, Col, Modal, Input, Space, Button, Badge, Mentions, Tag, Avatar, message, Form, Popover, Switch } from "antd";
+import { List, Card, Row, Col, Modal, Input, Space, Button, Badge, Mentions, Tag, Avatar, message, Form, Popover, Switch, Spin } from "antd";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../../authProvider";
@@ -113,12 +113,16 @@ export const DocumentShow = () => {
   const [numberProtocol, setNumberProtocol] = useState<number>()
   const [dataOneDoc, setDataOneDoc] = useState({})
   const [switchChecked, setSwitchChecked] = useState<boolean>(false);
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   //MODEL CASH
   const [isModalCash, setIsModalCash] = useState<boolean>();
   const [listDebit, setListDebit] = useState([])
   const [loadingDataDebit, setLoadingDataDebit] = useState(true)
+
+  //MODEL VIEW DOC
+  const [openViewModalDoc, setOpenViewModalDoc] = useState(false)
+  const [dataFilesView, setDataFilesView ] = useState<any>()
 
 
   const handleSendComment = async () => {
@@ -485,7 +489,10 @@ export const DocumentShow = () => {
     }
   }
 
-  
+  const openModalViewDoc = async (data: any) =>{
+    await setOpenViewModalDoc(true)
+    await setDataFilesView(data)
+  }
  
   return (
     <Show title={[<><span>{status}</span></>]} canEdit={false} canDelete={false} headerButtons={<RefreshButton onClick={() => atualiza()} />}>
@@ -527,7 +534,6 @@ export const DocumentShow = () => {
                       }
                       actions={[
                         <Space>
-                          <EditButton hideText shape="circle" size="small" />
                           <Badge count={item?.d_comentarios?.length || null} size="small">
                             <Button
                               icon={<CommentOutlined />}
@@ -543,6 +549,7 @@ export const DocumentShow = () => {
                             />
                           </Badge>
                           <Button icon={<EqualizerIcon fontSize="inherit" htmlColor="#F23847"/>} shape="circle" size="small"/>
+                          <Button size="small" shape="circle" icon={<ReconciliationOutlined />} disabled={!item?.d_anexo?.arquivo} onClick={async ()=> await openModalViewDoc(item?.d_anexo)}/>
                         </Space>,
                       ]}
                     >
@@ -873,10 +880,39 @@ export const DocumentShow = () => {
           <Form.Item><span style={{fontSize: 14}}>Irregular? </span> <Switch size="small" checked={switchChecked} onChange={handleSwitchChange}  /></Form.Item>
           {contextHolder}  
       </Modal>
-
-    
       
       <ModalCash open={isModalCash} close={()=>setIsModalCash(false)} dataOneDoc={dataOneDoc} listDebits={listDebits} listDebit={listDebit} loadingDataDebit={loadingDataDebit}/> 
+      
+
+      {/* MODAL DE VIZUALIZAÇÃO DO DOCUMENTO */}
+      <Modal 
+        open={openViewModalDoc} 
+        cancelButtonProps={{ onClick: () => setOpenViewModalDoc(false) }} 
+        closable={false} 
+        okButtonProps={{ hidden: true }}
+        centered
+      >
+          <h3>Visualizar Documento</h3>
+          {!dataFilesView?.url ? 
+           <Spin/>
+          :
+          
+          dataFilesView?.url ? (
+            <iframe
+              loading="eager" 
+              src={dataFilesView?.url} 
+              title={dataFilesView?.arquivo} 
+              style={{ width: '100%', height: '500px', border: 'none' }} 
+            />
+          ) : (
+            <p>Documento não disponível.</p>
+          )
+
+
+        }
+      </Modal>
+
+
     </Show>
   );
 };
