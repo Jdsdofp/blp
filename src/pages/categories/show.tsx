@@ -561,7 +561,7 @@ export const DocumentShow = () => {
                       
                       {item.d_data_pedido === "1970-01-01" ? null : (
                       <span>
-                        {item.d_data_emissao !== "1970-01-01" ? 'Durou'  : 'há dias:'} {
+                        {item.d_data_emissao !== "1970-01-01" ? 'Este processo durou'  : 'há dias:'} {
                           (() => {
                             const datePedido = new Date(item.d_data_pedido);
                             const dateEmissao =
@@ -643,6 +643,7 @@ export const DocumentShow = () => {
           numberProtocol={numberProtocol}
           dataOneDoc={dataOneDoc}
           handlerDataOneData={handlerDataOneData}
+          getColor={getColor}
       />
 
       <Modal

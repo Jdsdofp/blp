@@ -46,7 +46,8 @@ export const ModalConditions = ({
     docStatusId,
     numberProtocol,
     dataOneDoc,
-    handlerDataOneData
+    handlerDataOneData,
+    getColor
 }) =>{
   
   const [messageApi] = message.useMessage()
@@ -132,7 +133,7 @@ export const ModalConditions = ({
                          
                         <DatePicker placeholder="Emissão" locale='pt-BR' format={'DD/MM/YYYY'} allowClear  style={{borderRadius: 20}} onChange={(date)=>setDataEmissao(date)} value={dataEmissao} disabled={dataOneDoc?.d_num_protocolo > 0 ? false : true}/>
                         <DatePicker placeholder="Vencimento" locale='pt-BR' format={'DD/MM/YYYY'} allowClear  style={{borderRadius: 20}} onChange={(date)=>setDataVencimento(date)} value={dataVencimento} disabled={dataOneDoc?.d_num_protocolo > 0 ? false : true} />
-                        <Button type="primary" onClick={async ()=>{await handleCloseAllProcss(result?.data?.dc_id); await handlerDataOneData(result?.data?.dc_id)}} shape="round" icon={<Check fontSize="inherit"/>} >{stateProtocolo ? 'Fechar' : 'Finalizar' }</Button>
+                        <Button type="primary" onClick={async ()=>{await handleCloseAllProcss(result?.data?.dc_id); await handlerDataOneData(result?.data?.dc_id); await handleUpload(dataOneDoc?.d_id, file)}} shape="round" icon={<Check fontSize="inherit"/>} >{stateProtocolo ? 'Fechar' : 'Finalizar' }</Button>
                       </>)}
                       </>
                   )}
@@ -163,9 +164,8 @@ export const ModalConditions = ({
                         {Object.entries(conditions || {}).map(([key, value]) => (
                           <tr key={key}>
                             <td style={{ borderBottom: '1px solid #8B41F2' }}>
-                              <p style={{ textTransform: 'capitalize', color: value.status == false && dataOneDoc?.d_situacao == 'Irregular' ? 'red' : null, fontSize: 11 }}>{key}</p>
+                              <p style={{ textTransform: 'capitalize', color: value.status == false && dataOneDoc?.d_situacao == 'Irregular' ? 'red' : null, fontSize: 11 }}>{key} - <Tag color={getColor(value?.statusProcesso)} style={{fontSize: 8, margin: 0, borderRadius: 20}}>{value?.statusProcesso}</Tag></p>
                             </td>
-
                             <td style={{ borderBottom: '1px solid #8B41F2', textAlign: 'center', paddingRight: 60 }}>
                               {value?.dateCreate ? (
                                 (() => {
@@ -376,18 +376,6 @@ export const ModalConditions = ({
                         </>
                       ) : null}
                     </Space>
-              
-                    <Button
-                      loading={loadFile}
-                      type="text"
-                      size="small"
-                      shape="circle"
-                      icon={<SaveOutlined />}
-                      disabled={!dataOneDoc?.d_num_protocolo}
-                      onClick={() => handleUpload(dataOneDoc?.d_id, file)} // Envia o arquivo e o ID
-                      hidden={dataOneDoc?.d_anexo?.arquivo}
-                    />
-                    {console.log(dataOneDoc?.d_anexo?.arquivo)}
                   </>
                   )
                 }
