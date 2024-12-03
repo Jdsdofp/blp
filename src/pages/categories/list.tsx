@@ -514,7 +514,7 @@ const totalDocumentos = tableQueryResult?.data?.data?.reduce((total, filial) => 
 
   return (
     <>
-      <List canCreate={false} headerButtons={<RefreshButton  hideText shape="circle"/>} >
+      <List canCreate={false} headerButtons={<RefreshButton  hideText shape="circle" onClick={()=>tableQueryResult.refetch()} loading={tableQueryResult.isFetching}/>} >
       <Space align="baseline" wrap>
             <Card size="small" hoverable title='Documento cadastrados' bordered={false} style={{ width: 200, textAlign: 'center' }}  styles={{body: {background: '#976DF2', marginBottom: 10}}}>
                     <h4 style={{fontSize: 20}}>{totalDocumentos}</h4>
