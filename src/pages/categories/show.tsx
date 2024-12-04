@@ -415,7 +415,8 @@ export const DocumentShow = () => {
        setNumberProtocol(data?.doc)
 
       } catch (error) {
-        
+        console.log(error)
+        messageApi.error(error?.response.data.message)
       }
   }
 
