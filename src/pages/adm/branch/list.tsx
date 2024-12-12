@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Badge, Col, Form, Input, Modal, Row, Select, Table, Tabs, Tag } from 'antd';
+import { Badge, Button, Col, Form, Input, Modal, Row, Select, Table, Tabs, Tag } from 'antd';
 import type { TableProps } from 'antd';
 import { List, useForm } from '@refinedev/antd';
 import {  BranchesOutlined, ClearOutlined } from '@ant-design/icons';
 import { useInvalidate, useTable } from '@refinedev/core';
 import InputMask from 'react-input-mask';
-import { AddLocation } from '@mui/icons-material';
+import { AddLocation, Edit } from '@mui/icons-material';
 import axios from 'axios';
+import { ModalEditBranch } from './components/modalEdit';
 
 interface IBranchs {
     f_id: number;
@@ -16,6 +17,7 @@ interface IBranchs {
     f_cidade: string;
     f_uf: string;
     f_endereco: string;
+    f_endereco_complemento: string;
     f_latitude: string;
     f_longitude: string;
     empresa: object;
@@ -36,6 +38,9 @@ export const AdmBranchlist = () => {
     const { tableQueryResult: companiesResult } = useTable({ resource: 'company', meta: {endpoint: 'listar-empresas'},syncWithLocation: false});
     const {tableQueryResult: branchsResult} = useTable<IBranchs>({resource: 'branch', meta: {endpoint: 'listar-filiais'}, syncWithLocation: false, liveMode: 'auto'})
     
+    //VARIAIVES EDIT MODAL
+    const [isModalEditBranch, setIsModalEditBranch] = useState<boolean>()
+    const [isDataEdit, setIsDataEdit] = useState<any>(null)
     const invalid = useInvalidate()
     const {formProps, form, saveButtonProps } = useForm<IBranchs>({resource: 'branchsCreate', action: 'create', 
         successNotification(data) {
@@ -165,8 +170,18 @@ export const AdmBranchlist = () => {
         {
             key: 'f_ativo',
             title: 'Status',
-            render: (_, {f_ativo})=>(
-                <Tag color={f_ativo ? 'green' : 'error'} style={{fontSize: 10}}> <Badge color={f_ativo ? 'green': 'red'}/> {f_ativo ? 'Ativa' : 'Desativada'}</Tag>
+            render: (_, {f_ativo, f_id})=>(
+                <Tag color={f_ativo ? 'green' : 'error'} style={{fontSize: 10, cursor: 'pointer'}} onClick={()=>console.log('Clicado', f_id)}> <Badge color={f_ativo ? 'green': 'red'}/> {f_ativo ? 'Ativa' : 'Desativada'}</Tag>
+            )
+        },
+
+        {
+            key: 'acao',
+            title: 'Ações',
+            render: (_, record) =>(
+                <>
+                    <Button size='small' shape='circle' icon={<Edit fontSize='inherit'/>} onClick={async ()=>{ await setIsModalEditBranch(true); await setIsDataEdit(record)}}/>
+                </>
             )
         }
     ]
@@ -174,6 +189,12 @@ export const AdmBranchlist = () => {
     const hadleCancel = () =>{
         setIsModal(false)
     
+    }
+
+    //MODAL EDIT
+    const hadleCancelModalEdit = () =>{
+        setIsModalEditBranch(false)
+        
     }
     
     const unidades = ufs.map((e: any)=>({
@@ -356,6 +377,20 @@ export const AdmBranchlist = () => {
                 </Tabs>
             </Form>
         </Modal>
+
+        <ModalEditBranch
+            companiesOptions={companiesOptions}
+            consultarCEP={consultarCEP}
+            endereco={endereco}
+            hadleCancelModalEdit={hadleCancelModalEdit}
+            handleUfChange={handleUfChange}
+            isModalEditBranch={isModalEditBranch}
+            isDataEdit={isDataEdit}
+            municipios={municipios}
+            unidades={unidades}
+            refreshTable={branchsResult}
+        
+        />
 
         </>
     )
