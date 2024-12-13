@@ -113,28 +113,77 @@ export const ModalConditions = ({
           cancelButtonProps={{ hidden: true }}
           footer={[Object.entries(conditions || {}).filter(([key, value]) => value?.status === false).length >= 1 ? null : (
             
-              <Space>
-                 <Tag color='purple-inverse' style={{ fontSize: 10, borderRadius: 20 }}>{result?.data?.status}</Tag>
-                 
-                  {dataOneDoc?.d_situacao == 'Não iniciado' ? (
+            <Space>
+            <Tag color="purple-inverse" style={{ fontSize: 10, borderRadius: 20 }}>
+              {result?.data?.status}
+            </Tag>
+          
+            {dataOneDoc?.d_situacao === "Não iniciado" ? (
+              <>
+                {/* Botão para fechar diretamente */}
+                <DatePicker
+                  placeholder="Data Protocolo"
+                  name="d_data"
+                  locale="pt-BR"
+                  format="DD/MM/YYYY"
+                  allowClear
+                  style={{ borderRadius: 20 }}
+                  onChange={(date) => setDataProtocolo(date)}
+                  value={dataProtocolo}
+                />
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    handleCloseProcss(result?.data?.dc_id);
+                    handlerDataOneData(result?.data?.dc_id);
+                  }}
+                  shape="round"
+                  icon={<Check fontSize="inherit" />}
+                >
+                  Fechar
+                </Button>
+              </>
+            ) : (
+              <>
+                {dataOneDoc?.d_situacao === "Vencido" || dataOneDoc?.d_situacao === "Emitido" ? null : (
+                  <>
+                    {/* Input para número de protocolo */}
+                    <Input
+                      placeholder="Nº Protocolo"
+                      allowClear
+                      style={{ borderRadius: 20 }}
+                      onChange={(e) => setNumProtocolo(e.target.value)}
+                      value={numProtocolo}
+                      hidden={dataOneDoc?.d_num_protocolo > 0}
+                    />
+          
+                    {/* DatePickers para Emissão e Vencimento */}
+                    <DatePicker
+                      placeholder="Emissão"
+                      locale="pt-BR"
+                      format="DD/MM/YYYY"
+                      allowClear
+                      style={{ borderRadius: 20 }}
+                      onChange={(date) => setDataEmissao(date)}
+                      value={dataEmissao}
+                      disabled={dataOneDoc?.d_num_protocolo <= 0}
+                    />
+                    <DatePicker
+                      placeholder="Vencimento"
+                      locale="pt-BR"
+                      format="DD/MM/YYYY"
+                      allowClear
+                      style={{ borderRadius: 20 }}
+                      onChange={(date) => setDataVencimento(date)}
+                      value={dataVencimento}
+                      disabled={dataOneDoc?.d_num_protocolo <= 0}
+                    />
+          
+                    {/* Botão para finalizar ou enviar */}
+                    {file == null ? (
                       <>
-                        <DatePicker placeholder="Data Protocolo" name="d_data" locale='pt-BR' format={'DD/MM/YYYY'} allowClear  style={{borderRadius: 20}} onChange={(date) => setDataProtocolo(date)} value={dataProtocolo}/>
-                        <Button type="primary" onClick={()=>{handleCloseProcss(result?.data?.dc_id); handlerDataOneData(result?.data?.dc_id)}} shape="round" icon={<Check fontSize="inherit"/>} >Fechar</Button>
-                      </>
-                  ) : (
-                      <>
-                      {dataOneDoc?.d_situacao == 'Vencido' ? null : dataOneDoc?.d_situacao == 'Emitido' ? null : (<>
-
-                        <Input placeholder="Nº Protocolo" allowClear  style={{borderRadius: 20}} onChange={(e)=>setNumProtocolo(e.target.value)} value={numProtocolo} hidden={dataOneDoc?.d_num_protocolo > 0 ? true : false }/>
-                         
-                        <DatePicker placeholder="Emissão" locale='pt-BR' format={'DD/MM/YYYY'} allowClear  style={{borderRadius: 20}} onChange={(date)=>setDataEmissao(date)} value={dataEmissao} disabled={dataOneDoc?.d_num_protocolo > 0 ? false : true}/>
-                        <DatePicker placeholder="Vencimento" locale='pt-BR' format={'DD/MM/YYYY'} allowClear  style={{borderRadius: 20}} onChange={(date)=>setDataVencimento(date)} value={dataVencimento} disabled={dataOneDoc?.d_num_protocolo > 0 ? false : true} />
-                        
-                        
-                        
-                        
-                        <Button type="primary" shape="round" icon={<Check fontSize="inherit" />}>
-                        {file == null ? (
+                        {dataEmissao || dataVencimento ? (
+                          /* Caso datas estejam preenchidas, usa Popconfirm */
                           <Popconfirm
                             title="Tem certeza que deseja finalizar o processo sem o arquivo de anexo?"
                             onConfirm={async () => {
@@ -144,24 +193,56 @@ export const ModalConditions = ({
                             okText="Sim"
                             cancelText="Não"
                           >
-                            {stateProtocolo ? 'Fechar' : 'Finalizar'}
+                            <Button type="primary" shape="round" icon={<Check fontSize="inherit" />}>
+                              {stateProtocolo ? "Fechar" : "Finalizar"}
+                            </Button>
                           </Popconfirm>
                         ) : (
-                          <span onClick={async () => {
+                          /* Caso somente o número do protocolo esteja preenchido */
+                          <Button
+                            type="primary"
+                            shape="round"
+                            icon={<Check fontSize="inherit" />}
+                            onClick={async () => {
+                              await handleCloseAllProcss(result?.data?.dc_id);
+                              await handlerDataOneData(result?.data?.dc_id);
+                            }}
+                          >
+                            {stateProtocolo ? "Fechar" : "Finalizar"}
+                          </Button>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        {/* Finalizar com arquivo */}
+                        <Button
+                          type="primary"
+                          shape="round"
+                          icon={<Check fontSize="inherit" />}
+                          onClick={async () => {
                             await handleCloseAllProcss(result?.data?.dc_id);
                             await handlerDataOneData(result?.data?.dc_id);
                             await handleUpload(dataOneDoc?.d_id, file);
-                          }}>
-                            {stateProtocolo ? 'Fechar' : 'Finalizar'}
-                          </span>
-                        )}
-                      </Button>
-
-                      </>)}
+                          }}
+                        >
+                          {stateProtocolo ? "Fechar" : "Finalizar"}
+                        </Button>
                       </>
-                  )}
-                  {contextHolder}
-              </Space>
+                    )}
+                  </>
+                )}
+              </>
+            )}
+            {contextHolder}
+          </Space>
+          
+          
+          
+          
+          
+          
+          
+          
           )]}
       >
           <Card
