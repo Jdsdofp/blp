@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 import { CheckCircleOutlined, CloseCircleOutlined, ConsoleSqlOutlined, ExclamationCircleOutlined, IssuesCloseOutlined, PlusCircleOutlined, SaveOutlined, UploadOutlined } from "@ant-design/icons";
 import { Check, Close, DocumentScanner, DocumentScannerOutlined, Save, UploadFile } from "@mui/icons-material";
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
-import { Button, Card, Checkbox, DatePicker, Input, List, Modal, Popover, Upload, Space, Spin, Tag, message } from "antd";
+import { Button, Card, Checkbox, DatePicker, Input, List, Modal, Popover, Upload, Space, Spin, Tag, message, Popconfirm } from "antd";
 import moment from "moment";
 import axios from "axios";
 import { API_URL } from "../../../authProvider";
@@ -96,23 +96,19 @@ export const ModalConditions = ({
       });
 
       setLoadFile(false)
-      if (response.data.success) {
-        messageApi.info("PDF enviado com sucesso!");
-      } else {
-        console.log(response.data.error || "Falha ao enviar o PDF.");
-      }
+      setFile(null)
+      formData.append("")
     } catch (error) {
       console.error("Erro no envio:", error);
     }
   };
-
 
   return (
 
         <Modal
           styles={{body: {padding: 0, margin: -19}, footer: {marginTop: 30}}}  
           open={isModal}
-          onCancel={() => { hendleCloseModalConditions(); setCheckCondicionante(true); setNumProtocolo('')}}
+          onCancel={() => { hendleCloseModalConditions(); setCheckCondicionante(true); setNumProtocolo(''); setFile(null)}}
           okButtonProps={{ disabled: checkCondicionante, onClick: () => { setCheckCondicionante(true); setNumProtocolo('')}}}
           cancelButtonProps={{ hidden: true }}
           footer={[Object.entries(conditions || {}).filter(([key, value]) => value?.status === false).length >= 1 ? null : (
@@ -133,7 +129,34 @@ export const ModalConditions = ({
                          
                         <DatePicker placeholder="Emissão" locale='pt-BR' format={'DD/MM/YYYY'} allowClear  style={{borderRadius: 20}} onChange={(date)=>setDataEmissao(date)} value={dataEmissao} disabled={dataOneDoc?.d_num_protocolo > 0 ? false : true}/>
                         <DatePicker placeholder="Vencimento" locale='pt-BR' format={'DD/MM/YYYY'} allowClear  style={{borderRadius: 20}} onChange={(date)=>setDataVencimento(date)} value={dataVencimento} disabled={dataOneDoc?.d_num_protocolo > 0 ? false : true} />
-                        <Button type="primary" onClick={async ()=>{await handleCloseAllProcss(result?.data?.dc_id); await handlerDataOneData(result?.data?.dc_id); await handleUpload(dataOneDoc?.d_id, file)}} shape="round" icon={<Check fontSize="inherit"/>} >{stateProtocolo ? 'Fechar' : 'Finalizar' }</Button>
+                        
+                        
+                        
+                        
+                        <Button type="primary" shape="round" icon={<Check fontSize="inherit" />}>
+                        {file == null ? (
+                          <Popconfirm
+                            title="Tem certeza que deseja finalizar o processo sem o arquivo de anexo?"
+                            onConfirm={async () => {
+                              await handleCloseAllProcss(result?.data?.dc_id);
+                              await handlerDataOneData(result?.data?.dc_id);
+                            }}
+                            okText="Sim"
+                            cancelText="Não"
+                          >
+                            {stateProtocolo ? 'Fechar' : 'Finalizar'}
+                          </Popconfirm>
+                        ) : (
+                          <span onClick={async () => {
+                            await handleCloseAllProcss(result?.data?.dc_id);
+                            await handlerDataOneData(result?.data?.dc_id);
+                            await handleUpload(dataOneDoc?.d_id, file);
+                          }}>
+                            {stateProtocolo ? 'Fechar' : 'Finalizar'}
+                          </span>
+                        )}
+                      </Button>
+
                       </>)}
                       </>
                   )}
@@ -363,6 +386,7 @@ export const ModalConditions = ({
                           <Upload
                             onChange={handleFileChange} // Captura o arquivo selecionado
                             beforeUpload={() => false} // Evita upload automático pelo Ant Design
+                            onRemove={()=>setFile(null)}
                             
                           >
                             <Button
