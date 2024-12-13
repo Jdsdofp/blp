@@ -322,7 +322,7 @@ export const ListCondition = () => {
     return (
         <>
             <List title='Condição' breadcrumb createButtonProps={{ children: "Nova condição", onClick: ()=>{setIsModal(true)}, icon: <IssuesCloseOutlined /> }} >
-                <Table columns={columns} dataSource={condtionsResult.data?.data} scroll={{ x: 'max-content' }} size='small'/>
+                <Table columns={columns} dataSource={condtionsResult.data?.data} scroll={{ x: 'max-content' }} size='small' loading={condtionsResult?.isLoading}/>
                 {contextHolder}
             </List>
 

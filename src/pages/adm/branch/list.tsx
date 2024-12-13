@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Badge, Col, Form, Input, Modal, Row, Select, Table, Tabs, Tag } from 'antd';
+import { Badge, Button, Col, Form, Input, message, Modal, Popconfirm, Row, Select, Table, Tabs, Tag } from 'antd';
 import type { TableProps } from 'antd';
 import { List, useForm } from '@refinedev/antd';
 import {  BranchesOutlined, ClearOutlined } from '@ant-design/icons';
 import { useInvalidate, useTable } from '@refinedev/core';
 import InputMask from 'react-input-mask';
-import { AddLocation } from '@mui/icons-material';
+import { AddLocation, Edit } from '@mui/icons-material';
 import axios from 'axios';
+import { ModalEditBranch } from './components/modalEdit';
+import { API_URL } from '../../../authProvider';
 
 interface IBranchs {
     f_id: number;
@@ -16,6 +18,7 @@ interface IBranchs {
     f_cidade: string;
     f_uf: string;
     f_endereco: string;
+    f_endereco_complemento: string;
     f_latitude: string;
     f_longitude: string;
     empresa: object;
@@ -35,7 +38,11 @@ export const AdmBranchlist = () => {
     const [isModal, setIsModal] = useState(false)
     const { tableQueryResult: companiesResult } = useTable({ resource: 'company', meta: {endpoint: 'listar-empresas'},syncWithLocation: false});
     const {tableQueryResult: branchsResult} = useTable<IBranchs>({resource: 'branch', meta: {endpoint: 'listar-filiais'}, syncWithLocation: false, liveMode: 'auto'})
-    
+    const [iState, setIstate] = useState<boolean>()
+    const [messageApi, contextHolder] = message.useMessage()
+    //VARIAIVES EDIT MODAL
+    const [isModalEditBranch, setIsModalEditBranch] = useState<boolean>()
+    const [isDataEdit, setIsDataEdit] = useState<any>(null)
     const invalid = useInvalidate()
     const {formProps, form, saveButtonProps } = useForm<IBranchs>({resource: 'branchsCreate', action: 'create', 
         successNotification(data) {
@@ -84,6 +91,8 @@ export const AdmBranchlist = () => {
         }
     }, [form.getFieldValue('f_uf')]);
 
+
+
     const handleUfChange = (value: string) => {
         form.setFieldsValue({ f_cidade: undefined }); // Limpar o campo de cidade
         setMunicipios([]); // Limpar municípios
@@ -101,6 +110,28 @@ export const AdmBranchlist = () => {
                 .catch(error => console.error('Erro ao buscar municípios:', error));
         }
     };
+
+    const handleStatusEdit = async (state: boolean, f_id: number) =>{
+        try {
+
+            const newSate = !state;
+
+            setIstate(newSate);
+
+            const payload = {
+                state: newSate
+            }
+
+            console.log('Estado', newSate)
+
+            const response = await axios.patch(`${API_URL}/branch/status-filial/${f_id}`, payload)
+            messageApi.success(response?.data?.message)
+            await branchsResult.refetch()
+
+        } catch (error) {
+            console.log('Log de erro')
+        }
+    }
 
           
     const columns: TableProps<IBranchs>['columns'] = [
@@ -165,8 +196,25 @@ export const AdmBranchlist = () => {
         {
             key: 'f_ativo',
             title: 'Status',
-            render: (_, {f_ativo})=>(
-                <Tag color={f_ativo ? 'green' : 'error'} style={{fontSize: 10}}> <Badge color={f_ativo ? 'green': 'red'}/> {f_ativo ? 'Ativa' : 'Desativada'}</Tag>
+            render: (_, {f_ativo, f_id})=>(
+                <Popconfirm 
+                    title={`Tem certeza que deseja ${f_ativo ? 'BAIXAR🔴' : 'ATIVAR🟢'} essa filial?`}
+                    onConfirm={async ()=> await handleStatusEdit(f_ativo, f_id)}
+                    okText="Sim"
+                    cancelText="Não"
+                >
+                    <Tag color={f_ativo ? 'green' : 'error'} style={{fontSize: 10, cursor: 'pointer'}}> <Badge color={f_ativo ? 'green': 'red'}/> {f_ativo ? 'Ativa' : 'Baixada'}</Tag>
+                </Popconfirm>
+            )
+        },
+
+        {
+            key: 'acao',
+            title: 'Ações',
+            render: (_, record) =>(
+                <>
+                    <Button size='small' shape='circle' icon={<Edit fontSize='inherit'/>} onClick={async ()=>{ await setIsModalEditBranch(true); await setIsDataEdit(record)}}/>
+                </>
             )
         }
     ]
@@ -174,6 +222,12 @@ export const AdmBranchlist = () => {
     const hadleCancel = () =>{
         setIsModal(false)
     
+    }
+
+    //MODAL EDIT
+    const hadleCancelModalEdit = () =>{
+        setIsModalEditBranch(false)
+        
     }
     
     const unidades = ufs.map((e: any)=>({
@@ -233,6 +287,7 @@ export const AdmBranchlist = () => {
         <>
             <List breadcrumb createButtonProps={{ children: "Nova Filial", onClick: ()=>{setIsModal(true)}, icon: <BranchesOutlined /> }} headerProps={{subTitle: <span style={{fontSize: 10}}>Total.: {branchsResult.data?.total}</span>}} >
                 <Table columns={columns} dataSource={branchsResult.data?.data} scroll={{ x: 'max-content' }} size='small' loading={branchsResult.isLoading} bordered />
+            
             </List>
 
             <Modal 
@@ -357,6 +412,20 @@ export const AdmBranchlist = () => {
             </Form>
         </Modal>
 
+        <ModalEditBranch
+            companiesOptions={companiesOptions}
+            consultarCEP={consultarCEP}
+            endereco={endereco}
+            hadleCancelModalEdit={hadleCancelModalEdit}
+            handleUfChange={handleUfChange}
+            isModalEditBranch={isModalEditBranch}
+            isDataEdit={isDataEdit}
+            municipios={municipios}
+            unidades={unidades}
+            refreshTable={branchsResult}
+        
+        />
+        {contextHolder}
         </>
     )
 };
