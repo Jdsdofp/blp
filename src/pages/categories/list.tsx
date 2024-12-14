@@ -569,7 +569,7 @@ const totalDocumentos = tableQueryResult?.data?.data?.reduce((total, filial) => 
                 </Col>
                 
                 <Col xs={24} sm={12}>
-                  <Form.Item label="Orgão Exp." name="d_orgao_exp">
+                  <Form.Item label="Orgão Exp." name="d_orgao_exp" initialValue={"orgão"} hidden>
                     <Input placeholder="Orgão Exp" />
                   </Form.Item>
                 </Col>

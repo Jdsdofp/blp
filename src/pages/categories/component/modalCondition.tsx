@@ -154,7 +154,7 @@ export const ModalConditions = ({
                       style={{ borderRadius: 20 }}
                       onChange={(e) => setNumProtocolo(e.target.value)}
                       value={numProtocolo}
-                      hidden={dataOneDoc?.d_num_protocolo > 0}
+                      hidden={/^\d+(\/\d+)?$/.test(dataOneDoc.d_num_protocolo)}
                     />
           
                     {/* DatePickers para Emissão e Vencimento */}
@@ -235,12 +235,6 @@ export const ModalConditions = ({
             )}
             {contextHolder}
           </Space>
-          
-          
-          
-          
-          
-          
           
           
           )]}
@@ -462,7 +456,7 @@ export const ModalConditions = ({
                         <PlusCircleOutlined /> Adicionar Itens
                       </Button>
               
-                      {dataOneDoc?.d_num_protocolo > 0 ? (
+                      {/^\d+(\/\d+)?$/.test(dataOneDoc.d_num_protocolo)  ? (
                         <>
                           <Upload
                             onChange={handleFileChange} // Captura o arquivo selecionado
@@ -474,7 +468,7 @@ export const ModalConditions = ({
                               type="dashed"
                               shape="circle"
                               icon={<UploadOutlined />}
-                              disabled={!dataOneDoc?.d_num_protocolo}
+                              disabled={!/^\d+(\/\d+)?$/.test(dataOneDoc.d_num_protocolo)}
                               hidden={dataOneDoc?.d_anexo?.arquivo}
                             />
                           </Upload>
