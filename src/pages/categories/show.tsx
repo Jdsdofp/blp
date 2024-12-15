@@ -578,6 +578,10 @@ export const DocumentShow = () => {
                           })()
                         } <span style={{ marginLeft: 3 }}>Dias</span>
                       </span>)}
+
+                      <p>Data protocolo: </p>
+                      <p>Data Emissão: </p>
+                      <p>Data Vencimento: </p>
                       </p>
                         
 
