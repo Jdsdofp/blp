@@ -6,7 +6,7 @@ import {
   useForm,
   useTable
 } from "@refinedev/antd";
-import { Table, TableProps, Popover, Tag, Badge, Modal, Button, Tabs, Row, Col, Form, Select, Input, DatePicker, Card, Space } from "antd";
+import { Table, TableProps, Popover, Tag, Badge, Modal, Button, Tabs, Row, Col, Form, Select, Input, DatePicker, Card, Space, Checkbox } from "antd";
 import StoreIcon from '@mui/icons-material/Store';
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -41,6 +41,7 @@ interface IDocument {
   d_anexo: string;
   d_num_protocolo: string;
   d_sitaucao: string;
+  d_flag_stts: boolean;
   d_condicoes: string[];
   criado_em: Date;
 }
@@ -64,7 +65,9 @@ export const DocumentList = () => {
   const [searchText, setSearchText] = useState('')
   const [seachedColumn, setSearchedColumn] = useState('');
   const [selectedUFs, setSelectedUFs] = useState<string[]>([]);
-  
+  const [isChecked, setIsChecked] = useState<boolean>()
+
+
   const { data: listTypeDocument } = useList({ resource: 'type-document', meta: { endpoint: 'listar-tipo-documentos' }, liveMode: 'auto',  });
   const { data: condtionsResult } = useList({ resource: 'condition', meta: { endpoint: 'listar-condicionantes' } });
   
@@ -460,6 +463,7 @@ const verifyConditionsSys = async (id) => {
 
 
 
+
 // Função para capturar as condições ao selecionar uma condicionante
 const handleCondicoes = (value: any, option: any) => {
   const conditions = option.c_condicao;
@@ -487,7 +491,6 @@ const handleCondicoes = (value: any, option: any) => {
   // Atualiza a lista modal com as novas condições ou esvazia se não houver
   setIsListModalConditions(conditions.length ? conditions : []);
 };
-
 
 
 
@@ -534,13 +537,56 @@ const totalDocumentos = tableQueryResult?.data?.data?.reduce((total, filial) => 
         <Table  {...tableProps} tableLayout="auto" rowKey="id" columns={columns} size="small" sticky scroll={{y: 600 }} bordered={true}/>
       </List>
 
-      <Modal open={isModal} onCancel={() => {form.resetFields(); setIsModal(false); setSubList(false); setIsListModalConditions([]); setTabCond(true)}} okButtonProps={saveButtonProps}>
+      <Modal 
+        open={isModal} 
+        onCancel={() => {
+          form.resetFields(); 
+          setIsModal(false); 
+          setSubList(false); 
+          setIsListModalConditions([]); 
+          setTabCond(true); 
+          setIsChecked(false)
+        }}
+        okButtonProps={saveButtonProps}
+        footer={
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Checkbox 
+              checked={isChecked}
+              onChange={(e) => {
+                setIsChecked(e.target.checked)
+                form.setFieldsValue({d_flag_stts: e.target.checked ? 'Irregular' : null})
+                
+              }
+              
+              }>
+              Irregular
+            </Checkbox>
+            <div>
+              <Button style={{ marginRight: "10px" }} onClick={() => {
+                form.resetFields(); 
+                setIsModal(false); 
+                setSubList(false); 
+                setIsListModalConditions([]); 
+                setTabCond(true); 
+                setIsChecked(false)
+                }}>Cancelar</Button>
+              <Button
+                type="primary" 
+                onClick={() => form.submit()} 
+              >
+                Salvar
+              </Button>
+            </div>
+          </div>
+        }
+        >
         <Form
           layout="vertical"
           style={{ width: '100%' }}
           form={form}
           {...formProps}
           disabled={formLoading}
+        
         >
 
           <Tabs defaultActiveKey="1">
@@ -644,6 +690,10 @@ const totalDocumentos = tableQueryResult?.data?.data?.reduce((total, filial) => 
                     ) : null
                   }
                     <Form.Item hidden name="d_condicoes">
+                     <Input/>
+
+                   </Form.Item>
+                   <Form.Item hidden name="d_flag_stts">
                      <Input/>
 
                    </Form.Item>

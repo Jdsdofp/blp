@@ -1,7 +1,7 @@
 import { CommentOutlined, DownOutlined, IssuesCloseOutlined, MessageOutlined, ReconciliationOutlined, UpOutlined } from "@ant-design/icons"
 import { DateField, EditButton, RefreshButton, Show } from "@refinedev/antd";
 import { useList, useTable } from "@refinedev/core";
-import { List, Card, Row, Col, Modal, Input, Space, Button, Badge, Mentions, Tag, Avatar, message, Form, Popover, Switch, Spin } from "antd";
+import { List, Card, Row, Col, Modal, Input, Space, Button, Badge, Mentions, Tag, Avatar, message, Form, Popover, Switch, Spin, Typography } from "antd";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../../authProvider";
@@ -386,6 +386,7 @@ export const DocumentShow = () => {
        const {data} = await axios.put(`${API_URL}/document-condition/fechar-processo-condicionante/${dc_id}`, payload);
        setNumProtocolo('')
        setDataProtocolo(null)
+       await asas()
        messageApi.success(data?.message)
       } catch (error) {
         console.log('Erro ao requisiatar ', error)
@@ -446,15 +447,24 @@ export const DocumentShow = () => {
       }
   }
 
-  const handlerUpdateStateDoc = async (d_id: number) =>{
+  
+  
+  
+  const handlerUpdateStateDoc = async (d_id: number, checked: any) =>{
+  
       try {
+        const condiciones = result?.data?.dc_condicoes;
+
+        const statusProcessosFalse = Object.values(condiciones)
+        .filter((item) => item.status === false) // Filtra os itens com status false
+        .map((item) => item.statusProcesso); // Pega apenas o statusProcesso
 
         const payload = {
-          d_situacao: 'Irregular'
+          d_situacao: checked ? 'Irregular' : statusProcessosFalse[0]
         }
 
        const response = await axios.put(`${API_URL}/document/atualiza-status-irregular/${d_id}`, payload);
-       
+       await asas()
        console.log(response)
        messageApi.success(response?.data?.message)
       } catch (error) {
@@ -578,8 +588,9 @@ export const DocumentShow = () => {
                           })()
                         } <span style={{ marginLeft: 3 }}>Dias</span>
                       </span>)}
-
+                      
                       <p style={{padding: 0, margin: 0}}>Data protocolo: {item?.d_data_pedido == '1970-01-01' ? null : (<DateField style={{fontSize: '10px'}} value={item?.d_data_pedido}/>)}</p>
+                      <p style={{padding: 0, margin: 0}}>Protocolo: {item?.d_num_protocolo == '' ? null : (<Typography.Text copyable style={{fontSize: 11}}>{item?.d_num_protocolo}</Typography.Text>)}</p>
                       <p style={{padding: 0, margin: 0}}>Data Emissão: {item?.d_data_emissao == '1970-01-01' ? null : (<DateField style={{fontSize: '10px'}} value={item?.d_data_emissao}/>)}</p>
                       <p style={{padding: 0, margin: 0}}>Data Vencimento: {item?.d_data_vencimento == '1970-01-01' ? null : (<DateField style={{fontSize: '10px'}} value={item?.d_data_vencimento}/>)}</p>
                       </p>
@@ -611,45 +622,48 @@ export const DocumentShow = () => {
 
 
       <ModalConditions 
-          isModal={isModal}
-          hendleCloseModalConditions={hendleCloseModalConditions}
-          checkCondicionante={checkCondicionante}
-          setCheckCondicionante={setCheckCondicionante}
-          numProtocolo={numProtocolo}
-          setNumProtocolo={setNumProtocolo}
-          dataProtocolo={dataProtocolo}
-          setDataProtocolo={setDataProtocolo}
-          dataEmissao={dataEmissao}
-          setDataEmissao={setDataEmissao}
-          dataVencimento={dataVencimento}
-          setDataVencimento={setDataVencimento}
-          handleCloseProcss={handleCloseProcss}
-          handleCloseAllProcss={handleCloseAllProcss}
-          conditions={conditions}
-          car={car}
-          result={result}
-          data={data}
-          toggleCondition={toggleCondition}
-          hendleCheck={hendleCheck}
-          users={users}
-          handleUserToggle={handleUserToggle}
-          handleSubmit={handleSubmit}
-          refreshCondition={refreshCondition}
-          selectedUserIds={selectedUserIds}
-          isRefetching={isRefetching}
-          visiblePopover={visiblePopover}
-          setVisiblePopover={setVisiblePopover}
-          userTK={userTK}
-          setIsMdAddCond={setIsMdAddCond}
-          isModalIdCondition={isModalIdCondition}
-          contextHolder={contextHolder}
-          handleUserListAttr={handleUserListAttr}
-          docStatusId={docStatusId}
-          numberProtocol={numberProtocol}
-          dataOneDoc={dataOneDoc}
-          handlerDataOneData={handlerDataOneData}
-          getColor={getColor}
-      />
+        isModal={isModal}
+        hendleCloseModalConditions={hendleCloseModalConditions}
+        checkCondicionante={checkCondicionante}
+        setCheckCondicionante={setCheckCondicionante}
+        numProtocolo={numProtocolo}
+        setNumProtocolo={setNumProtocolo}
+        dataProtocolo={dataProtocolo}
+        setDataProtocolo={setDataProtocolo}
+        dataEmissao={dataEmissao}
+        setDataEmissao={setDataEmissao}
+        dataVencimento={dataVencimento}
+        setDataVencimento={setDataVencimento}
+        handleCloseProcss={handleCloseProcss}
+        handleCloseAllProcss={handleCloseAllProcss}
+        conditions={conditions}
+        car={car}
+        result={result}
+        data={data}
+        toggleCondition={toggleCondition}
+        hendleCheck={hendleCheck}
+        users={users}
+        handleUserToggle={handleUserToggle}
+        handleSubmit={handleSubmit}
+        refreshCondition={refreshCondition}
+        selectedUserIds={selectedUserIds}
+        isRefetching={isRefetching}
+        visiblePopover={visiblePopover}
+        setVisiblePopover={setVisiblePopover}
+        userTK={userTK}
+        setIsMdAddCond={setIsMdAddCond}
+        isModalIdCondition={isModalIdCondition}
+        contextHolder={contextHolder}
+        handleUserListAttr={handleUserListAttr}
+        docStatusId={docStatusId}
+        numberProtocol={numberProtocol}
+        dataOneDoc={dataOneDoc}
+        handlerDataOneData={handlerDataOneData}
+        getColor={getColor}
+        switchChecked={switchChecked}
+        handleSwitchChange={handleSwitchChange} 
+        loadingCloseAll={undefined}      
+        />
 
       <Modal
         title={[<MessageOutlined />, ` Interações`]}
@@ -883,7 +897,6 @@ export const DocumentShow = () => {
                   <Input placeholder="Condição" />
               </Form.Item>
           </Form>
-          <Form.Item><span style={{fontSize: 14}}>Irregular? </span> <Switch size="small" checked={switchChecked} onChange={handleSwitchChange}  /></Form.Item>
           {contextHolder}  
       </Modal>
       

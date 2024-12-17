@@ -1,8 +1,9 @@
 import React, {useEffect, useState} from "react";
 import { CheckCircleOutlined, CloseCircleOutlined, ConsoleSqlOutlined, ExclamationCircleOutlined, IssuesCloseOutlined, PlusCircleOutlined, SaveOutlined, UploadOutlined } from "@ant-design/icons";
-import { Check, Close, DocumentScanner, DocumentScannerOutlined, Save, UploadFile } from "@mui/icons-material";
+import { Check, Close, DocumentScanner, DocumentScannerOutlined, PointOfSale, Save, UploadFile } from "@mui/icons-material";
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
-import { Button, Card, Checkbox, DatePicker, Input, List, Modal, Popover, Upload, Space, Spin, Tag, message, Popconfirm } from "antd";
+import { Button, Card, Checkbox, DatePicker, Input, List, Modal, Popover, Upload, Space, Spin, Tag, message, Popconfirm, Form, Switch } from "antd";
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import moment from "moment";
 import axios from "axios";
 import { API_URL } from "../../../authProvider";
@@ -47,7 +48,10 @@ export const ModalConditions = ({
     numberProtocol,
     dataOneDoc,
     handlerDataOneData,
-    getColor
+    getColor,
+    loadingCloseAll,
+    switchChecked,
+    handleSwitchChange
 }) =>{
   
   const [messageApi] = message.useMessage()
@@ -132,6 +136,7 @@ export const ModalConditions = ({
                   value={dataProtocolo}
                 />
                 <Button
+                  loading={loadingCloseAll}
                   type="primary"
                   onClick={() => {
                     handleCloseProcss(result?.data?.dc_id);
@@ -216,6 +221,7 @@ export const ModalConditions = ({
                       <>
                         {/* Finalizar com arquivo */}
                         <Button
+                          loading={loadingCloseAll}
                           type="primary"
                           shape="round"
                           icon={<Check fontSize="inherit" />}
@@ -459,9 +465,11 @@ export const ModalConditions = ({
                       {dataOneDoc?.d_num_protocolo?.trim().length > 0  ? (
                         <>
                           <Upload
-                            onChange={handleFileChange} // Captura o arquivo selecionado
-                            beforeUpload={() => false} // Evita upload automático pelo Ant Design
-                            onRemove={()=>setFile(null)}
+                            
+                            onChange={handleFileChange} 
+                            beforeUpload={() => false}
+                            onRemove={() => setFile(null)}
+                            fileList={file ? [file] : []}
                             
                           >
                             <Button
@@ -474,6 +482,9 @@ export const ModalConditions = ({
                           </Upload>
                         </>
                       ) : null}
+                      <Popover trigger='click' placement="bottom" content={(<Form.Item><span style={{fontSize: 11}}>Irregular? </span> <Switch size="small" checked={switchChecked} onChange={handleSwitchChange}/></Form.Item>)}>
+                        <Button shape="circle" size="small" icon={<MoreVertIcon fontSize="inherit"/>}/>
+                      </Popover>
                     </Space>
                   </>
                   )
