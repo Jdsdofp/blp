@@ -578,6 +578,10 @@ export const DocumentShow = () => {
                           })()
                         } <span style={{ marginLeft: 3 }}>Dias</span>
                       </span>)}
+
+                      <p style={{padding: 0, margin: 0}}>Data protocolo: {item?.d_data_pedido == '1970-01-01' ? null : (<DateField style={{fontSize: '10px'}} value={item?.d_data_pedido}/>)}</p>
+                      <p style={{padding: 0, margin: 0}}>Data Emissão: {item?.d_data_emissao == '1970-01-01' ? null : (<DateField style={{fontSize: '10px'}} value={item?.d_data_emissao}/>)}</p>
+                      <p style={{padding: 0, margin: 0}}>Data Vencimento: {item?.d_data_vencimento == '1970-01-01' ? null : (<DateField style={{fontSize: '10px'}} value={item?.d_data_vencimento}/>)}</p>
                       </p>
                         
 
