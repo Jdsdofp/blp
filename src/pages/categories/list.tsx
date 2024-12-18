@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {  CreateNewFolder, OneK } from "@mui/icons-material";
 import TabPane from "antd/lib/tabs/TabPane";
-import { AlertOutlined, CheckCircleOutlined, ClockCircleOutlined, DownCircleOutlined, ExceptionOutlined, ExclamationCircleOutlined, FolderAddOutlined, IssuesCloseOutlined, SearchOutlined, StopOutlined, UpCircleOutlined } from "@ant-design/icons";
+import { AlertOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, DownCircleOutlined, ExceptionOutlined, ExclamationCircleOutlined, FolderAddOutlined, IssuesCloseOutlined, SearchOutlined, StopOutlined, UpCircleOutlined } from "@ant-design/icons";
 import { useInvalidate, useList } from "@refinedev/core";
 import { ColumnType } from "antd/es/table";
 import axios from "axios";
@@ -550,7 +550,9 @@ const totalDocumentos = tableQueryResult?.data?.data?.reduce((total, filial) => 
         okButtonProps={saveButtonProps}
         footer={
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <Checkbox 
+            {Object.entries(conditionsStatus || {}).filter(([key, value]) => value?.status === false).length > 0 ? 
+            (
+              <Checkbox 
               checked={isChecked}
               onChange={(e) => {
                 setIsChecked(e.target.checked)
@@ -560,7 +562,9 @@ const totalDocumentos = tableQueryResult?.data?.data?.reduce((total, filial) => 
               
               }>
               Irregular
-            </Checkbox>
+            </Checkbox>  
+            ) : null
+            }
             <div>
               <Button style={{ marginRight: "10px" }} onClick={() => {
                 form.resetFields(); 
@@ -669,21 +673,50 @@ const totalDocumentos = tableQueryResult?.data?.data?.reduce((total, filial) => 
                     subList ? (
                     <>
                     
-                    <Table size="small" dataSource={islistModalConditions} loading={islistModalConditions ? false : true}>
-                      <Table.Column title='Condição' render={(_, record) => (
+                    <Table 
+                    size="small" 
+                    dataSource={islistModalConditions} 
+                    loading={!islistModalConditions}
+                  >
+                    <Table.Column 
+                      title="Condição" 
+                      render={(_, record) => (
                         <>
                           {record}
                         </>
-                      )
-                      } />
+                      )}
+                    />
 
-                      <Table.Column title={'Status Condição'} align="center"  render={(_, record: any) => (
-                      <CheckCircleOutlined
-                        style={{ color: conditionsStatus[record] ? 'green' : 'gray', cursor: 'pointer' }}
-                        onClick={() => handleConditionCheck(record)} // Atualiza o status ao clicar
-                      />
-                    )} />
-                    </Table>
+                  <Table.Column 
+                    title="Status Condição" 
+                    align="center"  
+                    render={(_, record: any) => {
+                      const condition = conditionsStatus[record];
+                      
+                      // Define o ícone e a cor com base no status
+                      const Icon = condition?.status === true 
+                        ? CheckCircleOutlined 
+                        : condition?.status === false 
+                          ? CloseCircleOutlined 
+                          : ExclamationCircleOutlined;
+
+                      const iconColor = condition?.status === true 
+                        ? 'green' 
+                        : condition?.status === false 
+                          ? 'red' 
+                          : 'orange';
+
+                      return (
+                        <Icon
+                          style={{ color: iconColor, cursor: 'pointer' }}
+                          onClick={() => handleConditionCheck(record)} // Atualiza o status ao clicar
+                        />
+                      );
+                    }} 
+                  />
+
+                  </Table>
+
 
                     </>
 

@@ -5,7 +5,7 @@ import { List, Card, Row, Col, Modal, Input, Space, Button, Badge, Mentions, Tag
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../../authProvider";
-import { Check, Close, ReplyOutlined, Send } from "@mui/icons-material";
+import { Check, Close, ReplyOutlined, Send, ShapeLine } from "@mui/icons-material";
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import dayjs from 'dayjs';
@@ -167,10 +167,10 @@ export const DocumentShow = () => {
           status: newValue,
           date: new Date().toISOString().slice(0, 10),
           users: [userTK],
-          statusProcesso: data?.data.map((d) => d?.d_situacao)[0],
+          statusProcesso: docStatusId,
         },
       };
-  
+      
       // Certifique-se de que o ID da condicionante está presente
       if (isModalIdCondition && updatedConditions[key]) {
         // Chama a API para atualizar a condição via axios
@@ -191,7 +191,6 @@ export const DocumentShow = () => {
       return updatedConditions;
     });
   };
-  
 
   const handleSendReply = async () => {
     if (!isReplyingToComment) return;
@@ -504,6 +503,8 @@ export const DocumentShow = () => {
     await setOpenViewModalDoc(true)
     await setDataFilesView(data)
   }
+
+  const totalGeral = listDebit?.reduce((acc, d) => acc + parseFloat(d.dd_valor || 0), 0);
  
   return (
     <Show title={[<><span>{status}</span></>]} canEdit={false} canDelete={false} headerButtons={<RefreshButton onClick={() => atualiza()} />}>
@@ -589,10 +590,11 @@ export const DocumentShow = () => {
                         } <span style={{ marginLeft: 3 }}>Dias</span>
                       </span>)}
                       
-                      <p style={{padding: 0, margin: 0}}>Data protocolo: {item?.d_data_pedido == '1970-01-01' ? null : (<DateField style={{fontSize: '10px'}} value={item?.d_data_pedido}/>)}</p>
-                      <p style={{padding: 0, margin: 0}}>Protocolo: {item?.d_num_protocolo == '' ? null : (<Typography.Text copyable style={{fontSize: 11}}>{item?.d_num_protocolo}</Typography.Text>)}</p>
-                      <p style={{padding: 0, margin: 0}}>Data Emissão: {item?.d_data_emissao == '1970-01-01' ? null : (<DateField style={{fontSize: '10px'}} value={item?.d_data_emissao}/>)}</p>
-                      <p style={{padding: 0, margin: 0}}>Data Vencimento: {item?.d_data_vencimento == '1970-01-01' ? null : (<DateField style={{fontSize: '10px'}} value={item?.d_data_vencimento}/>)}</p>
+                      <p style={{padding: 0, margin: 0}}><span style={{fontWeight: 'bold'}}>Data protocolo:</span> {item?.d_data_pedido == '1970-01-01' ? null : (<DateField style={{fontSize: '10px'}} value={item?.d_data_pedido}/>)}</p>
+                      <p style={{padding: 0, margin: 0}}><span style={{fontWeight: 'bold'}}>Protocolo:</span> {item?.d_num_protocolo == '' ? null : (<Typography.Text copyable style={{fontSize: 11}}>{item?.d_num_protocolo}</Typography.Text>)}</p>
+                      <p style={{padding: 0, margin: 0}}><span style={{fontWeight: 'bold'}}>Data Emissão:</span> {item?.d_data_emissao == '1970-01-01' ? null : (<DateField style={{fontSize: '10px'}} value={item?.d_data_emissao}/>)}</p>
+                      <p style={{padding: 0, margin: 0}}><span style={{fontWeight: 'bold'}}>Data Vencimento:</span> {item?.d_data_vencimento == '1970-01-01' ? null : (<DateField style={{fontSize: '10px'}} value={item?.d_data_vencimento}/>)}</p>
+                      <span><span style={{fontWeight: 'bolder'}}>Valor Agregado: </span> R$ {listDebit?.reduce((acc, d) => acc + parseFloat(d.dd_valor || 0), 0).toFixed(2)}</span>
                       </p>
                         
 
@@ -909,7 +911,6 @@ export const DocumentShow = () => {
         cancelButtonProps={{ onClick: () => setOpenViewModalDoc(false) }} 
         closable={false} 
         okButtonProps={{ hidden: true }}
-        centered
       >
           <h3>Visualizar Documento</h3>
           {!dataFilesView?.url ? 
@@ -921,7 +922,8 @@ export const DocumentShow = () => {
               loading="eager" 
               src={dataFilesView?.url} 
               title={dataFilesView?.arquivo} 
-              style={{ width: '100%', height: '500px', border: 'none' }} 
+              style={{ width: '100%', height: '700px', border: 'none' }}
+               
             />
           ) : (
             <p>Documento não disponível.</p>

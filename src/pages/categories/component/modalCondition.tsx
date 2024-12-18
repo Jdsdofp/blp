@@ -85,7 +85,7 @@ export const ModalConditions = ({
       return;
     }
 
-    console.log('Arquivo da handler', file)
+    //console.log('Arquivo da handler', file)
 
     const formData = new FormData();
     formData.append("file", file);
@@ -107,6 +107,8 @@ export const ModalConditions = ({
     }
   };
 
+  
+  console.log('Estado para o input: ', result?.data?.status === 'Em processo')
   return (
 
         <Modal
@@ -123,36 +125,45 @@ export const ModalConditions = ({
             </Tag>
           
             {dataOneDoc?.d_situacao === "Não iniciado" ? (
+              
               <>
                 {/* Botão para fechar diretamente */}
-                <DatePicker
-                  placeholder="Data Protocolo"
-                  name="d_data"
-                  locale="pt-BR"
-                  format="DD/MM/YYYY"
-                  allowClear
-                  style={{ borderRadius: 20 }}
-                  onChange={(date) => setDataProtocolo(date)}
-                  value={dataProtocolo}
-                />
-                <Button
-                  loading={loadingCloseAll}
-                  type="primary"
-                  onClick={() => {
-                    handleCloseProcss(result?.data?.dc_id);
-                    handlerDataOneData(result?.data?.dc_id);
-                  }}
-                  shape="round"
-                  icon={<Check fontSize="inherit" />}
-                >
-                  Fechar
-                </Button>
+                {result?.data?.status !== 'Em processo' ? (
+                  <>
+                    <DatePicker
+                    placeholder="Data Protocolo"
+                    name="d_data"
+                    locale="pt-BR"
+                    format="DD/MM/YYYY"
+                    allowClear
+                    style={{ borderRadius: 20 }}
+                    onChange={(date) => setDataProtocolo(date)}
+                    value={dataProtocolo}
+                    hidden={true}
+                  />
+                  <Button
+                    loading={loadingCloseAll}
+                    type="primary"
+                    onClick={() => {
+                      handleCloseProcss(result?.data?.dc_id);
+                      handlerDataOneData(result?.data?.dc_id);
+                    }}
+                    shape="round"
+                    icon={<Check fontSize="inherit" />}
+                  >
+                    Fechar
+                  </Button>
+                  
+                  </>
+                ) : null}
               </>
             ) : (
               <>
                 {dataOneDoc?.d_situacao === "Vencido" || dataOneDoc?.d_situacao === "Emitido" ? null : (
                   <>
+
                     {/* Input para número de protocolo */}
+                    
                     <Input
                       placeholder="Nº Protocolo"
                       allowClear
@@ -265,6 +276,7 @@ export const ModalConditions = ({
                       <Spin style={{padding: 20, position: 'relative', left: 200, height: 100}}  />
                     ) : (
                       <tbody>
+                        
                         {Object.entries(conditions || {}).map(([key, value]) => (
                           <tr key={key}>
                             <td style={{ borderBottom: '1px solid #8B41F2' }}>
@@ -307,6 +319,7 @@ export const ModalConditions = ({
 
                             <td style={{ borderBottom: '1px solid #8B41F2', paddingRight: 35 }} align="center">
                               {value?.status === true ? (
+                                
                                 <Popover content={`OK - ${new Date(value?.date).toLocaleString()}`}>
                                   <Button disabled={value?.users?.includes(userTK) && value?.statusProcesso ==  docStatusId ? false : true}  shape="circle" style={{border: 'none', height: '30px'}}>
                                    
@@ -318,6 +331,7 @@ export const ModalConditions = ({
                                         hendleCheck();
                                       }}
                                       style={{ color: value?.users?.includes(userTK) && value?.statusProcesso ==  docStatusId ? 'green' : 'gray', cursor: 'pointer' }}
+
                                     />
                                   </Button>
                                 </Popover>
@@ -431,8 +445,8 @@ export const ModalConditions = ({
                             const formattedDateFinal = dateFinal.toISOString().split('T')[0];  // 'YYYY-MM-DD'
   
                             // Mostrar as datas formatadas para debug
-                            console.log(`Data de Criação: ${formattedDateCreate}`);
-                            console.log(`Data Final: ${formattedDateFinal}`);
+                            //console.log(`Data de Criação: ${formattedDateCreate}`);
+                            //console.log(`Data Final: ${formattedDateFinal}`);
   
                             // Calcular a diferença de dias entre a data criada e a data final
                             const dateCreate = new Date(formattedDateCreate);
@@ -454,6 +468,7 @@ export const ModalConditions = ({
                   data?.data.map((d)=>d?.d_situacao)[0] == 'Vencido' ? null : data?.data.map((d)=>d?.d_situacao)[0] == 'Emitido' ? null : (
                     <>
                     <Space align="end">
+                      {dataOneDoc?.d_situacao == 'Irregular' || result?.data?.dc_status_doc_ref == 'Irregular' ? null : (
                       <Button
                         type="dashed"
                         style={{ marginTop: 10, fontSize: 12 }}
@@ -461,30 +476,39 @@ export const ModalConditions = ({
                       >
                         <PlusCircleOutlined /> Adicionar Itens
                       </Button>
+
+
+                      )}
               
                       {dataOneDoc?.d_num_protocolo?.trim().length > 0  ? (
                         <>
+                        {dataOneDoc?.d_situacao == 'Irregular' ? null : (
                           <Upload
                             
-                            onChange={handleFileChange} 
-                            beforeUpload={() => false}
-                            onRemove={() => setFile(null)}
-                            fileList={file ? [file] : []}
-                            
-                          >
-                            <Button
-                              type="dashed"
-                              shape="circle"
-                              icon={<UploadOutlined />}
-                              disabled={!dataOneDoc?.d_num_protocolo?.trim().length > 0}
-                              hidden={dataOneDoc?.d_anexo?.arquivo}
-                            />
-                          </Upload>
+                          onChange={handleFileChange} 
+                          beforeUpload={() => false}
+                          onRemove={() => setFile(null)}
+                          fileList={file ? [file] : []}
+                          
+                        >
+                          <Button
+                            type="dashed"
+                            shape="circle"
+                            icon={<UploadOutlined />}
+                            disabled={!dataOneDoc?.d_num_protocolo?.trim().length > 0}
+                            hidden={dataOneDoc?.d_anexo?.arquivo}
+                          />
+                        </Upload>
+                        )}
+                          
                         </>
                       ) : null}
-                      <Popover trigger='click' placement="bottom" content={(<Form.Item><span style={{fontSize: 11}}>Irregular? </span> <Switch size="small" checked={switchChecked} onChange={handleSwitchChange}/></Form.Item>)}>
-                        <Button shape="circle" size="small" icon={<MoreVertIcon fontSize="inherit"/>}/>
-                      </Popover>
+                        {Object.entries(conditions || {}).filter(([key, value]) => value?.status === false).length >= 1 ? (
+                          <Popover trigger='click' placement="bottom" content={(<Form.Item><span style={{fontSize: 11}}>Irregular? </span> <Switch size="small" checked={switchChecked} onChange={handleSwitchChange}/></Form.Item>)}>
+                              <Button shape="circle" size="small" icon={<MoreVertIcon fontSize="inherit"/>}/>
+                         </Popover>
+                        ) : null}
+                      
                     </Space>
                   </>
                   )
