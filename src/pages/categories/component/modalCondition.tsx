@@ -108,7 +108,6 @@ export const ModalConditions = ({
   };
 
   
-  console.log('Estado para o input: ', result?.data?.status === 'Em processo')
   return (
 
         <Modal

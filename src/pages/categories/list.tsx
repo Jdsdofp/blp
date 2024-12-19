@@ -17,6 +17,7 @@ import { useInvalidate, useList } from "@refinedev/core";
 import { ColumnType } from "antd/es/table";
 import axios from "axios";
 import { API_URL } from "../../authProvider";
+import { io } from 'socket.io-client';
 
 interface IDocuments {
   f_id: number;
@@ -513,6 +514,8 @@ const colorsCards = (status: any) => {
 const totalDocumentos = tableQueryResult?.data?.data?.reduce((total, filial) => {
   return total + (filial.documentos?.length || 0);
 }, 0);
+
+
 
 
   return (

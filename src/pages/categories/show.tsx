@@ -1,10 +1,10 @@
 import { CommentOutlined, DownOutlined, IssuesCloseOutlined, MessageOutlined, ReconciliationOutlined, UpOutlined } from "@ant-design/icons"
 import { DateField, EditButton, RefreshButton, Show } from "@refinedev/antd";
 import { useList, useTable } from "@refinedev/core";
-import { List, Card, Row, Col, Modal, Input, Space, Button, Badge, Mentions, Tag, Avatar, message, Form, Popover, Switch, Spin, Typography } from "antd";
+import { List, Card, Row, Col, Modal, Input, Space, Button, Badge, Mentions, Tag, Avatar, message, Form, Popover, Switch, Spin, Typography, notification } from "antd";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { API_URL } from "../../authProvider";
+import { API_URL, USER } from "../../authProvider";
 import { Check, Close, ReplyOutlined, Send, ShapeLine } from "@mui/icons-material";
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
@@ -15,6 +15,8 @@ import 'dayjs/locale/pt-br';
 import { ModalConditions } from "./component/modalCondition";
 import EqualizerIcon from '@mui/icons-material/Equalizer';
 import { ModalCash } from "./component/modalCash";
+import socket from "../../config/socket";
+import { io } from "socket.io-client";
 dayjs.extend(relativeTime);
 dayjs.locale('pt-br');
 
@@ -299,13 +301,14 @@ export const DocumentShow = () => {
   const handleUserListAttr = async (dc_id, condicaoNome) => {
     try {
       setLoadingListUserAttr(true);
-
+      
       const payload = {
         nome: condicaoNome
       }
-
+      
       // Chamada à rota passando o id da condição e o nome da condição
       const response = await axios.post(`${API_URL}/document-condition/listar-usuarios-atribuidos-condicao/${dc_id}`, payload);
+   
 
       // Define a lista de usuários no estado
       setUserList(response.data);
@@ -316,6 +319,8 @@ export const DocumentShow = () => {
       setLoadingListUserAttr(false);
     }
   };
+
+
 
   const handleSubmitAddConditions = async () => {
     try {
@@ -366,6 +371,7 @@ export const DocumentShow = () => {
         setSelectedUserIds([]); // Limpa a lista de IDs de usuários selecionados
         messageApi.success(data?.message); // Feedback ao usuário
         await refreshCondition();
+
     } catch (error) {
         console.error('Erro ao enviar os dados:', error);
         message.error('Erro ao atribuir usuários. Por favor, tente novamente.');
@@ -506,6 +512,9 @@ export const DocumentShow = () => {
 
   const totalGeral = listDebit?.reduce((acc, d) => acc + parseFloat(d.dd_valor || 0), 0);
  
+
+  
+
   return (
     <Show title={[<><span>{status}</span></>]} canEdit={false} canDelete={false} headerButtons={<RefreshButton onClick={() => atualiza()} />}>
       <List
