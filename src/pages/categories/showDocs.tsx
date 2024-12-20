@@ -10,6 +10,7 @@ import { ModalConditions } from "./component/modalCondition";
 import { API_URL } from "../../authProvider";
 import axios from "axios";
 import useMessage from "antd/es/message/useMessage";
+import { useNotifications } from "../../contexts/NotificationsContext";
 
 interface ICondition {
   dc_id: number;
@@ -19,6 +20,13 @@ interface ICondition {
 
 
 export const ShowDocs = () => {
+  const { notifications, loading, fetchNotifications, markAsRead } = useNotifications();
+      
+        useEffect(() => {
+          fetchNotifications();
+        }, [fetchNotifications]);
+
+
   const { Search } = Input;
 
   const { id } = useParams(); // Capturando o id da filial

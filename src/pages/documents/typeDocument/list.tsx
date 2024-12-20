@@ -7,6 +7,7 @@ import { useInvalidate, useList } from '@refinedev/core';
 import {  Check, CloseFullscreen, CloseSharp, Delete, DocumentScanner, EditAttributes, EditAttributesOutlined, Save, SaveAlt } from '@mui/icons-material';
 import axios from 'axios';
 import { API_URL } from '../../../authProvider';
+import { useNotifications } from '../../../contexts/NotificationsContext';
 
 interface ITypeDoc {
     td_id: number;
@@ -19,6 +20,12 @@ interface ITypeDoc {
 
 
 export const DocTypeDocCreate = () => {
+    const { notifications, loading, fetchNotifications, markAsRead } = useNotifications();
+        
+          useEffect(() => {
+            fetchNotifications();
+          }, [fetchNotifications]);
+
     const [isModal, setIsModal] = useState(false)
     const [ messageApi, contextHolder ] = message.useMessage();
 

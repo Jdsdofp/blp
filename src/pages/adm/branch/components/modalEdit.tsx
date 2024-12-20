@@ -6,6 +6,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import InputMask from 'react-input-mask';
 import { API_URL } from "../../../../authProvider";
+import { useNotifications } from "../../../../contexts/NotificationsContext";
 
 
 
@@ -23,6 +24,13 @@ export const ModalEditBranch = ({
     endereco,
     refreshTable
   }) => {
+
+    const { notifications, loading, fetchNotifications, markAsRead } = useNotifications();
+    
+      useEffect(() => {
+        fetchNotifications();
+      }, [fetchNotifications]);
+
     const [form] = Form.useForm();
     const [ messageApi, contextHolder ]= message.useMessage()
     useEffect(() => {
@@ -51,6 +59,7 @@ export const ModalEditBranch = ({
       try {
         const response = await axios.put(`${API_URL}/branch/editar-filial/${f_id}`, payload)
         await refreshTable.refetch()
+        await fetchNotifications()
         messageApi.success(response?.data?.message)
       } catch (error) {
         messageApi.error(error?.response.data.message)

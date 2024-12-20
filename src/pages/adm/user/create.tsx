@@ -4,9 +4,16 @@ import { useInvalidate, useMany, useTable } from "@refinedev/core";
 import { Avatar, Form, Input, Select, Switch } from "antd";
 import { invalid } from "moment-timezone";
 import { useEffect, useState } from "react";
+import { useNotifications } from "../../../contexts/NotificationsContext";
 
 
 export const AdmUserCreate = () => {
+    const { notifications, loading, fetchNotifications, markAsRead } = useNotifications();
+        
+          useEffect(() => {
+            fetchNotifications();
+          }, [fetchNotifications]);
+
     const { tableQueryResult: companiesResult } = useTable({ resource: 'company', meta: {
         endpoint: 'listar-empresas'
     },

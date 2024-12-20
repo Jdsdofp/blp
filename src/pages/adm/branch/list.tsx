@@ -9,6 +9,7 @@ import { AddLocation, Edit } from '@mui/icons-material';
 import axios from 'axios';
 import { ModalEditBranch } from './components/modalEdit';
 import { API_URL } from '../../../authProvider';
+import { useNotifications } from '../../../contexts/NotificationsContext';
 
 interface IBranchs {
     f_id: number;
@@ -32,6 +33,14 @@ const formatCNPJ = (cnpj: any) => {
 };
 
 export const AdmBranchlist = () => {
+    const { notifications, loading, fetchNotifications, markAsRead } = useNotifications();
+    
+      useEffect(() => {
+        fetchNotifications();
+      }, [fetchNotifications]);
+
+
+
     const [bdgStatus, setBagStatus] = useState<number>(0)
     const [municipios, setMunicipios] = useState([]);
     const [ufs, setUfs] = useState([])

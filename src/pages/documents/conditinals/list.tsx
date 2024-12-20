@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Badge, Button,Form, Input, message, Modal, Popconfirm, Space, Table, Tabs, Tag } from 'antd';
 import type { TableProps } from 'antd';
 import { List, useForm } from '@refinedev/antd';
@@ -8,6 +8,7 @@ import AssignmentTurnedInOutlinedIcon from '@mui/icons-material/AssignmentTurned
 import { Add, CloseSharp, Delete, Edit, Save } from '@mui/icons-material';
 import axios from 'axios';
 import { API_URL } from '../../../authProvider';
+import { useNotifications } from '../../../contexts/NotificationsContext';
 
 interface IConditions {
     c_id: number;
@@ -17,6 +18,12 @@ interface IConditions {
 
 
 export const ListCondition = () => {
+    const { notifications, loading, fetchNotifications, markAsRead } = useNotifications();
+        
+          useEffect(() => {
+            fetchNotifications();
+          }, [fetchNotifications]);
+
     const [messageApi, contextHolder] = message.useMessage()
     const [isModal, setIsModal] = useState(false)
     const [modalList, setModalList] = useState(false)

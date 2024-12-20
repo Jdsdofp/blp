@@ -4,6 +4,8 @@ import { useInvalidate, useTable } from "@refinedev/core";
 import { TableProps } from "antd";
 import { useForm } from "@refinedev/antd";
 import InputMask from 'react-input-mask';
+import { useNotifications } from "../../../contexts/NotificationsContext";
+import { useEffect } from "react";
 
 const { Title } = Typography;
 
@@ -24,7 +26,13 @@ const formatCNPJ = (cnpj: any) => {
 };
 
 export const AdmCompanyCreate = () => {
-  
+    const { notifications, loading, fetchNotifications, markAsRead } = useNotifications();
+        
+          useEffect(() => {
+            fetchNotifications();
+          }, [fetchNotifications]);
+
+
     const { tableQueryResult: companiesResult } = useTable({ resource: 'company', liveMode: 'auto', meta: {
         endpoint: 'listar-empresas'
     },

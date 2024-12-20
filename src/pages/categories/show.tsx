@@ -17,6 +17,7 @@ import EqualizerIcon from '@mui/icons-material/Equalizer';
 import { ModalCash } from "./component/modalCash";
 import socket from "../../config/socket";
 import { io } from "socket.io-client";
+import { useNotifications } from "../../contexts/NotificationsContext";
 dayjs.extend(relativeTime);
 dayjs.locale('pt-br');
 
@@ -46,6 +47,14 @@ interface Icomment {
 const { Search } = Input;
 
 export const DocumentShow = () => {
+  const { notifications, loading, fetchNotifications, markAsRead } = useNotifications();
+      
+        useEffect(() => {
+          fetchNotifications();
+        }, [fetchNotifications]);
+
+
+
   // Define a localização para português
   const queryParams = new URLSearchParams(location.search);
   const status = queryParams.get("status");
@@ -367,6 +376,8 @@ export const DocumentShow = () => {
         // Envia a requisição para o backend com o parâmetro 'dc_id' na URL
         const { data } = await axios.patch(`${API_URL}/document-condition/atribuir-usuarios-condicao/${dc_id}`, payload);
 
+        
+
         // Ações adicionais após o envio
         setSelectedUserIds([]); // Limpa a lista de IDs de usuários selecionados
         messageApi.success(data?.message); // Feedback ao usuário
@@ -377,6 +388,7 @@ export const DocumentShow = () => {
         message.error('Erro ao atribuir usuários. Por favor, tente novamente.');
     }
   };
+
 
   const handleCloseProcss = async (conditionID: number)=>{
 

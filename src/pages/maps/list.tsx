@@ -3,11 +3,12 @@ import 'leaflet/dist/leaflet.css'; // Importar o CSS do Leaflet
 import { useList } from '@refinedev/core';
 import L from 'leaflet';
 import { List } from '@refinedev/antd';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { ColorModeContext } from '../../contexts/color-mode';
 import { Card, Input, Table, Tag } from 'antd';
 import Link from 'antd/es/typography/Link';
 import { useNavigate } from 'react-router-dom';
+import { useNotifications } from '../../contexts/NotificationsContext';
 
 // Função para retornar a cor do ícone com base na situação
 const getMarkerColor = (situation) => {
@@ -43,6 +44,12 @@ function getMarkerHTML(d_situacao) {
 }
 
 export const Mapsall = () => {
+    const { notifications, loading, fetchNotifications, markAsRead } = useNotifications();
+        
+          useEffect(() => {
+            fetchNotifications();
+          }, [fetchNotifications]);
+
     const centerCoordinates = [-5.091278491303021, -42.83431574194223];
     const { data, isInitialLoading } = useList({ resource: 'document', meta: { endpoint: 'listar-documentos-filais' } });
     const [modeColor, setModeColor] = useState(localStorage.getItem('colorMode'));

@@ -5,6 +5,7 @@ import { DateField, DeleteButton, EditButton, List, ShowButton } from '@refinede
 import { UserAddOutlined } from '@ant-design/icons';
 import { BaseRecord, useTable } from '@refinedev/core';
 import Link from 'antd/es/typography/Link';
+import { useNotifications } from '../../../contexts/NotificationsContext';
 
 interface DataType {
   key: number;
@@ -18,6 +19,11 @@ interface DataType {
 
 
 export const AdmUserlist = () => {
+  const { notifications, loading, fetchNotifications, markAsRead } = useNotifications();
+      
+        useEffect(() => {
+          fetchNotifications();
+        }, [fetchNotifications]);
 
   const hendleDelete = (record)=>{
     if(record){

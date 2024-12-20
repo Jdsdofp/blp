@@ -18,6 +18,7 @@ import { ColumnType } from "antd/es/table";
 import axios from "axios";
 import { API_URL } from "../../authProvider";
 import { io } from 'socket.io-client';
+import { useNotifications } from "../../contexts/NotificationsContext";
 
 interface IDocuments {
   f_id: number;
@@ -67,6 +68,11 @@ export const DocumentList = () => {
   const [seachedColumn, setSearchedColumn] = useState('');
   const [selectedUFs, setSelectedUFs] = useState<string[]>([]);
   const [isChecked, setIsChecked] = useState<boolean>()
+  const { notifications, loading, fetchNotifications } = useNotifications();
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
 
 
   const { data: listTypeDocument } = useList({ resource: 'type-document', meta: { endpoint: 'listar-tipo-documentos' }, liveMode: 'auto',  });

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -9,8 +9,15 @@ import { useList } from "@refinedev/core";
 import './style.css'
 import { AddAPhoto, NextPlan } from "@mui/icons-material";
 import { Show } from "@refinedev/antd";
+import { useNotifications } from "../../contexts/NotificationsContext";
 
 export const CalendarList = () => {
+  const { notifications, loading, fetchNotifications, markAsRead } = useNotifications();
+      
+        useEffect(() => {
+          fetchNotifications();
+        }, [fetchNotifications]);
+
     // Obter dados da API
     const { data, isLoading } = useList({
         resource: "document",

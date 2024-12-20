@@ -3,6 +3,7 @@ import { useMany, useOne, useTable, useUpdate } from "@refinedev/core";
 import { Button, Form, Input, Select, Switch } from "antd";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useNotifications } from "../../../contexts/NotificationsContext";
 
 interface IUserOne {
     u_id: number;
@@ -19,7 +20,11 @@ export const AdmUserEdit = () => {
         action: "edit"
     });
 
-    
+    const { notifications, loading, fetchNotifications, markAsRead } = useNotifications();
+        
+          useEffect(() => {
+            fetchNotifications();
+          }, [fetchNotifications]);
 
     const [valueID, setValueID] = useState(null);
     const { tableQueryResult: companiesResult } = useTable({ resource: 'company', meta: {
