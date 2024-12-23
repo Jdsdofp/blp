@@ -155,8 +155,8 @@ function App() {
                 options={{
                   
                   title: {
-                    text: (<span style={{color: "#1479bd", fontSize: 20}}>LegaliSys</span>),
-                    icon: <Image src='/lg_Drogaria_Globo 1.png'  height={35} width={35} style={{ objectFit: "contain" }} />
+                    text: (<span style={{color: "#1479bd", fontSize: 20, verticalAlign: -15}}>LegaliSys</span>),
+                    icon: <Image src='/lg_Drogaria_Globo 1.png'  height={35} width={35} />
                   },
                   liveMode: "auto",
                   syncWithLocation: true,
