@@ -1,5 +1,5 @@
 .fc .fc-toolbar-title {
-    color: #976DF2; /* Título em azul */
+    color: #009cde; /* Título em azul */
   }
     
   .fc .fc-day-today {
@@ -7,13 +7,13 @@
   }
   
   .fc .fc-daygrid-day-number {
-    color: #8B41F2; /* Altere essa cor conforme necessário */
+    color: #009cde; /* Altere essa cor conforme necessário */
 }
 
 
 /* Estilos personalizados para os botões do FullCalendar */
 .fc .fc-button {
-  background-color: #976DF2;  /* Cor de fundo verde */
+  background-color: #009cde;  /* Cor de fundo verde */
   color: white;               /* Cor do texto branco */
   border-radius: 20px;          /* Borda arredondada */
   border: none;                /* Remove bordas */
@@ -24,7 +24,7 @@
 
 /* Estilo para o botão quando o mouse passa por cima */
 .fc-button:hover {
-  background-color: #976DF2;  /* Muda a cor ao passar o mouse */
+  background-color: #009cde;  /* Muda a cor ao passar o mouse */
 }
 
 /* Estilos específicos para os botões de navegação */

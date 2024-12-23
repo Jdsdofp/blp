@@ -278,10 +278,10 @@ export const ModalConditions = ({
                         
                         {Object.entries(conditions || {}).map(([key, value]) => (
                           <tr key={key}>
-                            <td style={{ borderBottom: '1px solid #8B41F2' }}>
+                            <td style={{ borderBottom: '1px solid #009cde' }}>
                               <p style={{ textTransform: 'capitalize', color: value.status == false && dataOneDoc?.d_situacao == 'Irregular' ? 'red' : null, fontSize: 11 }}>{key} - <Tag color={getColor(value?.statusProcesso)} style={{fontSize: 8, margin: 0, borderRadius: 20}}>{value?.statusProcesso}</Tag></p>
                             </td>
-                            <td style={{ borderBottom: '1px solid #8B41F2', textAlign: 'center', paddingRight: 60 }}>
+                            <td style={{ borderBottom: '1px solid #009cde', textAlign: 'center', paddingRight: 60 }}>
                               {value?.dateCreate ? (
                                 (() => {
                                   // Criar objetos Moment a partir das datas já no formato YYYY-MM-DD
@@ -316,7 +316,7 @@ export const ModalConditions = ({
 
 
 
-                            <td style={{ borderBottom: '1px solid #8B41F2', paddingRight: 35 }} align="center">
+                            <td style={{ borderBottom: '1px solid #009cde', paddingRight: 35 }} align="center">
                               {value?.status === true ? (
                                 
                                 <Popover content={`OK - ${new Date(value?.date).toLocaleString()}`}>
@@ -363,7 +363,7 @@ export const ModalConditions = ({
                               )}
                             </td>
 
-                            <td style={{ borderBottom: '1px solid #8B41F2' }} align="center">
+                            <td style={{ borderBottom: '1px solid #009cde' }} align="center">
                               <Popover
                                 title={[
                                   <div style={{ position: 'relative' }}>

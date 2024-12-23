@@ -2,8 +2,9 @@
 @import url('https://unpkg.com/leaflet/dist/leaflet.css');
 
 /* global.css */
+/* #976DF2 */
 ::selection {
-    background: #976DF2; /* cor de fundo para o texto selecionado */
+    background: #009cde; /* cor de fundo para o texto selecionado */
     color: #000000;      /* cor do texto selecionado */
   }
   

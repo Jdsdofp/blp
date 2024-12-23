@@ -1,4 +1,4 @@
-import { CommentOutlined, DownOutlined, IssuesCloseOutlined, MessageOutlined, ReconciliationOutlined, UpOutlined } from "@ant-design/icons"
+import { CloseCircleOutlined, CommentOutlined, DownOutlined, IssuesCloseOutlined, MessageOutlined, ReconciliationOutlined, UpOutlined } from "@ant-design/icons"
 import { DateField, EditButton, RefreshButton, Show } from "@refinedev/antd";
 import { useList, useTable } from "@refinedev/core";
 import { List, Card, Row, Col, Modal, Input, Space, Button, Badge, Mentions, Tag, Avatar, message, Form, Popover, Switch, Spin, Typography, notification } from "antd";
@@ -18,7 +18,7 @@ import { ModalCash } from "./component/modalCash";
 import socket from "../../config/socket";
 import { io } from "socket.io-client";
 import { useNotifications } from "../../contexts/NotificationsContext";
-import { ModalProress } from "./component/modalProgress";
+import ProgressoGrafico, { ModalProress } from "./component/modalProgress";
 dayjs.extend(relativeTime);
 dayjs.locale('pt-br');
 
@@ -137,7 +137,11 @@ export const DocumentShow = () => {
   const [dataFilesView, setDataFilesView ] = useState<any>()
 
   //MODEL PROGRESS
-  const [dc_id, setDc_Id] = useState<number>(0)
+  const [openProgress, setOpenProgress] = useState<boolean>(false)
+  const [dc_id, setDc_Id] = useState<any>()
+  const [ dadosProgress, setDadosProgress] = useState<any>()
+  const [loadProgress, setLoadProgress] = useState(false)
+
 
   const handleSendComment = async () => {
     try {
@@ -266,7 +270,7 @@ export const DocumentShow = () => {
              {result?.u_nome}
            </div>
          ),
-      }))
+  }))
 
 
   const hendleCloseModalComments = () => {
@@ -527,103 +531,28 @@ export const DocumentShow = () => {
 
   const totalGeral = listDebit?.reduce((acc, d) => acc + parseFloat(d.dd_valor || 0), 0);
  
-
-  const dados = {
-    dc_id: 475,
-    dc_documento_id: 594,
-    status: "Pendente",
-    dc_condicoes: {
-      AVCB: {
-        date: "2024-12-20T14:00:17.199Z",
-        users: [2],
-        status: true,
-        dateCreate: "2024-12-20",
-        statusProcesso: "Não iniciado",
-      },
-      "Licença Sanitária": {
-        date: null,
-        users: [2],
-        status: false,
-        dateCreate: "2024-12-20",
-        statusProcesso: "Não iniciado",
-      },
-      "Certidão de Acessibilidade": {
-        date: null,
-        users: [2],
-        status: false,
-        dateCreate: "2024-12-20",
-        statusProcesso: "Não iniciado",
-      },
-      "Licença Ambiental de Operação": {
-        date: "2024-12-20T14:00:17.782Z",
-        users: [260],
-        status: null,
-        dateCreate: "2024-12-20",
-        statusProcesso: "Não iniciado",
-      },
-    },
-    dc_status_doc_ref: "Não iniciado",
-    dc_criado_em: "2024-12-20T14:00:29.214Z",
-  };
   
-  function calcularProgresso(dados) {
-    const condicoes = dados?.dc_condicoes;
-    const totalCondicoes = Object.keys(condicoes).length;
-    let condicoesConcluidas = 0;
-    const tarefasPorUsuario = {};
-  
-    // Iterar sobre as condições
-    Object.values(condicoes).forEach((detalhes) => {
-      if (detalhes.status || detalhes.status === null) {
-        condicoesConcluidas += 1;
-  
-        // Incrementar tarefas por usuário
-        detalhes.users.forEach((user) => {
-          if (!tarefasPorUsuario[user]) {
-            tarefasPorUsuario[user] = 0;
-          }
-          tarefasPorUsuario[user] += 1;
-        });
-      }
-    });
-  
-    // Calcular progresso em percentual
-    const progressoPercentual = (condicoesConcluidas / totalCondicoes) * 100;
-  
-    return {
-      totalCondicoes,
-      condicoesConcluidas,
-      progressoPercentual,
-      tarefasPorUsuario,
-    };
+  const handlerGraphc = async () =>{
+    if(!openProgress) {
+      await setOpenProgress(true)
+    }else {
+      await setOpenProgress(false)
+    }
   }
   
-  // Executar a função
-  const resultado = calcularProgresso(dados);
-  
-  // Exibir os resultados
-  console.log(`Progresso total: ${resultado.progressoPercentual.toFixed(2)}% (${resultado.condicoesConcluidas}/${resultado.totalCondicoes})`);
-  console.log("Tarefas concluídas por usuário:");
-  Object.entries(resultado.tarefasPorUsuario).forEach(([user, tasks]) => {
-    console.log(`Usuário ${user}: ${tasks} tarefa(s) concluída(s)`);
-  });
-  
-  
-  // Exibir os resultados
-  console.log(`Progresso total: ${resultado.progressoPercentual.toFixed(2)}% (${resultado.condicoesConcluidas}/${resultado.totalCondicoes})`);
-  console.log("Tarefas concluídas por usuário:");
-  Object.entries(resultado.tarefasPorUsuario).forEach(([user, tasks]) => {
-    console.log(`Usuário ${user}: ${tasks} tarefa(s) concluída(s)`);
-  });
-  
-  
-  // Exibir os resultados
-  console.log(`Progresso total: ${resultado.progressoPercentual.toFixed(2)}% (${resultado.condicoesConcluidas}/${resultado.totalCondicoes})`);
-  console.log("Tarefas concluídas por usuário:");
-  Object.entries(resultado.tarefasPorUsuario).forEach(([user, tasks]) => {
-    console.log(`Usuário ${user}: ${tasks} tarefa(s) concluída(s)`);
-  });
-  
+  const dadaProgress = async (id: number) =>{
+    try {
+      setLoadProgress(true)
+      const response = await axios.post(`${API_URL}/document-condition/listar-documento-condicionante-usuario/${id}`)
+      await setDadosProgress(response?.data)
+
+      setLoadProgress(false)
+    } catch (error) {
+      console.log('Erro: ', error)
+    }
+  }
+
+  console.info('Dada...: ', dadosProgress)
 
   return (
     <Show title={[<><span>{status}</span></>]} canEdit={false} canDelete={false} headerButtons={<RefreshButton onClick={() => atualiza()} />}>
@@ -680,17 +609,18 @@ export const DocumentShow = () => {
                             />
                           </Badge>
                           
-                          <Popover trigger='click' content={[
-                            <Space>
-                              <p>aasasasasasasasasasasas</p>
+                            <Popover open={openProgress} trigger='click' content={[
+                              <>
                               
-                            </Space>
-                          ]} placement="bottom">
-                              <Button onClick={()=>setDc_Id(item?.d_condicionante_id)} icon={ <EqualizerIcon fontSize="inherit" htmlColor="#F23847" /> } shape="circle" size="small" />
+                                <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", width: "100%" }}>
+                                  <CloseCircleOutlined style={{ fontSize: 20, cursor: "pointer" }} onClick={()=>setOpenProgress(false)} />
+                                </div>
+                                <ProgressoGrafico dados={dadosProgress} />
+                              </>
+                              ]} placement="right">
+                              <Button onClick={async ()=>{  await dadaProgress(item?.d_condicionante_id); await handlerGraphc()}} icon={ <EqualizerIcon fontSize="inherit" htmlColor="#F23847" /> } shape="circle" size="small" loading={loadProgress} />
                           </Popover>
-                            
-                           
-                          <Button size="small" shape="circle" icon={<ReconciliationOutlined />} disabled={!item?.d_anexo?.arquivo} onClick={async ()=> await openModalViewDoc(item?.d_anexo)}/>
+                          <Button size="small" shape="circle" icon={<ReconciliationOutlined />} disabled={!item?.d_anexo?.arquivo} onClick={async ()=> await openModalViewDoc(item?.d_anexo)}  itemID={item.d_condicionante_id}/>
                         </Space>,
                       ]}
                     >
@@ -818,7 +748,7 @@ export const DocumentShow = () => {
                     }
                     title={
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <a style={{ fontWeight: 'bold', color: '#8B41F2' }}>
+                        <a style={{ fontWeight: 'bold', color: '#009cde' }}>
                           {userTK === item.usuario.u_nome ? 'Você' : item.usuario.u_nome} -
                           <Tag color={getColor(item?.cd_situacao_comentario)} style={{ fontSize: 8, borderRadius: 8, marginLeft: 8 }} >{item?.cd_situacao_comentario}</Tag>
                         </a>
@@ -868,8 +798,8 @@ export const DocumentShow = () => {
                                 left: '16px',
                                 width: '15px',
                                 height: item.cd_resposta.length > 1 ? '98%' : '40%',
-                                borderLeft: '1px solid #8B41F2',
-                                borderBottom: '1px solid #8B41F2',
+                                borderLeft: '1px solid #009cde',
+                                borderBottom: '1px solid #009cde',
                                 borderBottomLeftRadius: '10px',
                               }}
                             ></div>
@@ -887,7 +817,7 @@ export const DocumentShow = () => {
                                       }
                                       title={
                                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                          <a style={{ fontWeight: 'bold', color: '#8B41F2', fontSize: 9 }}>
+                                          <a style={{ fontWeight: 'bold', color: '#009cde', fontSize: 9 }}>
                                             {userTK === response?.autor ? 'Você' : response?.autor}
                                           </a>
                                         </div>

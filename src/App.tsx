@@ -17,7 +17,7 @@ import routerBindings, {
   NavigateToResource,
   UnsavedChangesNotifier,
 } from "@refinedev/react-router-v6";
-import { App as AntdApp, ConfigProvider, notification, Typography } from "antd";
+import { App as AntdApp, ConfigProvider, Image, notification, Typography } from "antd";
 import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
 import moment from "moment-timezone";
 import { API_URL, authProvider } from "./authProvider";
@@ -57,6 +57,7 @@ import { NotificationsProvider, useNotifications } from "./contexts/Notification
 import { useEffect, useState } from "react";
 import { fetchNotifications } from "./config/notificationsUtils";
 import socket from "./config/socket";
+import { HeatMapOutlined } from "@ant-design/icons";
 
 
 type Props = {
@@ -66,7 +67,7 @@ type Props = {
 }
 
 function App() {
-  const [userTK, setUserTK] = useState<any>(JSON.parse(localStorage.getItem('refine-user')).id);
+  const [userTK, setUserTK] = useState<any>(JSON.parse(localStorage.getItem('refine-user'))?.id);
   useEffect(() => {
     const loadNotifications = async () => {
       try {
@@ -101,7 +102,7 @@ function App() {
   }, [userTK]);
 
   const customTitleHandler = ({ resource, action, params }: Props) => {
-    let title = String(name).toUpperCase(); // Título padrão
+    let title = String(name); // Título padrão
 
   
     if (resource && action) {
@@ -135,11 +136,11 @@ function App() {
                   borderRadius: 10
                 },
                 Typography: {
-                  colorTextHeading: "#AD8DF2"
+                  colorTextHeading: "009cde"
                 },
               },
               token: {
-                colorPrimary: "#8B41F2",
+                colorPrimary: "#009cde",
               },
             }}
             >
@@ -152,7 +153,11 @@ function App() {
                 authProvider={authProvider}
                 resources={resources}
                 options={{
-                  title: {text: "BLP"},
+                  
+                  title: {
+                    text: (<span style={{color: "#1479bd", fontSize: 20}}>LegaliSys</span>),
+                    icon: <Image src='/lg_Drogaria_Globo 1.png'  height={35} width={35} style={{ objectFit: "contain" }} />
+                  },
                   liveMode: "auto",
                   syncWithLocation: true,
                   warnWhenUnsavedChanges: true,

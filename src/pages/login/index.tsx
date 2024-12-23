@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useContext, useState } from "react";
 import { useLogin } from "@refinedev/core";
-import { Form, Input, Button, Typography, Row, Col, Card } from "antd";
+import { Form, Input, Button, Typography, Row, Col, Card, Image } from "antd";
 import { CircularProgress } from "@mui/material";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 
@@ -10,16 +10,17 @@ const { Title } = Typography;
 
 export const Login = () => {
   const { mutate: login, isLoading } = useLogin();
-
+   const [modeColor, setModeColor] = useState(localStorage.getItem('colorMode'));
+   console.log('modeColor: ', modeColor)
   return (
-    <div className="auth-page">
+    <div className="auth-page" style={{background: modeColor === 'dark' ? '#333': 'white'}}>
       <Row justify="center" align="middle" style={{ height: "100vh" }}>
         
         <Col xs={22} sm={16} md={12} lg={5}>
-          <Title style={{textAlign: 'center', fontFamily: 'sans-serif'}}>Blp Doc</Title>
+          <Title style={{textAlign: 'center', fontFamily: 'sans-serif', color: "#009cde"}}><Image src="/lg_Drogaria_Globo 1.png" height={80} width={80}/>LegaliSys</Title>
           <Card style={{boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.1), 0 6px 20px 0 rgba(0, 0, 0, 0.1)"}}>
             <div className="auth-container">
-              <Title level={4} style={{ textAlign: "center", height: "60px" }}>Faça login em sua conta</Title>
+              <Title level={4} style={{ textAlign: "center", height: "60px", color: "#009cde" }}>Faça login em sua conta</Title>
               <Form
                 layout="vertical"
                 onFinish={(values) => {
@@ -48,7 +49,7 @@ export const Login = () => {
                 </Form.Item>
                 <Form.Item>
                   <Button type="primary" htmlType="submit" disabled={isLoading} block>
-                    {isLoading ? <CircularProgress size={20} color={"secondary"} /> : "Login"}
+                    {isLoading ? <CircularProgress size={20} color={"primary"} /> : "Login"}
                   </Button>
                 </Form.Item>
               </Form>
