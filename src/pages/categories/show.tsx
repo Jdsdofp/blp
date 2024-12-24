@@ -126,6 +126,7 @@ export const DocumentShow = () => {
   const [dataOneDoc, setDataOneDoc] = useState({})
   const [switchChecked, setSwitchChecked] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loadProcss, setLoadProcss] = useState(false)
 
   //MODEL CASH
   const [isModalCash, setIsModalCash] = useState<boolean>();
@@ -137,7 +138,7 @@ export const DocumentShow = () => {
   const [dataFilesView, setDataFilesView ] = useState<any>()
 
   //MODEL PROGRESS
-  const [openProgress, setOpenProgress] = useState<boolean>(false)
+  const [openProgressId, setOpenProgressId] = useState(null);
   const [dc_id, setDc_Id] = useState<any>()
   const [ dadosProgress, setDadosProgress] = useState<any>()
   const [loadProgress, setLoadProgress] = useState(false)
@@ -400,6 +401,7 @@ export const DocumentShow = () => {
   const handleCloseProcss = async (conditionID: number)=>{
 
       try {
+        setLoadProcss(true)
         const dc_id = conditionID; // Substitua pelo valor correto de 'dc_id'
 
         const payload = {
@@ -411,7 +413,9 @@ export const DocumentShow = () => {
        setNumProtocolo('')
        setDataProtocolo(null)
        await asas()
+       setLoadProcss(false)
        messageApi.success(data?.message)
+
       } catch (error) {
         console.log('Erro ao requisiatar ', error)
       }
@@ -422,6 +426,7 @@ export const DocumentShow = () => {
   
   const handleCloseAllProcss = async (conditionID: number)=>{
       try {
+        setLoadProcss(true)
         const dc_id = conditionID;
 
         const payload = {
@@ -434,11 +439,11 @@ export const DocumentShow = () => {
         
         setDataEmissao(null)
         setDataVencimento(null)
-
+        setLoadProcss(false)
+        await refetch()
        messageApi.success(data?.message)
-       await refetch()
        setNumberProtocol(data?.doc)
-
+       await setIsModal(false)
       } catch (error) {
         console.log(error)
         messageApi.error(error?.response.data.message)
@@ -552,7 +557,7 @@ export const DocumentShow = () => {
     }
   }
 
-  console.info('Dada...: ', dadosProgress)
+  //console.info('Dada...: ', dadosProgress)
 
   return (
     <Show title={[<><span>{status}</span></>]} canEdit={false} canDelete={false} headerButtons={<RefreshButton onClick={() => atualiza()} />}>
@@ -608,18 +613,29 @@ export const DocumentShow = () => {
                               }}
                             />
                           </Badge>
-                          
-                            <Popover open={openProgress} trigger='click' content={[
-                              <>
-                              
-                                <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", width: "100%" }}>
-                                  <CloseCircleOutlined style={{ fontSize: 20, cursor: "pointer" }} onClick={()=>setOpenProgress(false)} />
-                                </div>
-                                <ProgressoGrafico dados={dadosProgress} />
-                              </>
-                              ]} placement="right">
-                              <Button onClick={async ()=>{  await dadaProgress(item?.d_condicionante_id); await handlerGraphc()}} icon={ <EqualizerIcon fontSize="inherit" htmlColor="#F23847" /> } shape="circle" size="small" loading={loadProgress} />
-                          </Popover>
+                            {
+                              item?.d_condicionante_id == null ? null : (
+                                <>
+                                  <Popover open={openProgressId === item.d_condicionante_id} trigger='click' content={[
+                                    <>
+                                    
+                                      <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", width: "100%" }}>
+                                        <CloseCircleOutlined style={{ fontSize: 20, cursor: "pointer" }} onClick={() => setOpenProgressId(null)} />
+                                      </div>
+                                      <ProgressoGrafico dados={dadosProgress} />
+                                    </>
+                                    ]} placement="right">
+                                    <Button  onClick={async () => {
+                                      setOpenProgressId(item.d_condicionante_id);
+                                      await dadaProgress(item?.d_condicionante_id);
+                                      await handlerGraphc();
+                                    }} icon={ <EqualizerIcon fontSize="inherit" htmlColor="#F23847" /> } shape="circle" size="small" loading={loadProgress} />
+                                </Popover>
+                                
+                                
+                                </>
+                              )
+                            }
                           <Button size="small" shape="circle" icon={<ReconciliationOutlined />} disabled={!item?.d_anexo?.arquivo} onClick={async ()=> await openModalViewDoc(item?.d_anexo)}  itemID={item.d_condicionante_id}/>
                         </Space>,
                       ]}
@@ -652,7 +668,7 @@ export const DocumentShow = () => {
                       <p style={{padding: 0, margin: 0}}><span style={{fontWeight: 'bold'}}>Data protocolo:</span> {item?.d_data_pedido == '1970-01-01' ? null : (<DateField style={{fontSize: '10px'}} value={item?.d_data_pedido}/>)}</p>
                       <p style={{padding: 0, margin: 0}}><span style={{fontWeight: 'bold'}}>Protocolo:</span> {item?.d_num_protocolo == '' ? null : (<Typography.Text copyable style={{fontSize: 11}}>{item?.d_num_protocolo}</Typography.Text>)}</p>
                       <p style={{padding: 0, margin: 0}}><span style={{fontWeight: 'bold'}}>Data Emissão:</span> {item?.d_data_emissao == '1970-01-01' ? null : (<DateField style={{fontSize: '10px'}} value={item?.d_data_emissao}/>)}</p>
-                      <p style={{padding: 0, margin: 0}}><span style={{fontWeight: 'bold'}}>Data Vencimento:</span> {item?.d_data_vencimento == '1970-01-01' ? null : (<DateField style={{fontSize: '10px'}} value={item?.d_data_vencimento}/>)}</p>
+                      <p style={{padding: 0, margin: 0}}><span style={{fontWeight: 'bold'}}>Data Vencimento:</span> {item?.d_flag_vitalicio ? (<span style={{fontSize: 12}}>indeterminado 🔄</span>) : item?.d_data_vencimento == '1970-01-01' ? null : (<DateField style={{fontSize: '10px'}} value={item?.d_data_vencimento}/>)}</p>
                       <span><span style={{fontWeight: 'bolder'}}>Valor Agregado: </span> R$ {listDebit?.reduce((acc, d) => acc + parseFloat(d.dd_valor || 0), 0).toFixed(2)}</span>
                       </p>
                         
@@ -671,7 +687,10 @@ export const DocumentShow = () => {
                           <Tag color={getColor(item?.d_situacao)} style={{ fontSize: 10, borderRadius: 20 }}>
                             {item?.d_situacao}
                           </Tag>
+                          {item?.d_condicionante_id == null ? null : (<>
                           <Button icon={<PaidIcon fontSize="small" htmlColor="green" />} shape="circle" style={{ marginLeft: 160, border: 0 }} onClick={async ()=>{await setIsModalCash(true); await handlerDataOneData(item?.d_condicionante_id); await listDebits(item?.d_condicionante_id)}}/>
+                          
+                          </>)}
                         </Space>
                       </Space>
                     </Card>
@@ -723,7 +742,8 @@ export const DocumentShow = () => {
         getColor={getColor}
         switchChecked={switchChecked}
         handleSwitchChange={handleSwitchChange} 
-        loadingCloseAll={undefined}      
+        loadingCloseAll={undefined}
+        loadProcss={loadProcss}      
         />
 
       <Modal

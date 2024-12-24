@@ -51,7 +51,8 @@ export const ModalConditions = ({
     getColor,
     loadingCloseAll,
     switchChecked,
-    handleSwitchChange
+    handleSwitchChange,
+    loadProcss
 }) =>{
   
   const [messageApi] = message.useMessage()
@@ -59,7 +60,8 @@ export const ModalConditions = ({
   const [stateProtocolo, setStateProtocolo] = useState<boolean>()
   const hasProtocol = numberProtocol?.d_num_protocolo;
   const [file, setFile] = useState(null);
-  const [loadFile, setLoadFile] = useState(false)
+  const [loadFile, setLoadFile] = useState(false);
+  const [blockBtn, setBlockBtn] = useState<boolean>()
   
 
   useEffect(() => {
@@ -71,8 +73,18 @@ export const ModalConditions = ({
      // Atualiza apenas com base no número de protocolo
   }, [hasProtocol]); // O useEffect dispara apenas quando d_num_protocolo muda
   
- 
-  
+
+  useEffect(()=>{
+    const datasValores = dataEmissao?.format('D').length <=1 && dataVencimento?.format('D').length <=1
+    
+    setBlockBtn(dataEmissao?.format('D').length + dataVencimento?.format('D').length >= 2 ? false : true)
+    
+    
+    console.log('Valor datasValores: ', datasValores)
+  },[dataEmissao, dataVencimento])
+  const ignorarBlockBtn = true; // ou false dependendo da lógica
+
+  console.log('Teste Logico: ', dataEmissao?.format('D').length + dataVencimento?.format('D').length >= 2 ? false : true)
   // Capturar o arquivo selecionado
   const handleFileChange = ({ file }) => {
     setFile(file); // Salva o arquivo real no estado
@@ -106,7 +118,6 @@ export const ModalConditions = ({
       console.error("Erro no envio:", error);
     }
   };
-
   
   return (
 
@@ -118,7 +129,7 @@ export const ModalConditions = ({
           cancelButtonProps={{ hidden: true }}
           footer={[Object.entries(conditions || {}).filter(([key, value]) => value?.status === false).length >= 1 ? null : (
             
-            <Space>
+            <Space style={{margin: 4}}>
             <Tag color="purple-inverse" style={{ fontSize: 10, borderRadius: 20 }}>
               {result?.data?.status}
             </Tag>
@@ -141,7 +152,7 @@ export const ModalConditions = ({
                     hidden={true}
                   />
                   <Button
-                    loading={loadingCloseAll}
+                    loading={loadProcss}
                     type="primary"
                     onClick={() => {
                       handleCloseProcss(result?.data?.dc_id);
@@ -183,16 +194,23 @@ export const ModalConditions = ({
                       value={dataEmissao}
                       disabled={dataOneDoc?.d_num_protocolo <= 0}
                     />
-                    <DatePicker
-                      placeholder="Vencimento"
-                      locale="pt-BR"
-                      format="DD/MM/YYYY"
-                      allowClear
-                      style={{ borderRadius: 20 }}
-                      onChange={(date) => setDataVencimento(date)}
-                      value={dataVencimento}
-                      disabled={dataOneDoc?.d_num_protocolo <= 0}
-                    />
+                    
+                      <DatePicker
+                        placeholder="Vencimento"
+                        locale="pt-BR"
+                        format="DD/MM/YYYY"
+                        allowClear
+                        style={{ borderRadius: 20 }}
+                        onChange={(date) => setDataVencimento(date)}
+                        value={dataVencimento}
+                        disabled={dataOneDoc?.d_num_protocolo <= 0}
+                      />
+                      <div style={{position: 'absolute', left: 20, bottom: 1, paddingBottom: 3  }}>
+                        <Checkbox disabled={!dataVencimento}>
+                        <span style={{fontSize: 10}}>Vecimento indeterminado ?</span>
+                        </Checkbox>
+                      </div>
+                    
           
                     {/* Botão para finalizar ou enviar */}
                     {file == null ? (
@@ -208,12 +226,13 @@ export const ModalConditions = ({
                             okText="Sim"
                             cancelText="Não"
                           >
-                            <Button type="primary" shape="round" icon={<Check fontSize="inherit" />}>
+                            <Button type="primary" shape="round" icon={<Check fontSize="inherit" />} disabled={blockBtn} loading={loadProcss}>
                               {stateProtocolo ? "Fechar" : "Finalizar"}
                             </Button>
                           </Popconfirm>
                         ) : (
                           /* Caso somente o número do protocolo esteja preenchido */
+                          
                           <Button
                             type="primary"
                             shape="round"
@@ -222,6 +241,8 @@ export const ModalConditions = ({
                               await handleCloseAllProcss(result?.data?.dc_id);
                               await handlerDataOneData(result?.data?.dc_id);
                             }}
+                            disabled={!ignorarBlockBtn && blockBtn ? true : numProtocolo?.length < 1}
+                            loading={loadProcss}
                           >
                             {stateProtocolo ? "Fechar" : "Finalizar"}
                           </Button>
@@ -231,10 +252,11 @@ export const ModalConditions = ({
                       <>
                         {/* Finalizar com arquivo */}
                         <Button
-                          loading={loadingCloseAll}
+                          loading={loadProcss}
                           type="primary"
                           shape="round"
                           icon={<Check fontSize="inherit" />}
+                          disabled={blockBtn}
                           onClick={async () => {
                             await handleCloseAllProcss(result?.data?.dc_id);
                             await handlerDataOneData(result?.data?.dc_id);
@@ -243,7 +265,9 @@ export const ModalConditions = ({
                         >
                           {stateProtocolo ? "Fechar" : "Finalizar"}
                         </Button>
-                      </>
+                        
+                        
+                      </> 
                     )}
                   </>
                 )}
@@ -251,7 +275,7 @@ export const ModalConditions = ({
             )}
             {contextHolder}
           </Space>
-          
+
           
           )]}
       >

@@ -522,6 +522,18 @@ const totalDocumentos = tableQueryResult?.data?.data?.reduce((total, filial) => 
 }, 0);
 
 
+  useEffect(() => {
+    // Verificar se todas as condições são verdadeiras
+    const allTrue =
+      conditionsStatus &&
+      Object.values(conditionsStatus).every((cond) => cond.status === true);
+
+    // Desmarcar o checkbox se todas as condições forem verdadeiras
+    if (allTrue && isChecked) {
+      setIsChecked(false);
+      form.setFieldsValue({ d_flag_stts: null }); // Atualizar o valor no formulário
+    }
+  }, [conditionsStatus, isChecked, form]);
 
 
   return (
@@ -559,7 +571,9 @@ const totalDocumentos = tableQueryResult?.data?.data?.reduce((total, filial) => 
         okButtonProps={saveButtonProps}
         footer={
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            
             {Object.entries(conditionsStatus || {}).filter(([key, value]) => value?.status === false).length > 0 ? 
+              
             (
               <Checkbox 
               checked={isChecked}
@@ -568,8 +582,7 @@ const totalDocumentos = tableQueryResult?.data?.data?.reduce((total, filial) => 
                 form.setFieldsValue({d_flag_stts: e.target.checked ? 'Irregular' : null})
                 
               }
-              
-              }>
+            }>
               Irregular
             </Checkbox>  
             ) : null

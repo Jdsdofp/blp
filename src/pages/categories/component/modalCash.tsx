@@ -34,7 +34,7 @@ export const ModalCash = ({ open, close, dataOneDoc, listDebits, listDebit, load
     }
   }
 
-  console.info('State load', loadingDataDebit)
+  //console.info('State load', loadingDataDebit)
   useEffect(()=>{
     if(listDebit.length >0){
       setDataResult(listDebit)
