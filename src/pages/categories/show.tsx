@@ -115,6 +115,7 @@ export const DocumentShow = () => {
   const [dataProtocolo, setDataProtocolo] = useState(null);
   const [dataEmissao, setDataEmissao] = useState(null);
   const [dataVencimento, setDataVencimento] = useState(null);
+  const [d_flag_vitalicio, setD_flag_vitalicio] = useState<boolean>()
   const [userList, setUserList] = useState([]);
   const [loadingListUserAttr, setLoadingListUserAttr] = useState(false);
   const [users, setUsers] = useState([]);
@@ -126,7 +127,8 @@ export const DocumentShow = () => {
   const [dataOneDoc, setDataOneDoc] = useState({})
   const [switchChecked, setSwitchChecked] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [loadProcss, setLoadProcss] = useState(false)
+  const [loadProcss, setLoadProcss] = useState(false);
+  
 
   //MODEL CASH
   const [isModalCash, setIsModalCash] = useState<boolean>();
@@ -429,11 +431,15 @@ export const DocumentShow = () => {
         setLoadProcss(true)
         const dc_id = conditionID;
 
+        
         const payload = {
           d_data_emissao: dataEmissao,
           d_data_vencimento: dataVencimento,
-          d_num_protocolo: numProtocolo
+          d_num_protocolo: numProtocolo,
+          d_flag_vitalicio: d_flag_vitalicio
         }
+
+        console.log('Payload enviado: ', payload)
 
         const {data} = await axios.put(`${API_URL}/document-condition/fechar-processo/${dc_id}`, payload);
         
@@ -714,6 +720,7 @@ export const DocumentShow = () => {
         setDataEmissao={setDataEmissao}
         dataVencimento={dataVencimento}
         setDataVencimento={setDataVencimento}
+        setD_flag_vitalicio={setD_flag_vitalicio}
         handleCloseProcss={handleCloseProcss}
         handleCloseAllProcss={handleCloseAllProcss}
         conditions={conditions}

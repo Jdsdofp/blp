@@ -26,21 +26,24 @@ export const CalendarList = () => {
 
     const d_v = data?.data?.map((v) => new Date(v.d_data_vencimento));
 
+    
+
 const currentDate = new Date();
 
 // Função para calcular a diferença em dias
 const calculateDaysDifference = (date1: any, date2: any) => {
   const timeDiff = date1.getTime() - date2.getTime();
   const daysDiff = timeDiff / (1000 * 3600 * 24); // Converter de milissegundos para dias
+  
   return Math.ceil(daysDiff); // Arredonda para o próximo dia
 };
 
-// Função para determinar a cor com base na diferença de dias
-const getEventColor = (daysDiff: any) => {
-  if (daysDiff < -10000) return ''; // Ignora grandes diferenças negativas
+// Função para determinar a cor com base na diferença de dias e no alerta do documento
+const getEventColor = (daysDiff: number, alertDays: number | null) => {
+  console.log('Dif', alertDays)
   if (daysDiff < 0) return 'red'; // Datas no passado
-  if (daysDiff <= 30) return 'yellow'; // Faltam 30 dias ou menos
-  if (daysDiff <= 60) return 'orange'; // Faltam entre 30 e 60 dias
+  if (alertDays !== null && daysDiff <= alertDays) return 'yellow'; // Dentro do prazo definido no alerta
+  if (daysDiff <= 30) return 'orange'; // Faltam entre 30 e 60 dias (regra padrão)
   return 'primary'; // Mais de 60 dias
 };
 
@@ -55,9 +58,10 @@ const getTextColor = (backgroundColor: any) => {
 
   
 
-// Mapeia os eventos com base na diferença de dias e define a cor
+// Atualização dos eventos para usar a nova lógica
 const events = data?.data?.map((documento) => {
   const daysDifference = calculateDaysDifference(new Date(documento.d_data_vencimento), currentDate);
+  const alertDays = documento.tipo_documentos?.td_dia_alert ?? null; // Dias para alerta, se existir
 
   return {
     title: `${documento.tipo_documentos.td_desc} - ${documento.filiais.f_nome}`,
@@ -67,9 +71,9 @@ const events = data?.data?.map((documento) => {
       situacao: documento.d_situacao,
       orgao_exp: documento.d_orgao_exp,
     },
-    backgroundColor: getEventColor(daysDifference), // Define a cor do evento
-    textColor: getTextColor(getEventColor(daysDifference)),
-    borderColor: getEventColor(daysDifference)
+    backgroundColor: getEventColor(daysDifference, alertDays), // Define a cor do evento
+    textColor: getTextColor(getEventColor(daysDifference, alertDays)), // Ajusta a cor do texto
+    borderColor: getEventColor(daysDifference, alertDays), // Ajusta a cor da borda
   };
 });
     

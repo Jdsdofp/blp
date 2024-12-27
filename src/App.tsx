@@ -1,4 +1,4 @@
-import { Authenticated, Refine, useTitle } from "@refinedev/core";
+import { Authenticated, Refine, useIsAuthenticated, useTitle } from "@refinedev/core";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 import { name } from '../package.json'
 
@@ -18,7 +18,7 @@ import routerBindings, {
   UnsavedChangesNotifier,
 } from "@refinedev/react-router-v6";
 import { App as AntdApp, ConfigProvider, Image, notification, Typography } from "antd";
-import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Outlet, Route, Routes, useNavigate } from "react-router-dom";
 import moment from "moment-timezone";
 import { API_URL, authProvider } from "./authProvider";
 import { Header } from "./components/header";
@@ -58,6 +58,7 @@ import { useEffect, useState } from "react";
 import { fetchNotifications } from "./config/notificationsUtils";
 import socket from "./config/socket";
 import { HeatMapOutlined } from "@ant-design/icons";
+import { ListTasks } from "./pages/tasks/list";
 
 
 type Props = {
@@ -67,6 +68,9 @@ type Props = {
 }
 
 function App() {
+  
+
+
   const [userTK, setUserTK] = useState<any>(JSON.parse(localStorage.getItem('refine-user'))?.id);
   useEffect(() => {
     const loadNotifications = async () => {
@@ -172,6 +176,7 @@ function App() {
                           <Authenticated
                             key="authenticated-inner"
                             fallback={<CatchAllNavigate to="/login" />}
+                            
                           >
                             <ThemedLayoutV2
                               Header={Header}
@@ -199,7 +204,8 @@ function App() {
                       >
                         <Route
                           index
-                          element={<NavigateToResource resource="document" />}
+                          element={<NavigateToResource resource="document"  />}
+                          
                         />
                         <Route path="/blog-posts">
                           <Route index element={<BlogPostList />} />
@@ -216,6 +222,10 @@ function App() {
                         
                         <Route path="/mapsall">
                             <Route index element={<Mapsall />} />
+                        </Route>
+
+                        <Route path="/task">
+                            <Route index element={<ListTasks />} />
                         </Route>
 
                         <Route path="/calendario">

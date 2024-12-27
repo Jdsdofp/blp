@@ -22,6 +22,7 @@ export const ModalConditions = ({
     dataEmissao,
     setDataEmissao,
     dataVencimento,
+    setD_flag_vitalicio,
     setDataVencimento,
     handleCloseProcss,
     handleCloseAllProcss,
@@ -63,6 +64,7 @@ export const ModalConditions = ({
   const [loadFile, setLoadFile] = useState(false);
   const [blockBtn, setBlockBtn] = useState<boolean>()
   
+  
 
   useEffect(() => {
     if(hasProtocol){
@@ -80,11 +82,11 @@ export const ModalConditions = ({
     setBlockBtn(dataEmissao?.format('D').length + dataVencimento?.format('D').length >= 2 ? false : true)
     
     
-    console.log('Valor datasValores: ', datasValores)
+    //console.log('Valor datasValores: ', datasValores)
   },[dataEmissao, dataVencimento])
   const ignorarBlockBtn = true; // ou false dependendo da lógica
 
-  console.log('Teste Logico: ', dataEmissao?.format('D').length + dataVencimento?.format('D').length >= 2 ? false : true)
+  //console.log('Teste Logico: ', dataEmissao?.format('D').length + dataVencimento?.format('D').length >= 2 ? false : true)
   // Capturar o arquivo selecionado
   const handleFileChange = ({ file }) => {
     setFile(file); // Salva o arquivo real no estado
@@ -118,6 +120,8 @@ export const ModalConditions = ({
       console.error("Erro no envio:", error);
     }
   };
+
+  
   
   return (
 
@@ -206,7 +210,7 @@ export const ModalConditions = ({
                         disabled={dataOneDoc?.d_num_protocolo <= 0}
                       />
                       <div style={{position: 'absolute', left: 20, bottom: 1, paddingBottom: 3  }}>
-                        <Checkbox disabled={!dataVencimento}>
+                        <Checkbox disabled={!dataVencimento} onChange={(e)=>setD_flag_vitalicio(e?.target?.checked)}>
                         <span style={{fontSize: 10}}>Vecimento indeterminado ?</span>
                         </Checkbox>
                       </div>

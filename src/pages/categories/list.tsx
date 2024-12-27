@@ -598,7 +598,9 @@ const totalDocumentos = tableQueryResult?.data?.data?.reduce((total, filial) => 
                 }}>Cancelar</Button>
               <Button
                 type="primary" 
-                onClick={() => form.submit()} 
+                loading={formLoading}
+                onClick={() => form.submit()}
+
               >
                 Salvar
               </Button>

@@ -1,8 +1,22 @@
 import React, { useEffect } from "react";
-import { Avatar, Badge, Button, List, Popover } from "antd";
+import { Avatar, Badge, Button, ConfigProvider, Empty, List, Popover } from "antd";
 import { NotificationOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useNotifications } from "../../contexts/NotificationsContext";
+import { EdgesensorHigh, ScubaDiving } from "@mui/icons-material";
+
+
+
+
+const EmptyComponent = () =>{
+  return(
+    <>
+      <Empty description="Não há notificações"/>
+    </>
+  )
+}
+
+
 
 const NotificationsHeader: React.FC = () => {
   const { notifications, loading, fetchNotifications, markAsRead } = useNotifications();
@@ -12,35 +26,37 @@ const NotificationsHeader: React.FC = () => {
   }, [fetchNotifications]);
 
   const content = (
-    <List
-    split
-      itemLayout="horizontal"
-      dataSource={notifications}
-      loading={loading}
-      size="small"
-      style={{maxHeight: '400px', overflowY: 'auto'}}
-      renderItem={(item, index) => (
-        <List.Item onClick={() => (!item.n_lida ? markAsRead(item) : null)}>
-          <List.Item.Meta
-            avatar={<Avatar src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${index}`} />}
-            title={<a href="https://ant.design">{item?.title}</a>}
-            style={{cursor: item?.n_lida ? null : 'pointer',}}
-            description={
-              <span
-                title="Clique para marcar como lido"
-                style={{
-                  fontWeight: item.n_lida ? "inherit" : "bolder",
-                  color: item.n_lida ? "gray" : "#976DF2",
-                }}
-              >
-                {item.n_mensagem}{" "}
-                <span style={{ fontSize: "9px", color: "#888" }}>{dayjs(item.n_criado_em).fromNow()}</span>
-              </span>
-            }
-          />
-        </List.Item>
-      )}
-    />
+    <ConfigProvider renderEmpty={EmptyComponent}>
+      <List
+        split
+        itemLayout="horizontal"
+        dataSource={notifications}
+        loading={loading}
+        size="small"
+        style={{maxHeight: '400px', overflowY: 'auto'}}
+        renderItem={(item, index) => (
+          <List.Item onClick={() => (!item.n_lida ? markAsRead(item) : null)}>
+            <List.Item.Meta
+              avatar={<Avatar src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${index}`} />}
+              title={<a href="https://ant.design">{item?.title}</a>}
+              style={{cursor: item?.n_lida ? null : 'pointer',}}
+              description={
+                <span
+                  title="Clique para marcar como lido"
+                  style={{
+                    fontWeight: item.n_lida ? "inherit" : "bolder",
+                    color: item.n_lida ? "gray" : "#976DF2",
+                  }}
+                >
+                  {item.n_mensagem}{" "}
+                  <span style={{ fontSize: "9px", color: "#888" }}>{dayjs(item.n_criado_em).fromNow()}</span>
+                </span>
+              }
+            />
+          </List.Item>
+        )}
+      />
+    </ConfigProvider>
   );
 
   return (

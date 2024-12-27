@@ -103,12 +103,13 @@ export const authProvider: AuthProvider = {
             Authorization: `Bearer ${token}`
           }
         });
-        
+
+
         if (response.status === 200) {
           return {
             authenticated: true,
           };
-        } else {
+        } if(response.status == 401){
           return {
             authenticated: false,
             redirectTo: '/login',
@@ -119,6 +120,7 @@ export const authProvider: AuthProvider = {
 
 
       } catch (error) {
+        console.log('Return auth: ', error?.response.status)
         return {
           authenticated: false,
           redirectTo: '/login',

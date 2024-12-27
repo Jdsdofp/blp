@@ -1,5 +1,5 @@
 import { ApartmentOutlined, BranchesOutlined, CalendarOutlined, DashboardFilled, DashboardTwoTone, DashOutlined, ExceptionOutlined, FileSyncOutlined, SafetyCertificateOutlined, SubnodeOutlined, UserSwitchOutlined } from "@ant-design/icons";
-import { CalendarMonthOutlined, Dashboard, DashboardCustomizeOutlined, DashboardCustomizeSharp, DashboardOutlined, DocumentScannerTwoTone, FolderCopyOutlined, MapsHomeWorkTwoTone, TypeSpecimen } from "@mui/icons-material";
+import { CalendarMonthOutlined, Dashboard, DashboardCustomizeOutlined, DashboardCustomizeSharp, DashboardOutlined, DocumentScannerTwoTone, FolderCopyOutlined, MapsHomeWorkTwoTone, Task, TypeSpecimen } from "@mui/icons-material";
 import AddLocationAltIcon from '@mui/icons-material/AddLocationAlt';
 import AddBusinessIcon from '@mui/icons-material/AddBusiness';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
@@ -29,6 +29,7 @@ export const resources: IResourceItem[] = [
       canDelete: true,
       label: 'Documentos',
       icon: <ReceiptLongIcon/>
+      
     },
   },
   {
@@ -51,6 +52,18 @@ export const resources: IResourceItem[] = [
       canDelete: true,
       label: 'Maps',
       icon: <AddLocationAltIcon />
+    },
+  },
+  {
+    name: "task",
+    list: "/task",
+    create: "/task/create",
+    edit: "/task/edit/:id",
+    show: "/task/show",
+    meta: {
+      canDelete: true,
+      label: 'Task',
+      icon: <Task />
     },
   },
   {

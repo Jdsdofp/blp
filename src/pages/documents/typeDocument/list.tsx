@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Badge, Button, Col, DatePicker, Form, Input, message, Modal, Popconfirm, Row, Select, Space, Spin, Switch, Table, Tabs, Tag } from 'antd';
+import { Badge, Button, Col, DatePicker, Form, Input, InputNumber, message, Modal, Popconfirm, Row, Select, Space, Spin, Switch, Table, Tabs, Tag } from 'antd';
 import type { TableProps } from 'antd';
 import { DateField, Edit, EditButton, List, useForm } from '@refinedev/antd';
 import { ClearOutlined, ClockCircleFilled, EditFilled } from '@ant-design/icons';
@@ -16,6 +16,7 @@ interface ITypeDoc {
     td_requer_condicao: boolean[];
     criado_em: Date;
     td_em_uso: Boolean;
+    td_dia_alert: number;
   }
 
 
@@ -257,6 +258,12 @@ export const DocTypeDocCreate = () => {
         },
 
         {
+           key: 'td_dia_alert',
+           title: 'Alerta Vencimento',
+           dataIndex: 'td_dia_alert'
+        },
+
+        {
             key: 'criado_em',
             title: 'Data Criação',
             render: (_, {criado_em})=>(
@@ -326,6 +333,9 @@ export const DocTypeDocCreate = () => {
                                 <Col xs={24} sm={24}>
                                     <Form.Item label="Tipo Documento" name="td_desc" rules={[{ required: true, message: 'Descrição Tipo Documento Obrigatório' }]}>
                                         <Input/>    
+                                    </Form.Item>
+                                    <Form.Item  label="Padrão Vencimento" name="td_dia_alert">
+                                        <InputNumber type='number' datatype='number' decimalSeparator=',' controls={false}/>    
                                     </Form.Item>
                                 </Col>
 
