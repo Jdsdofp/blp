@@ -179,14 +179,22 @@ export const DocumentShow = () => {
       } else {
         newValue = true;
       }
-  
+      
+
+      const date = newValue 
+      ? new Date().toISOString().slice(0, 10) // Se `newValue` for verdadeiro, data atual.
+      : newValue === null 
+      ? new Date().toISOString().slice(0, 10) // Se `newValue` for null, data atual.
+      : null; // Caso contrário, null.
+
+      console.log('Status: ', date)
       const updatedConditions = {
         ...prevConditions,
         [key]: {
           // Preserva as propriedades anteriores, como `dateCreate`
           ...prevConditions[key],
           status: newValue,
-          date: new Date().toISOString().slice(0, 10),
+          date: date,
           users: [userTK],
           statusProcesso: docStatusId,
         },

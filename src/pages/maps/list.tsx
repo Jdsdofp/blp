@@ -1,21 +1,35 @@
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css'; // Importar o CSS do Leaflet
 import { useList } from '@refinedev/core';
 import L from 'leaflet';
 import { List } from '@refinedev/antd';
 import { useContext, useEffect, useState } from 'react';
 import { ColorModeContext } from '../../contexts/color-mode';
-import { Card, Input, Table, Tag } from 'antd';
+import { Card, Input, InputNumber, Select, Space, Table, Tag } from 'antd';
 import Link from 'antd/es/typography/Link';
 import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '../../contexts/NotificationsContext';
 
+
+
+const { Option } = Select;
 // Função para retornar a cor do ícone com base na situação
+
+
+
+const ZoomToFilial = ({ position, zoom }) => {
+    const map = useMap();
+    if (position) {
+        map.setView(position, zoom, { animate: true });
+    }
+    return null;
+};
+
 const getMarkerColor = (situation) => {
     switch (situation) {
         case 'Em processo':
             return 'blue';
-        case 'Não iniciado':
+        case 'Irregular':
             return 'orange';
         case 'Vencido':
             return 'red';
@@ -51,10 +65,20 @@ export const Mapsall = () => {
           }, [fetchNotifications]);
 
     const centerCoordinates = [-5.091278491303021, -42.83431574194223];
+    const [coodZoom, setCoodZoom] = useState<any>()
     const { data, isInitialLoading } = useList({ resource: 'document', meta: { endpoint: 'listar-documentos-filais' } });
     const [modeColor, setModeColor] = useState(localStorage.getItem('colorMode'));
     const { mode, setMode } = useContext(ColorModeContext);
     const navigate = useNavigate()
+
+
+    //variaveis
+    const [filteredFilialId, setFilteredFilialId] = useState(null);
+    const [filteredUf, setFilteredUf] = useState(null);
+    const [mapZoom, setMapZoom] = useState(6);
+    const [filteredSituation, setFilteredSituation] = useState(null);
+    const [filteredDocType, setFilteredDocType] = useState(null); // Novo estado para o tipo de documento
+
 
     const getColor = (status: any) => {
         switch (status) {
@@ -70,20 +94,129 @@ export const Mapsall = () => {
             return 'default';
         }
       };
+    
+    // Obter os estados únicos (f_uf)
+    const uniqueStates = Array.from(new Set(data?.data.map((filial) => filial.f_uf))).filter(Boolean);
+    
+     // Obter os tipos de documentos únicos
+    const uniqueDocTypes = Array.from(
+        new Set(data?.data.flatMap((filial) => filial.documentos.map((doc) => doc.tipo_documentos?.td_desc)))
+    ).filter(Boolean);
+
+    // Filtrar as filiais com base no estado e no ID selecionado
+    const filteredData = data?.data.filter((filial) => {
+        const matchesFilial = filteredFilialId ? filial.f_id === filteredFilialId : true;
+        const matchesUf = filteredUf ? filial.f_uf === filteredUf : true;
+
+        const matchesSituation = filteredSituation
+            ? filial.documentos.some((doc) => doc.d_situacao === filteredSituation)
+            : true;
+        
+        const matchesDocType = filteredDocType
+            ? filial.documentos.some((doc) => doc.tipo_documentos?.td_desc === filteredDocType)
+            : true;
+
+        return matchesFilial && matchesUf && matchesSituation && matchesDocType;
+    });
+    
+
+    const handleFilialChange = (value) => {
+        const selectedFilial = data?.data.find((filial) => filial.f_id === value);
+        
+        if (selectedFilial?.f_location?.coordinates) {
+            setCoodZoom([selectedFilial.f_location.coordinates[1], selectedFilial.f_location.coordinates[0]]);
+            setMapZoom(15); // Zoom específico para a filial
+        } else {
+            setCoodZoom(centerCoordinates); // Retorna ao centro padrão
+            setMapZoom(6); // Zoom padrão
+        }
+        
+        setFilteredFilialId(value); // Atualiza o ID filtrado
+    };
+
+    const handleUfChange = (value) => {
+        setFilteredUf(value);
+    };
+
+    const handleDocTypeChange = (value) => {
+        setFilteredDocType(value); // Atualiza o tipo de documento filtrado
+    };
+    
+    
 
     return (
         <List breadcrumb canCreate={false} title="Relatório Mapa por Status">
-            <Card style={{ padding: 0, margin: 0 }}>
+            
+           
+            
+            <Card  styles={{body: {paddingRight: 0, paddingLeft: 0, paddingTop: 10}}}>
+            <Space>
+                <Select
+                        style={{ width: 200, marginBottom: 16, paddingLeft: 10 }}
+                        placeholder="Selecione uma filial"
+                        onChange={handleFilialChange}
+                        allowClear
+                    >
+                        {data?.data.map((filial) => (
+                            <Option key={filial.f_id} value={filial.f_id}>
+                                {filial.f_nome}
+                            </Option>
+                        ))}
+                    </Select>
+
+                    {/* Filtro por estado */}
+                    <Select
+                        style={{ width: 200, marginBottom: 16 }}
+                        placeholder="Selecione um estado"
+                        onChange={handleUfChange}
+                        allowClear
+                    >
+                        {uniqueStates.map((uf) => (
+                            <Option key={uf} value={uf}>
+                                {uf}
+                            </Option>
+                        ))}
+                    </Select>
+
+                    <Select
+                        style={{ width: 200, marginBottom: 16 }}
+                        placeholder="Selecione uma situação"
+                        onChange={(value) => setFilteredSituation(value)}
+                        allowClear
+                    >
+                        <Option value="Vencido">Vencido</Option>
+                        <Option value="Em processo">Em processo</Option>
+                        <Option value="Irregular">Irregular</Option>
+                        <Option value="Emitido">Emitido</Option>
+                    </Select>
+
+                    <Select
+                        style={{ width: 200, marginBottom: 16 }}
+                        placeholder="Selecione um tipo de documento"
+                        onChange={handleDocTypeChange}
+                        allowClear
+                    >
+                        {uniqueDocTypes.map((docType) => (
+                            <Option key={docType} value={docType}>
+                                {docType}
+                            </Option>
+                        ))}
+                    </Select>
+            </Space>
+
+
                 <div style={{ height: "80vh", width: "100%" }}>
                     <MapContainer 
+
                         center={centerCoordinates} 
-                        zoom={6} 
+                        zoom={mapZoom} 
                         style={{ height: "100%", width: "100%" }}
                     >
+                        <ZoomToFilial position={coodZoom} zoom={mapZoom}/>
                         <TileLayer
                             url={mode === 'light' ? "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" : "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"}
                         />
-                        {data?.data.map((filial) => {
+                        {filteredData?.map((filial) => {
                             if (filial.f_location && filial.f_location.coordinates) {
                                 // Ordena os documentos e seleciona o primeiro com maior prioridade
                                 const sortedDocumentos = filial.documentos.sort((a, b) => {
@@ -123,8 +256,8 @@ export const Mapsall = () => {
                             }
                             return null;
                         })}
-
-                    </MapContainer>
+                            
+                    </MapContainer> 
                 </div>
 
                 {/* CSS para o efeito piscante */}

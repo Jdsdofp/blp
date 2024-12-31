@@ -1,4 +1,4 @@
-import { Authenticated, Refine, useIsAuthenticated, useTitle } from "@refinedev/core";
+import { Authenticated, Refine, useDataProvider, useIsAuthenticated, useTitle } from "@refinedev/core";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 import { name } from '../package.json'
 
@@ -72,6 +72,8 @@ function App() {
 
 
   const [userTK, setUserTK] = useState<any>(JSON.parse(localStorage.getItem('refine-user'))?.id);
+  
+
   useEffect(() => {
     const loadNotifications = async () => {
       try {
@@ -122,9 +124,12 @@ function App() {
   };
   moment.tz.setDefault("America/Sao_Paulo");
   
+ 
 
 
   return (
+  
+    
     <BrowserRouter>
       <RefineKbarProvider>
         
@@ -177,6 +182,7 @@ function App() {
                             key="authenticated-inner"
                             fallback={<CatchAllNavigate to="/login" />}
                             
+                            
                           >
                             <ThemedLayoutV2
                               Header={Header}
@@ -188,8 +194,10 @@ function App() {
                               fixed
                             
                               render={({items, collapsed})=>{ 
+                                
                                 return(
                                   <>
+                                  
                                     {items}
                                   </>
                                 )
@@ -204,7 +212,8 @@ function App() {
                       >
                         <Route
                           index
-                          element={<NavigateToResource resource="document"  />}
+                          
+                          element={<NavigateToResource resource="document" />}
                           
                         />
                         <Route path="/blog-posts">
