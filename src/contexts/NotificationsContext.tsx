@@ -1,7 +1,12 @@
 // NotificationsContext.tsx
 import React, { createContext, useContext, useState, useCallback } from "react";
 import axios from "axios";
-import { API_URL } from "../authProvider";
+import { API_URL, TOKEN_KEY, USER } from "../authProvider";
+import { Alert, Button, notification } from "antd";
+import { toast } from "react-toastify";
+import { CloseFullscreenOutlined, OneK } from "@mui/icons-material";
+import { LogoutOutlined } from "@ant-design/icons";
+
 
 interface Notification {
   n_id: string;
@@ -29,7 +34,20 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
       const response = await axios.post(`${API_URL}/notifications/listar-notificacoes`);
       setNotifications(response.data);
     } catch (error) {
-      console.error("Erro ao buscar notificações:", error);
+      notification.error({
+        description: 'Sessão expirada, faça login novamente para continuar!',
+        message: 'Erro 😐',
+        btn: <Button onClick={()=>{
+            location.href='/login';
+            localStorage.removeItem(TOKEN_KEY);
+            localStorage.removeItem(USER)
+          }} 
+        icon={<LogoutOutlined color="red"/>} 
+        />,
+        closable: false,
+        placement: 'top',
+        duration: null
+      })
     } finally {
       setLoading(false);
     }
@@ -48,6 +66,7 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     <NotificationsContext.Provider value={{ notifications, loading, fetchNotifications, markAsRead }}>
       {children}
     </NotificationsContext.Provider>
+    
   );
 };
 

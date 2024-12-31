@@ -78,13 +78,10 @@ export const CurentUser: React.FC = () =>{
             overlayStyle={{ zIndex: 999 }}
           >
             <Avatar
-              nome={user?.nome}
-              src={user?.avatarUrl}
               size="large"
               style={{ cursor: "pointer" }}
-            ></Avatar>
+            >{getInitialsAvatar(String(user?.nome))}</Avatar>
           </Popover>
-
 
           {
             user && (

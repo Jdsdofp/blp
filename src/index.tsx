@@ -10,7 +10,7 @@ const root = createRoot(container);
 
 root.render(
   <React.StrictMode>
-    <NotificationsProvider>
+    <NotificationsProvider >
       <App/>
     </NotificationsProvider>
   </React.StrictMode>

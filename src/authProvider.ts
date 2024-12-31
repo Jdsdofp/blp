@@ -120,7 +120,6 @@ export const authProvider: AuthProvider = {
 
 
       } catch (error) {
-        console.log('Return auth: ', error?.response.status)
         return {
           authenticated: false,
           redirectTo: '/login',
@@ -150,7 +149,9 @@ export const authProvider: AuthProvider = {
         id: user?.id,
         nome: user?.nome,
         avatar: "https://i.pravatar.cc/300",
-        session: user?.sessaoExp
+        session: user?.sessaoExp,
+        filiais: user?.filial,
+        empresa: user?.empresa
       };
     }
     return null;
