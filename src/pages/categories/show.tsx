@@ -19,9 +19,11 @@ import socket from "../../config/socket";
 import { io } from "socket.io-client";
 import { useNotifications } from "../../contexts/NotificationsContext";
 import ProgressoGrafico, { ModalProress } from "./component/modalProgress";
+import ReportPDF, { DownloadButton } from "../../components/pdf-help";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import GeneratePDF from "../../components/pdf-help";
 dayjs.extend(relativeTime);
 dayjs.locale('pt-br');
-
 
 interface ICondition {
   dc_id: number;
@@ -603,7 +605,8 @@ export const DocumentShow = () => {
                             openModal();
                             hendleOpenModalConditions(item.d_condicionante_id);
                             verifyStatusDoc(item?.d_condicionante_id);
-                            handlerDataOneData(item?.d_condicionante_id)
+                            handlerDataOneData(item?.d_condicionante_id);
+                            
                           }}
                         >
                           {item.d_condicionante_id && (
@@ -613,6 +616,7 @@ export const DocumentShow = () => {
                       }
                       actions={[
                         <Space>
+                          <GeneratePDF data={item} />
                           <Badge count={item?.d_comentarios?.length || null} size="small">
                             <Button
                               icon={<CommentOutlined />}
@@ -624,6 +628,7 @@ export const DocumentShow = () => {
                                 updateComment();
                                 atualiza();
                                 setCommentStatusValue(item.d_situacao);
+                                
                               }}
                             />
                           </Badge>
@@ -928,7 +933,9 @@ export const DocumentShow = () => {
           <p style={{ fontSize: 12, margin: 0 }}>{isDocComment?.filiais?.f_nome}</p>
           <p style={{ fontSize: 12, margin: 0 }}>{isDocComment?.tipo_documentos?.td_desc}</p>
           <p style={{ fontSize: 10 }}>
+
             <CalendarTodayIcon fontSize="inherit" />{' '}
+            
             <DateField
               value={isDocComment?.criado_em}
               format='DD/MM/YYYY · H:mm:ss'
@@ -936,7 +943,9 @@ export const DocumentShow = () => {
               style={{ fontSize: 9 }}
             />
           </p>
+          
           <Space direction="vertical">
+            {/* <GeneratePDF data={isDocComment?.usuario?.u_nome}/> */}
             <Tag style={{ borderRadius: 20, padding: 3 }}>
               <Avatar shape="circle" icon={String(isDocComment?.usuario?.u_nome).toUpperCase()[0]} size="small" />{' '}
               {isDocComment?.usuario?.u_nome === JSON.parse(localStorage.getItem('refine-user')).nome ? (

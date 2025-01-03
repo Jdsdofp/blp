@@ -17,6 +17,7 @@
     "@fullcalendar/timegrid": "^6.1.15",
     "@mui/icons-material": "^5.16.5",
     "@mui/material": "^5.16.5",
+    "@react-pdf/renderer": "^4.1.6",
     "@refinedev/antd": "^5.42.0",
     "@refinedev/cli": "^2.16.21",
     "@refinedev/core": "^4.53.0",
