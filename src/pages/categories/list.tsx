@@ -421,11 +421,13 @@ const hendleModal = (record: any) => {
     }
   }
 
+
+  
 // Função para atualizar o status das condições
 const handleConditionCheck = (condition: string) => {
   setConditionsStatus((prevState) => {
     // Cria uma nova data
-    const currentDate = new Date().toISOString();
+    const currentDate = new Date().toISOString().slice(0, 10);
 
     // Atualiza o status da condição com o objeto desejado
     const updatedStatus = {
@@ -466,7 +468,6 @@ const verifyConditionsSys = async (id) => {
     return [];
   }
 };
-
 
 
 

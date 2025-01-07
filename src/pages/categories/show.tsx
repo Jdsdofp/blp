@@ -616,7 +616,9 @@ export const DocumentShow = () => {
                       }
                       actions={[
                         <Space>
-                          <GeneratePDF data={item} />
+
+                          <GeneratePDF id={item?.d_id} /> 
+                          
                           <Badge count={item?.d_comentarios?.length || null} size="small">
                             <Button
                               icon={<CommentOutlined />}
