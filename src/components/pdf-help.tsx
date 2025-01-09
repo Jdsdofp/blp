@@ -1,5 +1,10 @@
 import { Page, Text, View, Document, StyleSheet, PDFDownloadLink, Image, Svg, Circle, Line, Path } from '@react-pdf/renderer';
+
 import logoSys from '../../public/logo_Sys.png';
+import check from  '/public/feito.png'
+import unCheck from '/public/cruzar.png'
+import warng from '/public/aviso.png'
+
 import { useState } from 'react';
 import axios from 'axios';
 import { API_URL } from '../authProvider';
@@ -384,6 +389,7 @@ const MyDocument = ({data}) => {
             <Text style={{ flex: 1, fontWeight: 'bold', fontSize: 10, marginLeft: 30 }}>Data Início</Text>
             <Text style={{ flex: 1, fontWeight: 'bold', fontSize: 10 }}>Data Final</Text>
             <Text style={{ flex: 1, fontWeight: 'bold', fontSize: 10 }}>Duração</Text>
+            <Text style={{ flex: 1, fontWeight: 'bold', fontSize: 10 }}>Executor</Text>
             <Text style={{ flex: 1, fontWeight: 'bold', fontSize: 10 }}>Status</Text>
           </View>
 
@@ -412,6 +418,13 @@ const MyDocument = ({data}) => {
                 {calculateDaysDifference(value?.dateCreate, value?.date)} {calculateDaysDifference(value?.dateCreate, value?.date) > 1 ? "Dias" : "Dia"}
               </Text>
 
+              <View style={{flex: 1}}>
+                {
+                    value?.users.map(user=>(
+                        <Text style={{flex: 1, fontSize: 5}}>{user?.nome}</Text>
+                    ))
+                  }
+              </View>
 
               <Text style={{ flex: 1, fontSize: 7 }}>
                 {value?.status
@@ -420,6 +433,14 @@ const MyDocument = ({data}) => {
                   ? 'N/A'
                   : 'Pendente'}
               </Text>
+              {
+                value?.status 
+                ? (<Image src={check} style={{width: 8, height: 8}}   />)
+                : value?.status == null
+                ? (<Image src={warng} style={{width: 8, height: 8}}   />)
+                : (<Image src={unCheck} style={{width: 8, height: 8}}   />)
+              }
+              
             </View>
           ))}
 
