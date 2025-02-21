@@ -5,7 +5,7 @@ import { List, Card, Row, Col, Modal, Input, Space, Button, Badge, Mentions, Tag
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL, USER } from "../../authProvider";
-import { Check, Close, ReplyOutlined, Send, ShapeLine, Spa } from "@mui/icons-material";
+import { Check, Close, Delete, DeleteForever, Edit, ReplyOutlined, Send, ShapeLine, Spa } from "@mui/icons-material";
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import dayjs from 'dayjs';
@@ -658,6 +658,9 @@ export const DocumentShow = () => {
                               )
                             }
                           <Button size="small" shape="circle" icon={<ReconciliationOutlined />} disabled={!item?.d_anexo?.arquivo} onClick={async ()=> await openModalViewDoc(item?.d_anexo)}  itemID={item.d_condicionante_id}/>
+
+                          <Button size="small" shape="circle" icon={<DeleteForever fontSize="inherit" htmlColor="red" />}/>
+                          <Button size="small" shape="circle" icon={<Edit fontSize="inherit" />}/>
                         </Space>,
                       ]}
                     >

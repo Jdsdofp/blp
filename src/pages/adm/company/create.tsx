@@ -1,4 +1,4 @@
-import { Button, Card, Col, Form, Input, List, Row, Select, Space, Table, Tag, Typography } from "antd";
+import { Button, Card, Col, Form, Input, List, Row, Select, Table, Tag, Typography } from "antd";
 import AppRegistrationRoundedIcon from '@mui/icons-material/AppRegistrationRounded';
 import { useInvalidate, useTable } from "@refinedev/core";
 import { TableProps } from "antd";
@@ -122,7 +122,10 @@ export const AdmCompanyCreate = () => {
             ),
         }
     ]
-    
+
+
+
+
   return (
     <Row gutter={[16, 16]} justify="center">
       <Col xs={{ span: 24 }} sm={{ span: 16 }} md={{ span: 12 }} lg={{ span: 8 }} xl={{ span: 7 }}>

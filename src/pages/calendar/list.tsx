@@ -40,7 +40,6 @@ const calculateDaysDifference = (date1: any, date2: any) => {
 
 // Função para determinar a cor com base na diferença de dias e no alerta do documento
 const getEventColor = (daysDiff: number, alertDays: number | null) => {
-  console.log('Dif', alertDays)
   if (daysDiff < 0) return 'red'; // Datas no passado
   if (alertDays !== null && daysDiff <= alertDays) return 'yellow'; // Dentro do prazo definido no alerta
   if (daysDiff <= 30) return 'orange'; // Faltam entre 30 e 60 dias (regra padrão)
