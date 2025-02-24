@@ -241,6 +241,7 @@ export const DocumentList = () => {
       key: 'd_id',
       title: 'Nº Loja',
       align: 'center',
+      width: 105,
       ...getColumnSearchProps("Cod", "f_codigo"),
       sorter: (a, b) => a.f_codigo - b.f_codigo,
       render: (_, { f_codigo, f_id }) => (
@@ -545,13 +546,13 @@ const totalDocumentos = tableQueryResult?.data?.data?.reduce((total, filial) => 
                     <h4 style={{fontSize: 20}}>{totalDocumentos}</h4>
                    
             </Card>
-        {situacaoCount && Object.entries(situacaoCount).length > 0 ? (
-            Object.entries(situacaoCount).map(([situacao, count]) => (
-              <>                <Card size="small" hoverable title={situacao} bordered={false} style={{ width: 200, textAlign: 'center' }} key={situacao} styles={{body: {background: colorsCards(situacao), marginBottom: 10}}}>
-                    <h4 style={{fontSize: 20}}>{count}</h4>
-                </Card>
-              </>
-            ))
+            {situacaoCount && Object.entries(situacaoCount).length > 0 ? (
+                Object.entries(situacaoCount).map(([situacao, count]) => (
+                  <>                <Card size="small" hoverable title={situacao} bordered={false} style={{ width: 170, textAlign: 'center' }} key={situacao} styles={{body: {background: colorsCards(situacao), marginBottom: 10}}}>
+                        <h4 style={{fontSize: 20}}>{count}</h4>
+                    </Card>
+                  </>
+                ))
         ) : (
             <p>Nenhuma situação encontrada.</p>
         )}

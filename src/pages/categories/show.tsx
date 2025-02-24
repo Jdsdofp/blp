@@ -1,7 +1,7 @@
 import { CloseCircleOutlined, CommentOutlined, DownOutlined, IssuesCloseOutlined, MessageOutlined, ReconciliationOutlined, UpOutlined } from "@ant-design/icons"
 import { DateField, EditButton, RefreshButton, Show } from "@refinedev/antd";
 import { useList, useTable } from "@refinedev/core";
-import { List, Card, Row, Col, Modal, Input, Space, Button, Badge, Mentions, Tag, Avatar, message, Form, Popover, Switch, Spin, Typography, notification } from "antd";
+import { List, Card, Row, Col, Modal, Input, Space, Button, Badge, Mentions, Tag, Avatar, message, Form, Popover, Switch, Spin, Typography, notification, Popconfirm } from "antd";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL, USER } from "../../authProvider";
@@ -310,7 +310,7 @@ export const DocumentShow = () => {
     user?.u_nome.toLowerCase().includes(searchTerm.toLowerCase())
   );  
 
-  const handleUserToggle = (id) => {
+  const handleUserToggle = (id: number) => {
   setUsers(prevUsers => {
       const updatedUsers = prevUsers.map(user =>
           user.u_id === id ? { ...user, u_atribuido: !user.u_atribuido } : user
@@ -327,7 +327,7 @@ export const DocumentShow = () => {
   };
   
   // Função para chamar a API e listar os usuários
-  const handleUserListAttr = async (dc_id, condicaoNome) => {
+  const handleUserListAttr = async (dc_id: number, condicaoNome: any) => {
     try {
       setLoadingListUserAttr(true);
       
@@ -573,7 +573,28 @@ export const DocumentShow = () => {
     }
   }
 
-  //console.info('Dada...: ', dadosProgress)
+    //console.info('Dada...: ', dadosProgress)
+  const deletarDocumento = async (id: number) =>{
+    try {
+      const response = await axios.delete(`${API_URL}/document/deletar-documento/${id}`);
+      messageApi.warning(`Atenção ${response?.data?.message}`)
+
+
+      await refetch()
+    } catch (error) {
+      console.error("Erro ao obter o status do documento:", error);
+    }
+  }
+
+  const conditionDelete = (item: any)=>{
+    const criadoEm = new Date(item?.criado_em);
+    const agora = new Date();
+    const diffHoras = (agora - criadoEm) / (1000 * 60 * 60); // Diferença em horas
+    const podeExcluir = diffHoras <= 72 && item?.d_situacao === 'Não iniciado';
+
+    return podeExcluir;
+  }
+  
 
   return (
     <Show title={[<><span>{status}</span></>]} canEdit={false} canDelete={false} headerButtons={<RefreshButton onClick={() => atualiza()} />}>
@@ -658,8 +679,24 @@ export const DocumentShow = () => {
                               )
                             }
                           <Button size="small" shape="circle" icon={<ReconciliationOutlined />} disabled={!item?.d_anexo?.arquivo} onClick={async ()=> await openModalViewDoc(item?.d_anexo)}  itemID={item.d_condicionante_id}/>
-
-                          <Button size="small" shape="circle" icon={<DeleteForever fontSize="inherit" htmlColor="red" />}/>
+                          
+                          {/* ação de exclusão de documento */}
+                          <Popconfirm 
+                            title="Tem certeza que deseja excluir este processo?"
+                            onConfirm={async () => await deletarDocumento(item?.d_id)}
+                            disabled={!conditionDelete(item)} // Bloqueia o Popconfirm se não puder excluir
+                            
+                          >
+                            <Popover title="Exclusão bloqueada: prazo de 72h excedido." trigger={conditionDelete(item) ? null : 'hover'}>
+                              <Button 
+                                size="small" 
+                                shape="circle" 
+                                icon={<DeleteForever fontSize="inherit" htmlColor={conditionDelete(item) ? "red" : "gray"} />} 
+                                disabled={!conditionDelete(item)} 
+                              />
+                            </Popover>
+                          </Popconfirm>
+                          
                           <Button size="small" shape="circle" icon={<Edit fontSize="inherit" />}/>
                         </Space>,
                       ]}
@@ -1041,7 +1078,7 @@ export const DocumentShow = () => {
         }
       </Modal>
 
-
+      {contextHolder}  
     </Show>
   );
 };
