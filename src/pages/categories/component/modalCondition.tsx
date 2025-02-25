@@ -371,7 +371,7 @@ export const ModalConditions = ({
                                         toggleCondition(key);
                                         hendleCheck();
                                       }}
-                                      style={{ color: value?.users?.includes(userTK) && value?.statusProcesso ==  docStatusId ? 'red' : 'gray  ', cursor: 'pointer' }}
+                                      style={{ color: value?.users?.includes(userTK) && value?.statusProcesso ==  docStatusId ? 'red' : 'gray', cursor: 'pointer' }}
                                     />
                                   </Button>
                                 </Popover>

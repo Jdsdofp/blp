@@ -155,16 +155,18 @@ export const ListCondition = () => {
         }
     //} configuração de atualizar condição especifica
 
-        const deleteConditionOne = async (data: any) =>{
+        const deleteConditionOne = async (record: any) =>{
             try {
-                console.info('Condição recebida: ', data)
+                console.info('Condição recebida: ', record)
                 console.info('Id da condição: ', idConditionModal)
 
                 const payload = {
-                    c_condicao: data?.c_condicao
+                    c_condicao: record
                 }
 
-                const response = await axios.delete(`${API_URL}/condition/deletar-condicao/${idConditionModal}`, payload)
+                console.log('Payload: ', record)
+
+                const response = await axios.post(`${API_URL}/condition/deletar-condicao/${idConditionModal}`, {c_condicao: record})
                 await setListCond(response?.data?.condicoes)
                 await condtionsResult.refetch()
                 messageApi.error(response?.data?.message)

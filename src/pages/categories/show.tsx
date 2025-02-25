@@ -22,6 +22,8 @@ import ProgressoGrafico, { ModalProress } from "./component/modalProgress";
 import ReportPDF, { DownloadButton } from "../../components/pdf-help";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import GeneratePDF from "../../components/pdf-help";
+import ModalEdit from "./component/drawerEdit";
+import DrawerEdit from "./component/drawerEdit";
 dayjs.extend(relativeTime);
 dayjs.locale('pt-br');
 
@@ -145,8 +147,11 @@ export const DocumentShow = () => {
   const [openProgressId, setOpenProgressId] = useState(null);
   const [dc_id, setDc_Id] = useState<any>()
   const [ dadosProgress, setDadosProgress] = useState<any>()
-  const [loadProgress, setLoadProgress] = useState(false)
+  const [loadProgress, setLoadProgress] = useState(false);
 
+  //MODEL EDIT DOC
+  const [openModalEdit, setOpenModalEdit] = useState<boolean>(false)
+  const [dataModalEdit, setDataModalEdit] = useState<Object>({})
 
   const handleSendComment = async () => {
     try {
@@ -573,7 +578,7 @@ export const DocumentShow = () => {
     }
   }
 
-    //console.info('Dada...: ', dadosProgress)
+
   const deletarDocumento = async (id: number) =>{
     try {
       const response = await axios.delete(`${API_URL}/document/deletar-documento/${id}`);
@@ -595,6 +600,7 @@ export const DocumentShow = () => {
     return podeExcluir;
   }
   
+
 
   return (
     <Show title={[<><span>{status}</span></>]} canEdit={false} canDelete={false} headerButtons={<RefreshButton onClick={() => atualiza()} />}>
@@ -684,7 +690,7 @@ export const DocumentShow = () => {
                           <Popconfirm 
                             title="Tem certeza que deseja excluir este processo?"
                             onConfirm={async () => await deletarDocumento(item?.d_id)}
-                            disabled={!conditionDelete(item)} // Bloqueia o Popconfirm se não puder excluir
+                            // disabled={!conditionDelete(item)}
                             
                           >
                             <Popover title="Exclusão bloqueada: prazo de 72h excedido." trigger={conditionDelete(item) ? null : 'hover'}>
@@ -692,12 +698,27 @@ export const DocumentShow = () => {
                                 size="small" 
                                 shape="circle" 
                                 icon={<DeleteForever fontSize="inherit" htmlColor={conditionDelete(item) ? "red" : "gray"} />} 
-                                disabled={!conditionDelete(item)} 
+                                // disabled={!conditionDelete(item)} 
                               />
                             </Popover>
                           </Popconfirm>
+
+
+                          {/* ação de exclusão de documento */}
                           
-                          <Button size="small" shape="circle" icon={<Edit fontSize="inherit" />}/>
+                            <Popover title="Edição bloqueada: prazo de 72h excedido." trigger={conditionDelete(item) ? null : 'hover'}>
+                              <Button 
+                                size="small" 
+                                shape="circle" 
+                                icon={<Edit fontSize="inherit" htmlColor={conditionDelete(item) ? "default" : "gray"} />} 
+                                // disabled={!conditionDelete(item)} 
+
+                                onClick={async ()=>{ await setOpenModalEdit(true); await setDataModalEdit(item)}}
+                                // hidden={item?.d_situacao === 'Não iniciado' || item?.d_situacao === 'Em processo' ? false : true}
+
+                              />
+                            </Popover>
+                            
                         </Space>,
                       ]}
                     >
@@ -1078,7 +1099,15 @@ export const DocumentShow = () => {
         }
       </Modal>
 
-      {contextHolder}  
+
+      <DrawerEdit
+        title={`Edição de Documento - ${dataModalEdit?.tipo_documentos?.td_desc} - LJ ${dataModalEdit?.filiais?.f_codigo}`}
+        open={openModalEdit}
+        onCancel={() => setOpenModalEdit(false)}
+        data={dataModalEdit}
+      />
+      {contextHolder}
+
     </Show>
   );
 };
