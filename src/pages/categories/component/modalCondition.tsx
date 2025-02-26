@@ -7,6 +7,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import moment from "moment";
 import axios from "axios";
 import { API_URL } from "../../../authProvider";
+import dayjs from "dayjs";
 
 
 const { Search } = Input;
@@ -53,7 +54,8 @@ export const ModalConditions = ({
     loadingCloseAll,
     switchChecked,
     handleSwitchChange,
-    loadProcss
+    loadProcss,
+    d_flag_vitalicio
 }) =>{
   
   const [messageApi] = message.useMessage()
@@ -121,6 +123,11 @@ export const ModalConditions = ({
     }
   };
 
+  useEffect(() => {
+    if (d_flag_vitalicio) {
+      setDataVencimento(dayjs()); // Define a data de vencimento como a data atual
+    }
+  }, [d_flag_vitalicio]);
   
   
   return (
@@ -207,10 +214,10 @@ export const ModalConditions = ({
                         style={{ borderRadius: 20 }}
                         onChange={(date) => setDataVencimento(date)}
                         value={dataVencimento}
-                        disabled={dataOneDoc?.d_num_protocolo <= 0}
+                        disabled={dataOneDoc?.d_num_protocolo <= 0 || d_flag_vitalicio}
                       />
                       <div style={{position: 'absolute', left: 20, bottom: 1, paddingBottom: 3  }}>
-                        <Checkbox disabled={!dataVencimento} onChange={(e)=>setD_flag_vitalicio(e?.target?.checked)}>
+                        <Checkbox disabled={!dataEmissao} onChange={(e)=>setD_flag_vitalicio(e?.target?.checked)}>
                         <span style={{fontSize: 10}}>Vecimento indeterminado ?</span>
                         </Checkbox>
                       </div>

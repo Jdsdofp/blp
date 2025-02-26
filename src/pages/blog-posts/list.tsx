@@ -1,8 +1,11 @@
 
 
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts'
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, LabelList, Legend } from 'recharts'
 import 'leaflet/dist/leaflet.css';
+import { useContext } from 'react';
+import { ColorModeContext } from '../../contexts/color-mode';
+
 
 const data = [
   {
@@ -414,119 +417,266 @@ const data = [
       ]
   }];
 
+  
+    const custos = [
+        {
+            "dd_id": 140,
+            "dd_id_documento": 673,
+            "dd_descricao": "Taxa Licença Ambiental de Operação",
+            "dd_valor": "553.74",
+            "dd_data_entrada": "2024-12-05",
+            "dd_data_vencimento": "2024-12-17",
+            "dd_tipo": "Taxa",
+            "dd_usuario": "Alexandra Moura",
+            "dd_criado_em": "2025-02-10T20:52:18.089Z",
+            "d_num_ref": ""
+        },
+        {
+            "dd_id": 141,
+            "dd_id_documento": 674,
+            "dd_descricao": "Taxa Alvará de Funcionamento",
+            "dd_valor": "481.41",
+            "dd_data_entrada": "2024-12-04",
+            "dd_data_vencimento": "2024-12-12",
+            "dd_tipo": "Taxa",
+            "dd_usuario": "Alexandra Moura",
+            "dd_criado_em": "2025-02-10T20:53:43.146Z",
+            "d_num_ref": ""
+        },
+        {
+            "dd_id": 144,
+            "dd_id_documento": 794,
+            "dd_descricao": "Taxa Renovação Alv Func",
+            "dd_valor": "460.30",
+            "dd_data_entrada": "2025-01-07",
+            "dd_data_vencimento": "2025-01-10",
+            "dd_tipo": "Taxa",
+            "dd_usuario": "Lorenna Matos",
+            "dd_criado_em": "2025-02-19T21:47:43.365Z",
+            "d_num_ref": "2956258002771252317"
+        },
+        {
+            "dd_id": 145,
+            "dd_id_documento": 791,
+            "dd_descricao": "Renovação Alv Func",
+            "dd_valor": "460.30",
+            "dd_data_entrada": "2025-01-07",
+            "dd_data_vencimento": "2025-01-10",
+            "dd_tipo": "Taxa",
+            "dd_usuario": "Lorenna Matos",
+            "dd_criado_em": "2025-02-19T21:55:16.765Z",
+            "d_num_ref": ""
+        }
+    ]
+
+
 export const BlogPostList = () => {
-  // Cores para status
+  const { mode, setMode } = useContext(ColorModeContext);
+  
+    // Cores para status
   const colors = {
-    'Emitido': '#4CAF50',
-    'Vencido': '#F44336',
-    'Em processo': '#FFC107',
-    'Irregular': '#9E9E9E'
+    'Emitido': '#259c3b',
+    'Vencido': '#fc0f03',
+    'Em processo': '#00ffff',
+    'Irregular': '#e0aa07'
   };
 
   // Calcular totais
   const totalFiliais = data.length;
   const totalDocumentos = data.reduce((acc, filial) => acc + filial.documentos.length, 0);
 
+  // Novos cálculos para custos
+  const totalCustos = custos.reduce((acc, custo) => acc + parseFloat(custo.dd_valor), 0);
+  const custosPorTipo = custos.reduce((acc, custo) => {
+    acc[custo.dd_tipo] = (acc[custo.dd_tipo] || 0) + parseFloat(custo.dd_valor);
+    return acc;
+  }, {});
+
+
+
   return (
     <div style={{ padding: 20 }}>
       <h1>Dashboard de Filiais</h1>
       
       {/* Cards de Resumo */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, marginBottom: 20 }}>
-        <div style={{ background: '#fff', padding: 20, borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, marginBottom: 20, }}>
+        <div style={{ background: mode === 'dark' ? '#222' : '#fff', padding: 20, borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
           <h3>Filiais Ativas</h3>
           <p style={{ fontSize: 24, fontWeight: 'bold' }}>{totalFiliais}</p>
         </div>
-        <div style={{ background: '#fff', padding: 20, borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+        <div style={{ background: mode === 'dark' ? '#222' : '#fff', padding: 20, borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
           <h3>Total Documentos</h3>
           <p style={{ fontSize: 24, fontWeight: 'bold' }}>{totalDocumentos}</p>
         </div>
+        <div style={{ background: mode === 'dark' ? '#222' : '#fff', padding: 20, borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+          <h3>Total de Custos</h3>
+          <p style={{ fontSize: 24, fontWeight: 'bold' }}>
+            {totalCustos.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+          </p>
+        </div>
       </div>
 
-      {/* Mapa */}
-      <div style={{ height: 400, marginBottom: 20, background: '#fff', borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-        <MapContainer 
-          center={[-5.071175743778366, -42.78262704138441]} 
-          zoom={13} 
-          style={{ height: '100%', borderRadius: 8 }}
-        >
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          {data.map(filial => (
-            <Marker 
-              key={filial.f_id} 
-              position={[filial.f_location.coordinates[1], filial.f_location.coordinates[0]]}
-            >
-              <Popup>
-                <strong>{filial.f_nome}</strong><br/>
-                {filial.f_cidade}/{filial.f_uf}
-              </Popup>
-            </Marker>
-          ))}
-        </MapContainer>
+          {/* Gráfico de Status */}
+          <div style={{ background: mode === 'dark' ? '#222' : '#fff', padding: 20, borderRadius: 8, marginBottom: 20, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+              <h3 style={{ color: mode === 'dark' ? '#fff' : '#000' }}>Situação dos Documentos</h3>
+              <PieChart width={400} height={300} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                  <Pie
+                      data={data.flatMap(f => f.documentos).reduce((acc, doc) => {
+                          const entry = acc.find(d => d?.name === doc?.d_situacao);
+                          entry ? entry.value++ : acc.push({ name: doc?.d_situacao, value: 1 });
+                          return acc;
+                      }, [])}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  >
+                      {Object.entries(colors).map(([name, color]) => (
+                          <Cell key={name} fill={color} />
+                      ))}
+
+                  </Pie>
+                  <Tooltip
+                      contentStyle={{
+                          background: mode === 'dark' ? '#333' : '#fff',
+                          border: 'none',
+                          borderRadius: 8
+                      }}
+                      formatter={(value, name) => [
+                          `${value} documentos`,
+                          name,
+                      ]}
+                  />
+                  {/* <Legend
+                      layout="radial"
+                      align="right"
+                      verticalAlign="middle"
+                      formatter={(value) => (
+                          <span style={{ color: mode === 'dark' ? '#fff' : '#000' }}>
+                              {value}
+                          </span>
+                      )}
+                  /> */}
+              </PieChart>
+          </div>
+
+          {/* Lista de Alertas */}
+          <div style={{ background: mode === 'dark' ? '#222' : '#fff', padding: 20, borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+              <h3>Documentos com Alerta</h3>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                      <tr>
+                          <th>Filial</th>
+                          <th>Documento</th>
+                          <th>Situação</th>
+                          <th>Dias Alerta</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      {data.map(filial =>
+                          filial.documentos.map(doc => (
+                              <tr key={doc.d_id} style={{ borderTop: '1px solid #eee' }}>
+                                  <td style={{ padding: 10 }}>{filial.f_nome}</td>
+                                  <td style={{ padding: 10 }}>{doc.tipo_documentos.td_desc}</td>
+                                  <td style={{ padding: 10, color: colors[doc.d_situacao] }}>
+                                      {doc.d_situacao}
+                                  </td>
+                                  <td style={{ padding: 10 }}>{doc.tipo_documentos.td_dia_alert || '-'}</td>
+                              </tr>
+                          ))
+                      )}
+                  </tbody>
+              </table>
+          </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
+        {/* Gráfico de Distribuição de Custos */}
+        <div style={{ background: mode === 'dark' ? '#222' : '#fff', padding: 20, borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+          <h3>Distribuição de Custos por Tipo</h3>
+          <BarChart width={500} height={300} data={Object.entries(custosPorTipo).map(([tipo, valor]) => ({ tipo, valor }))}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="tipo" />
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey="valor" fill="#8884d8" />
+          </BarChart>
+        </div>
+
+        <div style={{ background: mode === 'dark' ? '#222' : '#fff', padding: 20, borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+          <h3>Próximos Vencimentos</h3>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                <th>Descrição</th>
+                <th>Valor</th>
+                <th>Vencimento</th>
+                <th>Tipo</th>
+              </tr>
+            </thead>
+            <tbody>
+              {custos
+                .sort((a, b) => new Date(a.dd_data_vencimento) - new Date(b.dd_data_vencimento))
+                .slice(0, 5)
+                .map(custo => (
+                  <tr key={custo.dd_id} style={{ borderTop: '1px solid #eee' }}>
+                    <td style={{ padding: 10 }}>{custo.dd_descricao}</td>
+                    <td style={{ padding: 10 }}>
+                      {parseFloat(custo.dd_valor).toLocaleString('pt-BR', { 
+                        style: 'currency', 
+                        currency: 'BRL' 
+                      })}
+                    </td>
+                    <td style={{ padding: 10 }}>
+                      {new Date(custo.dd_data_vencimento).toLocaleDateString('pt-BR')}
+                    </td>
+                    <td style={{ padding: 10 }}>{custo.dd_tipo}</td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {/* Gráfico de Status */}
-      <div style={{ background: '#fff', padding: 20, borderRadius: 8, marginBottom: 20, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-        <h3>Situação dos Documentos</h3>
-        <PieChart width={400} height={300}>
-          <Pie
-            data={data.flatMap(f => f.documentos).reduce((acc, doc) => {
-              const entry = acc.find(d => d.name === doc.d_situacao);
-              entry ? entry.value++ : acc.push({ name: doc.d_situacao, value: 1 });
-              return acc;
-            }, [])}
-            dataKey="value"
-          >
-            {Object.entries(colors).map(([name, color]) => (
-              <Cell key={name} fill={color} />
-            ))}
-          </Pie>
-          <Tooltip />
-        </PieChart>
-      </div>
 
-      {/* Lista de Alertas */}
-      <div style={{ background: '#fff', padding: 20, borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-        <h3>Documentos com Alerta</h3>
+      <div style={{ background: mode === 'dark' ? '#222' : '#fff', padding: 20, marginBottom: 20, borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+        <h3>Detalhamento de Custos</h3>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr>
-              <th>Filial</th>
-              <th>Documento</th>
-              <th>Situação</th>
-              <th>Dias Alerta</th>
+              <th>Descrição</th>
+              <th>Valor</th>
+              <th>Entrada</th>
+              <th>Vencimento</th>
+              <th>Responsável</th>
             </tr>
           </thead>
           <tbody>
-            {data.map(filial =>
-              filial.documentos.map(doc => (
-                <tr key={doc.d_id} style={{ borderTop: '1px solid #eee' }}>
-                  <td style={{ padding: 10 }}>{filial.f_nome}</td>
-                  <td style={{ padding: 10 }}>{doc.tipo_documentos.td_desc}</td>
-                  <td style={{ padding: 10, color: colors[doc.d_situacao] }}>
-                    {doc.d_situacao}
-                  </td>
-                  <td style={{ padding: 10 }}>{doc.tipo_documentos.td_dia_alert || '-'}</td>
-                </tr>
-              ))
-            )}
+            {custos.map(custo => (
+              <tr key={custo.dd_id} style={{ borderTop: '1px solid #eee' }}>
+                <td style={{ padding: 10 }}>{custo.dd_descricao}</td>
+                <td style={{ padding: 10 }}>
+                  {parseFloat(custo.dd_valor).toLocaleString('pt-BR', { 
+                    style: 'currency', 
+                    currency: 'BRL' 
+                  })}
+                </td>
+                <td style={{ padding: 10 }}>
+                  {new Date(custo.dd_data_entrada).toLocaleDateString('pt-BR')}
+                </td>
+                <td style={{ padding: 10 }}>
+                  {new Date(custo.dd_data_vencimento).toLocaleDateString('pt-BR')}
+                </td>
+                <td style={{ padding: 10 }}>{custo.dd_usuario}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
+
+
+
     </div>
   );
 };
-
-
-
-// export const BlogPostList = () => {
-
-//   return (
-//     <div style={{all: 'inherit', marginLeft: 600}}>
-//       <h1 >Dashboard em desenvolvimento ...</h1>
-//       <img src='../public/rocket-svgrepo-com.png'/>
-//     </div>
-//   );
-// };

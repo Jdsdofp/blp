@@ -6,6 +6,8 @@ import { LogoutOutlined, SettingOutlined } from "@ant-design/icons";
 import { Button, Popover } from "antd/lib";
 import { Avatar } from "antd";
 import { AccountSettings } from "./header/account-settings";
+import { OnlinePrediction, OnlinePredictionOutlined, OnlinePredictionTwoTone } from "@mui/icons-material";
+import OnlineUsersDrawer from "./header/usersOnline";
 
 
 
@@ -13,6 +15,7 @@ export const CurentUser: React.FC = () =>{
     const { data: user } = useGetIdentity<IUser>();
     const {mutate: logout} = useLogout();
     const [ openModalUser, setOpenModalUser] = useState(false);
+    const [openDrwOn, setOpenDwOn] = useState<boolean>(false)
 
     const getInitialsAvatar = (e: string) =>{
       const nomeArrays = e.split(" ");
@@ -37,10 +40,10 @@ export const CurentUser: React.FC = () =>{
           <div
             style={{
               borderTop: "1px solid #d9d9d9",
-              padding: "4px",
+              padding: "1px",
               display: "flex",
               flexDirection: "column",
-              gap: "4px",
+              gap: "4px"
             }}
           >
             <Button
@@ -52,6 +55,15 @@ export const CurentUser: React.FC = () =>{
               
             >
               Configurações de Conta
+            </Button>
+            <Button
+              style={{ textAlign: "left" }}
+              icon={<OnlinePredictionTwoTone />}
+              type="text"
+              block
+              onClick={()=>setOpenDwOn(true)}
+            >
+              Usuários Online
             </Button>
             <Button
               style={{ textAlign: "left" }}
@@ -85,13 +97,20 @@ export const CurentUser: React.FC = () =>{
 
           {
             user && (
-              <AccountSettings
-                openModalUser={openModalUser}
-                setOpenModalUser={setOpenModalUser}
-                userName={user?.nome}
-              />
+              <>
+                <AccountSettings
+                  openModalUser={openModalUser}
+                  setOpenModalUser={setOpenModalUser}
+                  userName={user?.nome}
+                />
+
+                <OnlineUsersDrawer openDrwOn={openDrwOn} setOpenDrwOn={setOpenDwOn}/>
+              </>
+              
             )
           }
+
+
         </>
       );
 }

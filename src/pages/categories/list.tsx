@@ -19,6 +19,7 @@ import axios from "axios";
 import { API_URL } from "../../authProvider";
 import { io } from 'socket.io-client';
 import { useNotifications } from "../../contexts/NotificationsContext";
+import socket from "../../config/socket";
 
 interface IDocuments {
   f_id: number;
@@ -53,6 +54,30 @@ const formatCNPJ = (cnpj: any) => {
 };
 
 
+type PaginationState = {
+  current: number;
+  pageSize: number;
+};
+
+const debounce = <F extends (...args: any[]) => void>(func: F, wait: number) => {
+  let timeoutId: number | null = null;
+  
+  const debounced = (...args: Parameters<F>) => {
+    if (timeoutId !== null) {
+      window.clearTimeout(timeoutId);
+    }
+    timeoutId = window.setTimeout(() => func(...args), wait);
+  };
+
+  debounced.cancel = () => {
+    if (timeoutId !== null) {
+      window.clearTimeout(timeoutId);
+    }
+  };
+
+  return debounced;
+};
+
 
 export const DocumentList = () => {
   const [isModal, setIsModal] = useState(false)
@@ -68,7 +93,10 @@ export const DocumentList = () => {
   const [seachedColumn, setSearchedColumn] = useState('');
   const [selectedUFs, setSelectedUFs] = useState<string[]>([]);
   const [isChecked, setIsChecked] = useState<boolean>()
+  const [isCheckedNA, setIsCheckedNA] = useState<boolean>()
   const { notifications, loading, fetchNotifications } = useNotifications();
+
+
 
   useEffect(() => {
     fetchNotifications();
@@ -124,14 +152,53 @@ export const DocumentList = () => {
     ...cond
   }))
 
-  
+
+  const getInitialPagination = (): PaginationState => {
+    try {
+      const saved = localStorage.getItem("documentPagination");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          current: Number(parsed.current) || 1,
+          pageSize: Number(parsed.pageSize) || 10
+        };
+      }
+    } catch (error) {
+      console.error("Error loading pagination state:", error);
+    }
+    return { current: 1, pageSize: 10 };
+  };
 
 
   const { tableProps, tableQueryResult } = useTable({
     resource: 'document', meta: { endpoint: 'listar-documentos-filais' },
     syncWithLocation: false,
-    liveMode: "auto"
+    liveMode: "auto",
+    pagination: getInitialPagination()
   });
+  
+  useEffect(() => {
+    const savePagination = debounce((state: PaginationState) => {
+      localStorage.setItem("documentPagination", JSON.stringify(state));
+    }, 300);
+
+    if (tableProps.pagination) {
+      savePagination({
+        current: tableProps.pagination.current || 1,
+        pageSize: tableProps.pagination.pageSize || 10
+      });
+    }
+
+    return () => {
+      savePagination.cancel();
+    };
+  }, [tableProps.pagination?.current, tableProps.pagination?.pageSize]);
+
+
+
+
+
+
   const data = tableQueryResult.data?.data || [];
 
   const situacaoCount = tableQueryResult.data?.data
@@ -312,7 +379,7 @@ export const DocumentList = () => {
         }, {});
         
     
-        const statusOrder = ['Vencido', 'Não iniciado', 'Irregular', 'Em processo', 'Emitido'];
+        const statusOrder = ['Vencido', 'Não iniciado', 'Irregular', 'Em processo', 'Emitido', 'Não Aplicavél'];
     
         const getColor = (status) => {
           switch (status) {
@@ -320,6 +387,7 @@ export const DocumentList = () => {
             case 'Em processo': return 'cyan';
             case 'Irregular': return 'orange';
             case 'Emitido': return 'green';
+            case 'Não Aplicavél': return 'yellow';
             default: return 'default';
           }
         };
@@ -364,6 +432,7 @@ export const DocumentList = () => {
                       {status === 'Não iniciado' && <ExclamationCircleOutlined />}
                       {status === 'Irregular' && <StopOutlined />}
                       {status === 'Emitido' && <CheckCircleOutlined />}
+                      {status === 'Não Aplicavél' && <ExclamationCircleOutlined />}
                       <span style={{ fontSize: 10, marginLeft: 4 }}>{status}</span>
                     </Badge>
                   </Popover>
@@ -514,6 +583,8 @@ const colorsCards = (status: any) => {
       return 'rgba(255, 165, 0, 0.3)';  // Laranja com 30% de opacidade
     case 'Emitido':
       return 'rgba(0, 255, 0, 0.3)';  // Verde com 30% de opacidade
+    case 'Não Aplicavél':
+      return 'rgba(255, 238, 0, 0.6)'
     default:
       return 'rgba(169, 169, 169, 0.3)';  // Cor padrão (cinza claro) com 30% de opacidade
   }
@@ -577,16 +648,31 @@ const totalDocumentos = tableQueryResult?.data?.data?.reduce((total, filial) => 
             {Object.entries(conditionsStatus || {}).filter(([key, value]) => value?.status === false).length > 0 ? 
               
             (
+              <>
+                <Checkbox 
+                checked={isChecked}
+                onChange={(e) => {
+                  setIsChecked(e.target.checked)
+                  form.setFieldsValue({d_flag_stts: e.target.checked ? 'Irregular' : null})
+                  
+                }
+                
+              } disabled={isCheckedNA}>
+                Irregular
+              </Checkbox>
+
               <Checkbox 
-              checked={isChecked}
+              checked={isCheckedNA}
               onChange={(e) => {
-                setIsChecked(e.target.checked)
-                form.setFieldsValue({d_flag_stts: e.target.checked ? 'Irregular' : null})
+                setIsCheckedNA(e.target.checked)
+                form.setFieldsValue({d_flag_stts: e.target.checked ? 'Não Aplicavél' : null})
                 
               }
-            }>
-              Irregular
+            } disabled={isChecked}>
+              Não Aplicavel
             </Checkbox>  
+              
+              </>
             ) : null
             }
             <div>

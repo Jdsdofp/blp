@@ -445,7 +445,6 @@ export const DocumentShow = () => {
       try {
         setLoadProcss(true)
         const dc_id = conditionID;
-
         
         const payload = {
           d_data_emissao: dataEmissao,
@@ -453,6 +452,7 @@ export const DocumentShow = () => {
           d_num_protocolo: numProtocolo,
           d_flag_vitalicio: d_flag_vitalicio
         }
+
 
         console.log('Payload enviado: ', payload)
 
@@ -797,6 +797,7 @@ export const DocumentShow = () => {
         dataVencimento={dataVencimento}
         setDataVencimento={setDataVencimento}
         setD_flag_vitalicio={setD_flag_vitalicio}
+        d_flag_vitalicio={d_flag_vitalicio}
         handleCloseProcss={handleCloseProcss}
         handleCloseAllProcss={handleCloseAllProcss}
         conditions={conditions}
