@@ -453,7 +453,7 @@ export const DocumentShow = () => {
           d_flag_vitalicio: d_flag_vitalicio
         }
 
-
+        
         console.log('Payload enviado: ', payload)
 
         const {data} = await axios.put(`${API_URL}/document-condition/fechar-processo/${dc_id}`, payload);

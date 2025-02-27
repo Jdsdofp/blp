@@ -32,6 +32,7 @@ export default function OnlineUsersDrawer({ openDrwOn, setOpenDrwOn }: Props) {
     };
   }, []); // Executa apenas uma vez ao montar
 
+
   return (
     <>
       {/* Drawer lateral */}

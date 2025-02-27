@@ -3,8 +3,11 @@
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, LabelList, Legend } from 'recharts'
 import 'leaflet/dist/leaflet.css';
-import { useContext } from 'react';
+import { useContext, useEffect } from 'react';
 import { ColorModeContext } from '../../contexts/color-mode';
+import axios from 'axios';
+import { API_URL } from '../../authProvider';
+import msgpack from 'msgpack-lite';
 
 
 const data = [
@@ -493,28 +496,47 @@ export const BlogPostList = () => {
   }, {});
 
 
+  useEffect(() => {
+    axios
+      .get(`${API_URL}/document/list-test`, { responseType: 'arraybuffer' }) // Garante que a resposta seja em binário
+      .then((response) => {
+        const bufferData = new Uint8Array(response?.data); // Converte para Uint8Array
+        console.log('Dados brutos recebidos:', bufferData);  // Verifica os dados antes de decodificar
+  
+        try {
+          const decodedData = msgpack.decode(bufferData); // Tenta decodificar os dados
+          console.log('Protocolo: ', decodedData);
+        } catch (err) {
+          console.error('Erro ao decodificar os dados:', err);
+        }
+      })
+      .catch((err) => {
+        console.error('Erro ao obter os dados:', err);
+      });
+  }, []);
+
 
   return (
-    <div style={{ padding: 20 }}>
-      <h1>Dashboard de Filiais</h1>
-      
-      {/* Cards de Resumo */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, marginBottom: 20, }}>
-        <div style={{ background: mode === 'dark' ? '#222' : '#fff', padding: 20, borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-          <h3>Filiais Ativas</h3>
-          <p style={{ fontSize: 24, fontWeight: 'bold' }}>{totalFiliais}</p>
-        </div>
-        <div style={{ background: mode === 'dark' ? '#222' : '#fff', padding: 20, borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-          <h3>Total Documentos</h3>
-          <p style={{ fontSize: 24, fontWeight: 'bold' }}>{totalDocumentos}</p>
-        </div>
-        <div style={{ background: mode === 'dark' ? '#222' : '#fff', padding: 20, borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-          <h3>Total de Custos</h3>
-          <p style={{ fontSize: 24, fontWeight: 'bold' }}>
-            {totalCustos.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-          </p>
-        </div>
-      </div>
+      <div style={{ padding: 20 }}>
+          <h1>Dashboard de Filiais</h1>
+
+          {/* Cards de Resumo */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, marginBottom: 20, }}>
+              <div style={{ background: mode === 'dark' ? '#222' : '#fff', padding: 20, borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+                  <h3>Filiais Ativas</h3>
+                  <p style={{ fontSize: 24, fontWeight: 'bold' }}>{totalFiliais}</p>
+              </div>
+              <div style={{ background: mode === 'dark' ? '#222' : '#fff', padding: 20, borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+                  <h3>Total Documentos</h3>
+                  <p style={{ fontSize: 24, fontWeight: 'bold' }}>{totalDocumentos}</p>
+              </div>
+              <div style={{ background: mode === 'dark' ? '#222' : '#fff', padding: 20, borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+                  <h3>Total de Custos</h3>
+                  <p style={{ fontSize: 24, fontWeight: 'bold' }}>
+                      {totalCustos.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                  </p>
+              </div>
+          </div>
 
           {/* Gráfico de Status */}
           <div style={{ background: mode === 'dark' ? '#222' : '#fff', padding: 20, borderRadius: 8, marginBottom: 20, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
@@ -591,92 +613,92 @@ export const BlogPostList = () => {
               </table>
           </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
-        {/* Gráfico de Distribuição de Custos */}
-        <div style={{ background: mode === 'dark' ? '#222' : '#fff', padding: 20, borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-          <h3>Distribuição de Custos por Tipo</h3>
-          <BarChart width={500} height={300} data={Object.entries(custosPorTipo).map(([tipo, valor]) => ({ tipo, valor }))}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="tipo" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="valor" fill="#8884d8" />
-          </BarChart>
-        </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
+              {/* Gráfico de Distribuição de Custos */}
+              <div style={{ background: mode === 'dark' ? '#222' : '#fff', padding: 20, borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+                  <h3>Distribuição de Custos por Tipo</h3>
+                  <BarChart width={500} height={300} data={Object.entries(custosPorTipo).map(([tipo, valor]) => ({ tipo, valor }))}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="tipo" />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="valor" fill="#8884d8" />
+                  </BarChart>
+              </div>
 
-        <div style={{ background: mode === 'dark' ? '#222' : '#fff', padding: 20, borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-          <h3>Próximos Vencimentos</h3>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr>
-                <th>Descrição</th>
-                <th>Valor</th>
-                <th>Vencimento</th>
-                <th>Tipo</th>
-              </tr>
-            </thead>
-            <tbody>
-              {custos
-                .sort((a, b) => new Date(a.dd_data_vencimento) - new Date(b.dd_data_vencimento))
-                .slice(0, 5)
-                .map(custo => (
-                  <tr key={custo.dd_id} style={{ borderTop: '1px solid #eee' }}>
-                    <td style={{ padding: 10 }}>{custo.dd_descricao}</td>
-                    <td style={{ padding: 10 }}>
-                      {parseFloat(custo.dd_valor).toLocaleString('pt-BR', { 
-                        style: 'currency', 
-                        currency: 'BRL' 
-                      })}
-                    </td>
-                    <td style={{ padding: 10 }}>
-                      {new Date(custo.dd_data_vencimento).toLocaleDateString('pt-BR')}
-                    </td>
-                    <td style={{ padding: 10 }}>{custo.dd_tipo}</td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
-        </div>
+              <div style={{ background: mode === 'dark' ? '#222' : '#fff', padding: 20, borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+                  <h3>Próximos Vencimentos</h3>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                          <tr>
+                              <th>Descrição</th>
+                              <th>Valor</th>
+                              <th>Vencimento</th>
+                              <th>Tipo</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          {custos
+                              .sort((a, b) => new Date(a?.dd_data_vencimento) - new Date(b?.dd_data_vencimento))
+                              .slice(0, 5)
+                              .map(custo => (
+                                  <tr key={custo?.dd_id} style={{ borderTop: '1px solid #eee' }}>
+                                      <td style={{ padding: 10 }}>{custo?.dd_descricao}</td>
+                                      <td style={{ padding: 10 }}>
+                                          {parseFloat(custo?.dd_valor).toLocaleString('pt-BR', {
+                                              style: 'currency',
+                                              currency: 'BRL'
+                                          })}
+                                      </td>
+                                      <td style={{ padding: 10 }}>
+                                          {new Date(custo?.dd_data_vencimento).toLocaleDateString('pt-BR')}
+                                      </td>
+                                      <td style={{ padding: 10 }}>{custo?.dd_tipo}</td>
+                                  </tr>
+                              ))}
+                      </tbody>
+                  </table>
+              </div>
+          </div>
+
+
+          <div style={{ background: mode === 'dark' ? '#222' : '#fff', padding: 20, marginBottom: 20, borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+              <h3>Detalhamento de Custos</h3>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                      <tr>
+                          <th>Descrição</th>
+                          <th>Valor</th>
+                          <th>Entrada</th>
+                          <th>Vencimento</th>
+                          <th>Responsável</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      {custos.map(custo => (
+                          <tr key={custo.dd_id} style={{ borderTop: '1px solid #eee' }}>
+                              <td style={{ padding: 10 }}>{custo?.dd_descricao}</td>
+                              <td style={{ padding: 10 }}>
+                                  {parseFloat(custo.dd_valor).toLocaleString('pt-BR', {
+                                      style: 'currency',
+                                      currency: 'BRL'
+                                  })}
+                              </td>
+                              <td style={{ padding: 10 }}>
+                                  {new Date(custo.dd_data_entrada).toLocaleDateString('pt-BR')}
+                              </td>
+                              <td style={{ padding: 10 }}>
+                                  {new Date(custo.dd_data_vencimento).toLocaleDateString('pt-BR')}
+                              </td>
+                              <td style={{ padding: 10 }}>{custo.dd_usuario}</td>
+                          </tr>
+                      ))}
+                  </tbody>
+              </table>
+          </div>
+
+
+
       </div>
-
-
-      <div style={{ background: mode === 'dark' ? '#222' : '#fff', padding: 20, marginBottom: 20, borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-        <h3>Detalhamento de Custos</h3>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              <th>Descrição</th>
-              <th>Valor</th>
-              <th>Entrada</th>
-              <th>Vencimento</th>
-              <th>Responsável</th>
-            </tr>
-          </thead>
-          <tbody>
-            {custos.map(custo => (
-              <tr key={custo.dd_id} style={{ borderTop: '1px solid #eee' }}>
-                <td style={{ padding: 10 }}>{custo.dd_descricao}</td>
-                <td style={{ padding: 10 }}>
-                  {parseFloat(custo.dd_valor).toLocaleString('pt-BR', { 
-                    style: 'currency', 
-                    currency: 'BRL' 
-                  })}
-                </td>
-                <td style={{ padding: 10 }}>
-                  {new Date(custo.dd_data_entrada).toLocaleDateString('pt-BR')}
-                </td>
-                <td style={{ padding: 10 }}>
-                  {new Date(custo.dd_data_vencimento).toLocaleDateString('pt-BR')}
-                </td>
-                <td style={{ padding: 10 }}>{custo.dd_usuario}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-
-
-    </div>
   );
 };

@@ -129,6 +129,7 @@ export const ModalConditions = ({
     }
   }, [d_flag_vitalicio]);
   
+  console.log('Log de teste da flag: ', d_flag_vitalicio)
   
   return (
 
