@@ -6,10 +6,10 @@ import {
   useForm,
   useTable
 } from "@refinedev/antd";
-import { Table, TableProps, Popover, Tag, Badge, Modal, Button, Tabs, Row, Col, Form, Select, Input, DatePicker, Card, Space, Checkbox } from "antd";
+import { Table, TableProps, Popover, Tag, Badge, Modal, Button, Tabs, Row, Col, Form, Select, Input, DatePicker, Card, Space, Checkbox, Skeleton } from "antd";
 import StoreIcon from '@mui/icons-material/Store';
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {  CreateNewFolder, OneK } from "@mui/icons-material";
 import TabPane from "antd/lib/tabs/TabPane";
 import { AlertOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, DownCircleOutlined, ExceptionOutlined, ExclamationCircleOutlined, FolderAddOutlined, IssuesCloseOutlined, SearchOutlined, StopOutlined, UpCircleOutlined } from "@ant-design/icons";
@@ -20,6 +20,8 @@ import { API_URL } from "../../authProvider";
 import { io } from 'socket.io-client';
 import { useNotifications } from "../../contexts/NotificationsContext";
 import socket from "../../config/socket";
+
+
 
 interface IDocuments {
   f_id: number;
@@ -95,7 +97,6 @@ export const DocumentList = () => {
   const [isChecked, setIsChecked] = useState<boolean>()
   const [isCheckedNA, setIsCheckedNA] = useState<boolean>()
   const { notifications, loading, fetchNotifications } = useNotifications();
-
 
 
   useEffect(() => {
@@ -269,7 +270,7 @@ export const DocumentList = () => {
     setSearchText("");
   };
 
-  
+
 
   const uniqueUFs = Array.from(new Set(data.map((uf) => uf?.f_uf)))
   .map((uf) => ({ text: uf, value: uf }));
@@ -609,26 +610,77 @@ const totalDocumentos = tableQueryResult?.data?.data?.reduce((total, filial) => 
   }, [conditionsStatus, isChecked, form]);
 
 
+  const ordemSituacao = ["Emitido", "Em processo", "Irregular", "Não iniciado", "Vencido", "Não Aplicavél"];
+
   return (
     <>
       <List canCreate={false} headerButtons={<RefreshButton  hideText shape="circle" onClick={()=>tableQueryResult.refetch()} loading={tableQueryResult.isFetching}/>} >
       <Space align="baseline" wrap>
-            <Card size="small" hoverable title='Documento cadastrados' bordered={false} style={{ width: 200, textAlign: 'center' }}  styles={{body: {background: '#009cde', marginBottom: 10}}}>
-                    <h4 style={{fontSize: 20}}>{totalDocumentos}</h4>
-                   
+            <Card 
+                size="small" 
+                hoverable 
+                title="Documento cadastrados" 
+                bordered={false} 
+                style={{ width: 200, textAlign: 'center' }}  
+                styles={{ body: { background: '#009cde', marginBottom: 10, padding: 2  } }}
+            >
+                {loading ? (<Skeleton active paragraph={false} />) : <h4 style={{ fontSize: 20 }}>{totalDocumentos}</h4>}
             </Card>
-            {situacaoCount && Object.entries(situacaoCount).length > 0 ? (
-                Object.entries(situacaoCount).map(([situacao, count]) => (
-                  <>                <Card size="small" hoverable title={situacao} bordered={false} style={{ width: 170, textAlign: 'center' }} key={situacao} styles={{body: {background: colorsCards(situacao), marginBottom: 10}}}>
-                        <h4 style={{fontSize: 20}}>{count}</h4>
+
+            {tableQueryResult.isLoading ? (
+                // Renderiza 3 Skeletons de placeholder
+                Array(6).fill(null).map((_, index) => (
+                    <Card 
+                        size="small" 
+                        hoverable 
+                        title={<Skeleton.Input style={{ width: 100 }} active />} 
+                        bordered={false} 
+                        key={index} 
+                        style={{ width: 200, textAlign: 'center' }} 
+                        styles={{ body: { marginBottom: 10 } }}
+                    >
+                        <Skeleton loading={tableQueryResult?.isLoading} active paragraph={false} />
                     </Card>
-                  </>
                 ))
-        ) : (
-            <p>Nenhuma situação encontrada.</p>
-        )}
-    </Space>
-        <Table  {...tableProps} tableLayout="auto" rowKey="id" columns={columns} size="small" sticky scroll={{y: 600 }} bordered={true}/>
+            ) : (
+              situacaoCount && Object.entries(situacaoCount).length > 0 ? (
+                  Object.entries(situacaoCount)
+                      .sort(([a], [b]) => ordemSituacao.indexOf(a) - ordemSituacao.indexOf(b)) // Ordenação correta
+                      .map(([situacao, count]) => (
+                          <Card 
+                              size="small" 
+                              hoverable 
+                              title={situacao} 
+                              bordered={false} 
+                              style={{ width: 170, textAlign: 'center' }} 
+                              key={situacao} 
+                              styles={{ body: { background: colorsCards(situacao), marginBottom: 10, padding: 2 } }}
+                              extra={[
+                                  <span style={{ fontSize: 13 }}>
+                                      {(count / Object.values(situacaoCount).reduce((a, b) => a + b, 0) * 100).toFixed()}%
+                                  </span>
+                              ]}
+                          >   
+                              <span>
+                                  <h4 style={{ fontSize: 20 }}>{count}</h4> 
+                              </span>
+                          </Card>
+                      ))
+              ) : (
+                    <p>Nenhuma situação encontrada.</p>
+                )
+            )}
+        </Space>
+          <Table  
+              {...tableProps}
+              tableLayout="auto" 
+              rowKey="id" 
+              columns={columns} 
+              size="small" 
+              sticky 
+              scroll={{y: 600 }} 
+              bordered={true}
+          />
       </List>
 
       <Modal 

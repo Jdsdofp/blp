@@ -32,7 +32,8 @@ export default function OnlineUsersDrawer({ openDrwOn, setOpenDrwOn }: Props) {
     };
   }, []); // Executa apenas uma vez ao montar
 
-
+  // console.log('chamada de users online: ', onlineUsers)
+  
   return (
     <>
       {/* Drawer lateral */}

@@ -1,13 +1,12 @@
 import { CloseCircleOutlined, CommentOutlined, DownOutlined, IssuesCloseOutlined, MessageOutlined, ReconciliationOutlined, UpOutlined } from "@ant-design/icons"
-import { DateField, EditButton, RefreshButton, Show } from "@refinedev/antd";
+import { DateField, RefreshButton, Show } from "@refinedev/antd";
 import { useList, useTable } from "@refinedev/core";
-import { List, Card, Row, Col, Modal, Input, Space, Button, Badge, Mentions, Tag, Avatar, message, Form, Popover, Switch, Spin, Typography, notification, Popconfirm } from "antd";
+import { List, Card, Row, Col, Modal, Input, Space, Button, Badge, Mentions, Tag, Avatar, message, Form, Popover, Spin, Typography, Popconfirm } from "antd";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { API_URL, USER } from "../../authProvider";
-import { Check, Close, Delete, DeleteForever, Edit, ReplyOutlined, Send, ShapeLine, Spa } from "@mui/icons-material";
+import { API_URL} from "../../authProvider";
+import { DeleteForever, DeleteOutline, Edit, ReplyOutlined, Send, } from "@mui/icons-material";
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import PaidIcon from '@mui/icons-material/Paid';
@@ -22,7 +21,6 @@ import ProgressoGrafico, { ModalProress } from "./component/modalProgress";
 import ReportPDF, { DownloadButton } from "../../components/pdf-help";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import GeneratePDF from "../../components/pdf-help";
-import ModalEdit from "./component/drawerEdit";
 import DrawerEdit from "./component/drawerEdit";
 dayjs.extend(relativeTime);
 dayjs.locale('pt-br');
@@ -119,7 +117,7 @@ export const DocumentShow = () => {
   const [dataProtocolo, setDataProtocolo] = useState(null);
   const [dataEmissao, setDataEmissao] = useState(null);
   const [dataVencimento, setDataVencimento] = useState(null);
-  const [d_flag_vitalicio, setD_flag_vitalicio] = useState<boolean>()
+  const [d_flag_vitalicio, setD_flag_vitalicio] = useState<boolean>(false)
   const [userList, setUserList] = useState([]);
   const [loadingListUserAttr, setLoadingListUserAttr] = useState(false);
   const [users, setUsers] = useState([]);
@@ -172,6 +170,11 @@ export const DocumentShow = () => {
   const refreshCondition = async () =>{
     await asas();
   }
+
+  useEffect(() => {
+    console.log("d_flag_vitalicio atualizado:", d_flag_vitalicio);
+ }, [d_flag_vitalicio]);
+ 
 
 
   const toggleCondition = async (key: string) => {
@@ -248,6 +251,18 @@ export const DocumentShow = () => {
     setIsModal(true);
     await asas()
   };
+
+  const handlerDeleteComment = async (id: number)=>{
+    try {
+      const response = await axios.delete(`${API_URL}/comment-document/${id}/deletar-comentario`);
+
+      await refetchComment()
+      messageApi.success(response?.data?.message);
+
+    } catch (error) {
+      messageApi.error(error?.response?.data?.message);
+    }
+  }
 
   const hendleOpenModalConditions = (id: any) => {
     setIsModalIdCondition(id);
@@ -864,14 +879,32 @@ export const DocumentShow = () => {
                         <p style={{ marginTop: '4px', textAlign: 'justify', fontSize: 11 }}>
                           {item.cd_msg}
                         </p>
-                        <ReplyOutlined
-                          onClick={() => {
-                            setReplyValue(`@${item.usuario?.u_nome} `);
-                            setIsReplyingToComment(item.cd_id);
-                          }}
-                          style={{ cursor: 'pointer', color: 'GrayText' }}
-                          fontSize="inherit"
-                        />
+                        <div style={{display: 'flex',  justifyContent: 'space-between', alignItems: 'center'}}>
+                          <ReplyOutlined
+                            onClick={() => {
+                              setReplyValue(`@${item.usuario?.u_nome} `);
+                              setIsReplyingToComment(item.cd_id);
+                            }}
+                            style={{ cursor: 'pointer', color: 'GrayText' }}
+                            fontSize="inherit"
+                          />
+
+                        
+                          {item?.cd_autor_id === userTK && (
+                            <Popconfirm
+                            title='Deseja excluir este comentario? 💬' 
+                            description={<p style={{fontSize: 10, textAlign: 'inherit', width: 180, color: 'gray'}}>Uma vez que excluído, todo o fluxo de resposta também será excluído!</p>} 
+                                arrow
+                                onConfirm={()=>handlerDeleteComment(item?.cd_id)}
+                                >
+                              <DeleteOutline 
+                                  fontSize="inherit" 
+                                  htmlColor="red"
+                              />
+                            </Popconfirm>
+                          )}
+
+                        </div>
                         {/* Campo de resposta e botão de envio */}
                         {isReplyingToComment === item.cd_id && (
                           <div style={{ marginTop: '8px' }}>
@@ -1073,32 +1106,32 @@ export const DocumentShow = () => {
       
 
       {/* MODAL DE VIZUALIZAÇÃO DO DOCUMENTO */}
-      <Modal 
-        open={openViewModalDoc} 
-        cancelButtonProps={{ onClick: () => setOpenViewModalDoc(false) }} 
-        closable={false} 
-        okButtonProps={{ hidden: true }}
-      >
+        <Modal
+          open={openViewModalDoc}
+          cancelButtonProps={{ onClick: () => setOpenViewModalDoc(false) }}
+          closable={false}
+          okButtonProps={{ hidden: true }}
+          width="45vw"
+          style={{ maxWidth: '1100px' }}
+        >
           <h3>Visualizar Documento</h3>
-          {!dataFilesView?.url ? 
-           <Spin/>
-          :
-          
-          dataFilesView?.url ? (
-            <iframe
-              loading="eager" 
-              src={dataFilesView?.url} 
-              title={dataFilesView?.arquivo} 
-              style={{ width: '100%', height: '700px', border: 'none' }}
-               
-            />
-          ) : (
-            <p>Documento não disponível.</p>
-          )
 
+          {!dataFilesView?.url ?
+            <Spin />
+            :
+            dataFilesView?.url ? (
+              <iframe
+                loading="lazy"
+                src={dataFilesView?.url}
+                title={dataFilesView?.arquivo}
+                style={{ width: '100%', height: '80vh', border: 'none' }}
 
-        }
-      </Modal>
+              />
+            ) : (
+              <p>Documento não disponível.</p>
+            )
+          }
+        </Modal>
 
 
       <DrawerEdit

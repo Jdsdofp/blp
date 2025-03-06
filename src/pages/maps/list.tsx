@@ -29,10 +29,10 @@ const getMarkerColor = (situation) => {
     switch (situation) {
         case 'Em processo':
             return 'blue';
-        case 'Irregular':
-            return 'orange';
         case 'Vencido':
             return 'red';
+        case 'Irregular':
+            return 'orange';
         case 'Emitido':
             return 'green';
         default:
@@ -79,7 +79,7 @@ export const Mapsall = () => {
     const [filteredSituation, setFilteredSituation] = useState(null);
     const [filteredDocType, setFilteredDocType] = useState(null); // Novo estado para o tipo de documento
 
-
+   
     const getColor = (status: any) => {
         switch (status) {
           case 'Vencido':
@@ -220,7 +220,7 @@ export const Mapsall = () => {
                             if (filial.f_location && filial.f_location.coordinates) {
                                 // Ordena os documentos e seleciona o primeiro com maior prioridade
                                 const sortedDocumentos = filial.documentos.sort((a, b) => {
-                                    const order = ['Vencido', 'Não iniciado', 'Em processo', 'Emitido'];
+                                    const order = ['Vencido', 'Em processo', 'Não iniciado', 'Não aplicavel', 'Irregular', 'Emitido'];
                                     return order.indexOf(a.d_situacao) - order.indexOf(b.d_situacao);
                                 });
                                 
