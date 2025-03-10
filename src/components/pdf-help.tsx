@@ -527,7 +527,7 @@ const GeneratePDF = ({ id }) => {
 
   return (
     <div>
-      <Button type='dashed' size='small' shape='round' onClick={fetchData} disabled={loading}>
+      <Button type='dashed' size='small' shape='circle' onClick={fetchData} disabled={loading}>
         {loading ? (<Spin size='small' tip/>) : (<FilePdfOutlined />)}
       </Button>
       {data && (

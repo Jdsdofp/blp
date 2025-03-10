@@ -5,11 +5,15 @@ import { useEffect, useState } from "react";
 import { DateField } from "@refinedev/antd";
 
 
-export const ModalCash = ({ open, close, dataOneDoc, listDebits, listDebit, loadingDataDebit }) => {
+export const ModalCash = ({ open, close, dataOneDoc, listDebits, listDebit, loadingDataDebit, refetch }) => {
   const [dataResult, setDataResult] = useState([])
   const [ messageApi, contextHolder ] = message.useMessage();
 
   const [form] = Form.useForm()
+
+  useEffect(()=>{
+    form.resetFields()
+  },[close])
 
   const handlerCreateBebit = async (d_id: number) =>{
     try {
@@ -27,6 +31,7 @@ export const ModalCash = ({ open, close, dataOneDoc, listDebits, listDebit, load
       const response = await axios.post(`${API_URL}/debit/registrar-custo/${d_id}`, payload)
       
       messageApi.success(response?.data?.message)
+      await refetch()
       form.resetFields()
 
     } catch (error) {
@@ -60,7 +65,8 @@ const totalGeral = listDebit?.reduce((acc, d) => acc + parseFloat(d.dd_valor || 
 
 
   return (
-    <Modal open={open} onCancel={close} okButtonProps={{onClick: async ()=>{await handlerCreateBebit(dataOneDoc?.d_id); await listDebits(dataOneDoc?.d_condicionante_id)}}} title={['Valores Documento ', dataOneDoc?.filiais ? `[ ${dataOneDoc?.filiais?.f_codigo} - ${dataOneDoc?.filiais?.f_nome} ]` : (<><Spin/></>) ]}>
+    <Modal open={open} onCancel={close} okButtonProps={{onClick: async ()=>{await handlerCreateBebit(dataOneDoc?.d_id); await listDebits(dataOneDoc?.d_condicionante_id)}}} title={[`${dataOneDoc?.tipo_documentos?.td_desc} - `, dataOneDoc?.filiais ? `[ ${dataOneDoc?.filiais?.f_codigo} - ${dataOneDoc?.filiais?.f_nome} ]` : (<><Spin/></>) ]}>
+      
       <Form layout="vertical" form={form}>
 
         <Form.Item label="Tipo" name="d_tipo_doc_id">

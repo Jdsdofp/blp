@@ -10,7 +10,7 @@ import { Table, TableProps, Popover, Tag, Badge, Modal, Button, Tabs, Row, Col, 
 import StoreIcon from '@mui/icons-material/Store';
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
-import {  CreateNewFolder, OneK } from "@mui/icons-material";
+import {  CreateNewFolder, NoEncryption, OneK } from "@mui/icons-material";
 import TabPane from "antd/lib/tabs/TabPane";
 import { AlertOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, DownCircleOutlined, ExceptionOutlined, ExclamationCircleOutlined, FolderAddOutlined, IssuesCloseOutlined, SearchOutlined, StopOutlined, UpCircleOutlined } from "@ant-design/icons";
 import { useInvalidate, useList } from "@refinedev/core";
@@ -615,7 +615,7 @@ const totalDocumentos = tableQueryResult?.data?.data?.reduce((total, filial) => 
   return (
     <>
       <List canCreate={false} headerButtons={<RefreshButton  hideText shape="circle" onClick={()=>tableQueryResult.refetch()} loading={tableQueryResult.isFetching}/>} >
-      <Space align="baseline" wrap>
+      <Space align="baseline" wrap size={'small'}>
             <Card 
                 size="small" 
                 hoverable 
@@ -670,7 +670,7 @@ const totalDocumentos = tableQueryResult?.data?.data?.reduce((total, filial) => 
                     <p>Nenhuma situação encontrada.</p>
                 )
             )}
-        </Space>
+      </Space>
           <Table  
               {...tableProps}
               tableLayout="auto" 

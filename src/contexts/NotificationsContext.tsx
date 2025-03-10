@@ -2,9 +2,7 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
 import axios from "axios";
 import { API_URL, TOKEN_KEY, USER } from "../authProvider";
-import { Alert, Button, notification } from "antd";
-import { toast } from "react-toastify";
-import { CloseFullscreenOutlined, OneK } from "@mui/icons-material";
+import { Button, notification } from "antd";
 import { LogoutOutlined } from "@ant-design/icons";
 
 

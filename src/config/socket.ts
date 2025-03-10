@@ -2,7 +2,7 @@ import { io } from 'socket.io-client';
 import { API_URL } from '../authProvider';
 
 const socket = io('http://10.11.3.42:8080', {
-    withCredentials: true,  // Habilita o envio de cookies, se necessário
+    withCredentials: false,  // Habilita o envio de cookies, se necessário
   });
   
   // Conectar ao socket uma única vez

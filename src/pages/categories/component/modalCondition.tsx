@@ -55,7 +55,8 @@ export const ModalConditions = ({
     switchChecked,
     handleSwitchChange,
     loadProcss,
-    d_flag_vitalicio
+    d_flag_vitalicio,
+    hendlerStatesFill
 }) =>{
   
   const [messageApi] = message.useMessage()
@@ -94,7 +95,7 @@ export const ModalConditions = ({
     setFile(file); // Salva o arquivo real no estado
   };
 
-  
+  // hendlerStatesFill()
   const handleUpload = async (id, file) => {
     if (!file) {
       console.log("Por favor, selecione um arquivo antes de salvar.");
@@ -129,7 +130,6 @@ export const ModalConditions = ({
     }
   }, [d_flag_vitalicio]);
   
-  console.log('Log de teste da flag: ', d_flag_vitalicio)
   
   return (
 
@@ -169,6 +169,7 @@ export const ModalConditions = ({
                     onClick={() => {
                       handleCloseProcss(result?.data?.dc_id);
                       handlerDataOneData(result?.data?.dc_id);
+                      
                     }}
                     shape="round"
                     icon={<Check fontSize="inherit" />}
