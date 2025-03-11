@@ -19,7 +19,7 @@ export default function OnlineUsersDrawer({ openDrwOn, setOpenDrwOn }: Props) {
 
     // Função para atualizar a lista de usuários online
     const handleUpdateUsers = (users: string[]) => {
-      console.log("Usuários online recebidos:", users);
+      // console.log("Usuários online recebidos:", users);
       setOnlineUsers(users);
     };
 

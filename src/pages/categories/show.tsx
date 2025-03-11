@@ -758,7 +758,7 @@ useEffect(()=>{
         size="small"
         renderItem={item => (
           <>
-
+            
             <Card
               loading={isLoading}
               size="small"
@@ -793,8 +793,10 @@ useEffect(()=>{
                 </span>
               }
               actions={[
+               
+                <>
                 <Space wrap>
-
+                  
                   {item?.d_condicionante_id != null && (
                     <Button
                       icon={<PaidIcon fontSize="small" htmlColor="green" />}
@@ -809,7 +811,7 @@ useEffect(()=>{
                   )}
 
                   <GeneratePDF id={item?.d_id} />
-
+                  
                   <Badge count={item?.d_comentarios?.length || null} size="small">
                     <Button
                       icon={<CommentOutlined />}
@@ -882,8 +884,10 @@ useEffect(()=>{
 
                     />
                   </Popover>
-
-                </Space>,
+                  
+                </Space>
+                <Badge.Ribbon text="Tag" placement="end" style={{ marginTop: "-100px", marginRight: "-10px" }}  />
+                </>
               ]}
             >
               <p style={{ fontSize: 12, margin: 0 }}>{item?.filiais?.f_codigo} - {item?.filiais?.f_nome}</p>
@@ -919,35 +923,37 @@ useEffect(()=>{
               </p>
 
 
-
+              
               <Space direction="vertical">
-
-
-                {/* Tags e Botão de Ação */}
+                {/* Tag de situação */}
                 <Space wrap align="end">
                   <Tag color={getColor(item?.d_situacao)} style={{ fontSize: 10, borderRadius: 20 }}>
                     {item?.d_situacao}
                   </Tag>
-
-
                 </Space>
-
-                {/* Tag com Avatar e Nome do Usuário */}
-                <Tag style={{ borderRadius: 20, padding: 3 }}>
-                  <Avatar
-                    shape="circle"
-                    icon={String(item?.usuario?.u_nome).toUpperCase()[0]}
-                    size="small"
-                  />{' '}
-                  {item?.usuario?.u_nome === JSON.parse(localStorage.getItem('refine-user')).nome ? (
-                    <a style={{ fontSize: 11, margin: 3 }}>você</a>
-                  ) : (
-                    item?.usuario?.u_nome
-                  )}
-                </Tag>
-
+                
+                {/* Container com nome e ribbon */}
+                <Space style={{ display: "flex", alignItems: "center" }}>
+                  
+                  <Tag style={{ borderRadius: 20, padding: 3 }}>
+                    <Avatar
+                      shape="circle"
+                      icon={String(item?.usuario?.u_nome).toUpperCase()[0]}
+                      size="small"
+                    />{' '}
+                    {item?.usuario?.u_nome === JSON.parse(localStorage.getItem('refine-user')).nome ? (
+                      <a style={{ fontSize: 11, margin: 3 }}>você</a>
+                    ) : (
+                      item?.usuario?.u_nome
+                    )}
+                  </Tag>
+                    
+                  {/* Ribbon reposicionado */}
+                </Space>
               </Space>
             </Card>
+            
+
             {/* </Col> */}
             {/* </Row> */}
           </>
@@ -973,7 +979,6 @@ useEffect(()=>{
         handleCloseProcss={handleCloseProcss}
         handleCloseAllProcss={handleCloseAllProcss}
         conditions={conditions}
-        car={car}
         result={result}
         data={data}
         toggleCondition={toggleCondition}
@@ -998,9 +1003,7 @@ useEffect(()=>{
         getColor={getColor}
         switchChecked={switchChecked}
         handleSwitchChange={handleSwitchChange}
-        loadingCloseAll={undefined}
         loadProcss={loadProcss}
-        hendlerStatesFill={hendlerStatesFill}
       />
 
       <Modal
