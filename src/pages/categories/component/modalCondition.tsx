@@ -102,6 +102,7 @@ export const ModalConditions = ({
   handleSwitchChange,
   loadProcss,
   d_flag_vitalicio,
+  setActiveCard
 }) => {
 
   const [messageApi] = message.useMessage()
@@ -190,7 +191,7 @@ export const ModalConditions = ({
     <Modal
       styles={{ body: { padding: 0, margin: -19 }, footer: { marginTop: 30 } }}
       open={isModal}
-      onCancel={() => { hendleCloseModalConditions(); setCheckCondicionante(true); setNumProtocolo(''); setFile(null) }}
+      onCancel={() => { hendleCloseModalConditions(); setCheckCondicionante(true); setNumProtocolo(''); setFile(null); setActiveCard(null) }}
       okButtonProps={{ disabled: checkCondicionante, onClick: () => { setCheckCondicionante(true); setNumProtocolo('') } }}
       cancelButtonProps={{ hidden: true }}
       footer={[Object.entries(conditions || {}).filter(([key, value]) => value?.status === false).length >= 1 ? null : (

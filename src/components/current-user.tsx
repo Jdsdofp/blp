@@ -56,7 +56,7 @@ export const CurentUser: React.FC = () =>{
             >
               Configurações de Conta
             </Button>
-            <Button
+            {/* <Button
               style={{ textAlign: "left" }}
               icon={<OnlinePredictionTwoTone />}
               type="text"
@@ -64,7 +64,7 @@ export const CurentUser: React.FC = () =>{
               onClick={()=>setOpenDwOn(true)}
             >
               Usuários Online
-            </Button>
+            </Button> */}
             <Button
               style={{ textAlign: "left" }}
               icon={<LogoutOutlined />}

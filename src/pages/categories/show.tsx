@@ -1,7 +1,7 @@
-import { CloseCircleOutlined, CommentOutlined, DownOutlined, IssuesCloseOutlined, LeftOutlined, MessageOutlined, ReconciliationOutlined, RightOutlined, UpOutlined } from "@ant-design/icons"
+import { CloseCircleOutlined, CommentOutlined, DownOutlined, IssuesCloseOutlined, LeftOutlined, Loading3QuartersOutlined, LoadingOutlined, MessageOutlined, ReconciliationOutlined, RightOutlined, UpOutlined } from "@ant-design/icons"
 import { DateField, RefreshButton, Show } from "@refinedev/antd";
 import { useList, useTable } from "@refinedev/core";
-import { List, Card, Modal, Input, Space, Button, Badge, Mentions, Tag, Avatar, message, Form, Popover, Spin, Typography, Popconfirm } from "antd";
+import { List, Card, Modal, Input, Space, Button, Badge, Mentions, Tag, Avatar, message, Form, Popover, Spin, Typography, Popconfirm, BackTop } from "antd";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../../authProvider";
@@ -20,6 +20,7 @@ import GeneratePDF from "../../components/pdf-help";
 import DrawerEdit from "./component/drawerEdit";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
+import '../categories/style.css'
 dayjs.extend(relativeTime);
 dayjs.locale('pt-br');
 
@@ -660,9 +661,19 @@ useEffect(()=>{
   }, [status, statues]);
 
 
+  const [loadingBack, setLoadingBack] = useState(false)
+  
+  const handleBack = () => {
+    setLoadingBack(true);
+    setTimeout(() => navigate(`/document`), 100);
+  };
+
+  const [activeCard, setActiveCard] = useState(null);
 
   return (
-    <Show title={[<><span>{status}</span></>]} canEdit={false} canDelete={false}  headerButtons={
+    <Show title={[<><span>{status}</span></>]} canEdit={false} canDelete={false}  headerProps={{ 
+      onBack: ()=>{handleBack()}
+    }} headerButtons={
       <>
         <RefreshButton onClick={() => {atualiza(); hendlerStatesFill()}} />
       </>}>
@@ -679,7 +690,7 @@ useEffect(()=>{
             
           }}
         />
-
+      
         {/* Carrossel de Status */}
         <div style={{ width: "260px", overflow: "hidden", display: "flex", justifyContent: "center", alignItems: "center" }}>
 
@@ -691,6 +702,9 @@ useEffect(()=>{
           }}>
             {statues.length > 0 ? statues[(index - 1 + statues.length) % statues.length] : ""}
           </span>
+
+         
+          
 
           <AnimatePresence custom={direction}>
             <motion.div
@@ -741,7 +755,7 @@ useEffect(()=>{
         />
       </Space>
 
-
+      
       <List
 
         grid={{
@@ -753,13 +767,14 @@ useEffect(()=>{
           xl: 5,
         }}
         key={data?.data.map(d => d.d_id)}
-        loading={isInitialLoading || isLoading}
+        loading={isInitialLoading || isLoading || loadingBack}
         dataSource={data?.data}
         size="small"
         renderItem={item => (
           <>
             
             <Card
+              className={activeCard === item.d_id ? "expanding-border-card" : ""}
               loading={isLoading}
               size="small"
               title={<><h3>{item.tipo_documentos.td_desc}</h3></>}
@@ -771,11 +786,13 @@ useEffect(()=>{
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "space-between",
+
+ 
               }}
 
               bordered
               cover
-              hoverable
+              // hoverable
               extra={
                 <span
                   id={item.d_condicionante_id}
@@ -784,7 +801,7 @@ useEffect(()=>{
                     hendleOpenModalConditions(item.d_condicionante_id);
                     verifyStatusDoc(item?.d_condicionante_id);
                     handlerDataOneData(item?.d_condicionante_id);
-
+                    setActiveCard(item.d_id);
                   }}
                 >
                   {item.d_condicionante_id && (
@@ -806,6 +823,7 @@ useEffect(()=>{
                         await setIsModalCash(true);
                         await handlerDataOneData(item?.d_condicionante_id);
                         await listDebits(item?.d_condicionante_id);
+                        setActiveCard(item.d_id);
                       }}
                     />
                   )}
@@ -823,7 +841,7 @@ useEffect(()=>{
                         updateComment();
                         atualiza();
                         setCommentStatusValue(item.d_situacao);
-
+                        setActiveCard(item.d_id);
                       }}
                     />
                   </Badge>
@@ -850,7 +868,7 @@ useEffect(()=>{
                       </>
                     )
                   }
-                  <Button size="small" shape="circle" icon={<ReconciliationOutlined />} disabled={!item?.d_anexo?.arquivo} onClick={async () => await openModalViewDoc(item?.d_anexo)} itemID={item.d_condicionante_id} />
+                  <Button size="small" shape="circle" icon={<ReconciliationOutlined />} disabled={!item?.d_anexo?.arquivo} onClick={async () => {await openModalViewDoc(item?.d_anexo); setActiveCard(item.d_id);}} itemID={item.d_condicionante_id} />
 
                   {/* ação de exclusão de documento */}
                   <Popconfirm
@@ -879,14 +897,16 @@ useEffect(()=>{
                       icon={<Edit fontSize="inherit" htmlColor={conditionDelete(item) ? "default" : "gray"} />}
                       // disabled={!conditionDelete(item)} 
 
-                      onClick={async () => { await setOpenModalEdit(true); await setDataModalEdit(item) }}
+                      onClick={async () => { await setOpenModalEdit(true); await setDataModalEdit(item); setActiveCard(item.d_id); }}
                     // hidden={item?.d_situacao === 'Não iniciado' || item?.d_situacao === 'Em processo' ? false : true}
 
                     />
                   </Popover>
                   
                 </Space>
-                <Badge.Ribbon text="Tag" placement="end" style={{ marginTop: "-100px", marginRight: "-10px" }}  />
+
+                {item?.tagStatusConds && (<Badge.Ribbon text={item?.tagStatusConds} placement="end" style={{ marginTop: "-100px", marginRight: "-10px" }} color={item?.tagStatusConds == 'Pendente' ? 'red' : ""} />)}
+                
                 </>
               ]}
             >
@@ -1004,12 +1024,13 @@ useEffect(()=>{
         switchChecked={switchChecked}
         handleSwitchChange={handleSwitchChange}
         loadProcss={loadProcss}
+        setActiveCard={setActiveCard}
       />
 
       <Modal
         title={[<MessageOutlined />, ` Interações`]}
         open={isModalComment}
-        onCancel={() => setIsModalComment(false)}
+        onCancel={() => {setIsModalComment(false); setActiveCard(null);}}
         centered
         footer={
           <List
@@ -1265,7 +1286,7 @@ useEffect(()=>{
 
       <ModalCash
         open={isModalCash}
-        close={() => setIsModalCash(false)}
+        close={() => {setIsModalCash(false); setActiveCard(null)}}
         dataOneDoc={dataOneDoc}
         listDebits={listDebits}
         listDebit={listDebit}
@@ -1277,7 +1298,7 @@ useEffect(()=>{
       {/* MODAL DE VIZUALIZAÇÃO DO DOCUMENTO */}
       <Modal
         open={openViewModalDoc}
-        cancelButtonProps={{ onClick: () => setOpenViewModalDoc(false) }}
+        cancelButtonProps={{ onClick: () => {setOpenViewModalDoc(false); setActiveCard(null);} }}
         closable={false}
         okButtonProps={{ hidden: true }}
         width="45vw"
@@ -1306,7 +1327,7 @@ useEffect(()=>{
       <DrawerEdit
         title={`Edição de Documento - ${dataModalEdit?.tipo_documentos?.td_desc} - LJ ${dataModalEdit?.filiais?.f_codigo}`}
         open={openModalEdit}
-        onCancel={() => setOpenModalEdit(false)}
+        onCancel={() => {setOpenModalEdit(false); setActiveCard(null)}}
         data={dataModalEdit}
       />
       {contextHolder}
