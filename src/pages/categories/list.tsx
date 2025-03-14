@@ -8,9 +8,9 @@ import { Table, TableProps, Popover, Tag, Badge, Modal, Button, Tabs, Row, Col, 
 import StoreIcon from '@mui/icons-material/Store';
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import {  CreateNewFolder } from "@mui/icons-material";
+import {  CreateNewFolder, Filter, Filter1Rounded, Filter6Outlined } from "@mui/icons-material";
 import TabPane from "antd/lib/tabs/TabPane";
-import { AlertOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, DownCircleOutlined, ExceptionOutlined, ExclamationCircleOutlined, FolderAddOutlined, IssuesCloseOutlined, SearchOutlined, StopOutlined, UpCircleOutlined } from "@ant-design/icons";
+import { AlertOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, DownCircleOutlined, ExceptionOutlined, ExclamationCircleOutlined, FilterOutlined, FolderAddOutlined, IssuesCloseOutlined, SearchOutlined, StopOutlined, UpCircleOutlined } from "@ant-design/icons";
 import { useInvalidate, useList } from "@refinedev/core";
 import { ColumnType } from "antd/es/table";
 import axios from "axios";
@@ -618,10 +618,15 @@ const totalDocumentos = tableQueryResult?.data?.data?.reduce((total, filial) => 
                 
                 size="small" 
                 hoverable 
-                title="Documento cadastrados" 
+                title={<p style={{fontSize: 13}}>Documento cadastrados</p>} 
                 bordered={false} 
                 style={{ width: 200, textAlign: 'center' }}  
                 styles={{ body: { background: '#009cde', marginBottom: 10, padding: 2  } }}
+                extra={[
+                  <div>
+                    <Button size="small" shape="circle" style={{border: 0}} icon={<FilterOutlined />} />
+                  </div>
+                  ]}
             >
                 {loading ? (<Skeleton active paragraph={false} />) : <h4 style={{ fontSize: 20 }}>{totalDocumentos}</h4>}
             </Card>
@@ -648,7 +653,7 @@ const totalDocumentos = tableQueryResult?.data?.data?.reduce((total, filial) => 
                       .sort(([a], [b]) => ordemSituacao.indexOf(a) - ordemSituacao.indexOf(b)) // Ordenação correta
                       .map(([situacao, count]) => (
                           <Card
-                          className="hover-card" 
+                              className="hover-card" 
                               size="small" 
                               hoverable 
                               title={situacao} 
