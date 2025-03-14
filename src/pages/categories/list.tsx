@@ -4,7 +4,7 @@ import {
   useForm,
   useTable
 } from "@refinedev/antd";
-import { Table, TableProps, Popover, Tag, Badge, Modal, Button, Tabs, Row, Col, Form, Select, Input, DatePicker, Card, Space, Checkbox, Skeleton } from "antd";
+import { Table, TableProps, Popover, Tag, Badge, Modal, Button, Tabs, Row, Col, Form, Select, Input, DatePicker, Card, Space, Checkbox, Skeleton, Spin } from "antd";
 import StoreIcon from '@mui/icons-material/Store';
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -17,7 +17,7 @@ import axios from "axios";
 import { API_URL } from "../../authProvider";
 import { io } from 'socket.io-client';
 import { useNotifications } from "../../contexts/NotificationsContext";
-import socket from "../../config/socket";
+import './style.css'
 
 
 
@@ -614,7 +614,8 @@ const totalDocumentos = tableQueryResult?.data?.data?.reduce((total, filial) => 
     <>
       <List canCreate={false} headerButtons={<RefreshButton  hideText shape="circle" onClick={()=>tableQueryResult.refetch()} loading={tableQueryResult.isFetching}/>} >
       <Space align="baseline" wrap size={'small'}>
-            <Card 
+            <Card
+                
                 size="small" 
                 hoverable 
                 title="Documento cadastrados" 
@@ -628,7 +629,8 @@ const totalDocumentos = tableQueryResult?.data?.data?.reduce((total, filial) => 
             {tableQueryResult.isLoading ? (
                 // Renderiza 3 Skeletons de placeholder
                 Array(6).fill(null).map((_, index) => (
-                    <Card 
+                    <Card
+                     
                         size="small" 
                         hoverable 
                         title={<Skeleton.Input style={{ width: 100 }} active />} 
@@ -645,7 +647,8 @@ const totalDocumentos = tableQueryResult?.data?.data?.reduce((total, filial) => 
                   Object.entries(situacaoCount)
                       .sort(([a], [b]) => ordemSituacao.indexOf(a) - ordemSituacao.indexOf(b)) // Ordenação correta
                       .map(([situacao, count]) => (
-                          <Card 
+                          <Card
+                          className="hover-card" 
                               size="small" 
                               hoverable 
                               title={situacao} 
@@ -678,6 +681,7 @@ const totalDocumentos = tableQueryResult?.data?.data?.reduce((total, filial) => 
               sticky 
               scroll={{y: 600 }} 
               bordered={true}
+              loading={tableQueryResult.isFetching}
           />
       </List>
 

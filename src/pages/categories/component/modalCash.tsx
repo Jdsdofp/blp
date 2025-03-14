@@ -1,9 +1,8 @@
-import { Col, DatePicker, Form, Input, Modal, Row, Select, Spin, Table, message } from "antd";
+import { Col, DatePicker, Form, Input, InputNumber, Modal, Row, Select, Spin, Table, message } from "antd";
 import axios from "axios";
 import { API_URL } from "../../../authProvider";
 import { useEffect, useState } from "react";
 import { DateField } from "@refinedev/antd";
-
 
 export const ModalCash = ({ open, close, dataOneDoc, listDebits, listDebit, loadingDataDebit, refetch }) => {
   const [dataResult, setDataResult] = useState([])
@@ -17,11 +16,18 @@ export const ModalCash = ({ open, close, dataOneDoc, listDebits, listDebit, load
 
   const handlerCreateBebit = async (d_id: number) =>{
     try {
-      const values = await form.validateFields()
+      const values = await form.validateFields();
+
+      // Tratamento do valor antes de enviar
+      const valorFormatado = values?.dd_valor
+        ?.replace(/[R$\s.]/g, '') // Remove "R$", espaços e pontos de milhar
+        ?.replace(',', '.'); // Substitui vírgula decimal por ponto
       
+      console.log('Valor M: ', values)
+
       const payload = {
         dd_descricao: values?.dd_descricao,
-        dd_valor: values?.dd_valor,
+        dd_valor: valorFormatado,
         dd_data_entrada: values?.dd_data_entrada,
         dd_data_vencimento: values?.dd_data_vencimento,
         dd_tipo: values?.d_tipo_doc_id,
@@ -62,6 +68,26 @@ const totalsByType = listDebit?.reduce((acc, d) => {
 const totalGeral = listDebit?.reduce((acc, d) => acc + parseFloat(d.dd_valor || 0), 0);
 
 
+  const [value, setValue] = useState('');
+
+  const formatCurrency = (inputValue) => {
+    let valor = inputValue.replace(/\D/g, '');
+    
+    valor = (Number(valor) / 100).toFixed(2);
+    
+    // Formatação BRL
+    return Number(valor).toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      minimumFractionDigits: 2
+    });
+  };
+
+  const handleChange = (e) => {
+    const formattedValue = formatCurrency(e.target.value);
+    setValue(formattedValue);
+  };
+
 
 
   return (
@@ -84,13 +110,30 @@ const totalGeral = listDebit?.reduce((acc, d) => acc + parseFloat(d.dd_valor || 
             <Form.Item label="Titulo/NF" name="d_num_ref">
               <Input type="number" placeholder="0000000" />
             </Form.Item>
-          </Col>    
+          </Col>
+
 
           <Col xs={24} sm={12}>
-            <Form.Item label="Valor" name="dd_valor">
-              <Input type="number" placeholder="Valor R$" />
-            </Form.Item>
-          </Col>
+  <Form.Item label="Valor" name="dd_valor">
+    <Input
+      type="text"
+      value={value}
+      onChange={(e) => {
+        const formattedValue = formatCurrency(e.target.value);
+        setValue(formattedValue);
+        form.setFieldsValue({ dd_valor: formattedValue }); // Atualiza o valor no form
+      }}
+      placeholder="R$ 0,00"
+      onKeyDown={(e) => {
+        if (!/[0-9]|Backspace|Tab|Delete|ArrowLeft|ArrowRight/.test(e.key)) {
+          e.preventDefault();
+        }
+      }}
+    />
+  </Form.Item>
+</Col>
+
+
 
           <Col xs={24} sm={12}>
             <Form.Item label="Data Entrada" name="dd_data_entrada">

@@ -9,7 +9,6 @@ import axios from "axios";
 import { API_URL } from "../../../authProvider";
 import dayjs from "dayjs";
 
-
 const { Search } = Input;
 
 type Props = {
@@ -104,6 +103,8 @@ export const ModalConditions = ({
   d_flag_vitalicio,
   setActiveCard
 }) => {
+
+  
 
   const [messageApi] = message.useMessage()
   const [dataApi, setDataApi] = useState<any>()
@@ -239,9 +240,6 @@ export const ModalConditions = ({
             <>
               {dataOneDoc?.d_situacao === "Vencido" || dataOneDoc?.d_situacao === "Emitido" ? null : (
                 <>
-
-                  
-
                   <Input
                     placeholder="Nº Protocolo"
                     allowClear
@@ -250,7 +248,6 @@ export const ModalConditions = ({
                     value={numProtocolo}
                     hidden={dataOneDoc?.d_num_protocolo?.trim().length > 0}
                   />
-
                   
                   <DatePicker
                     placeholder="Emissão"
@@ -273,6 +270,7 @@ export const ModalConditions = ({
                     value={dataVencimento}
                     disabled={dataOneDoc?.d_num_protocolo <= 0 || d_flag_vitalicio}
                   />
+                  {/* {console.log('debug: ', dataOneDoc?.d_num_protocolo <= 0 || d_flag_vitalicio)} */}
                   <div style={{ position: 'absolute', left: 20, bottom: 1, paddingBottom: 3 }}>
                     <Checkbox disabled={!dataEmissao} onChange={(e) => setD_flag_vitalicio(e?.target?.checked)}>
                       <span style={{ fontSize: 10 }}>Vecimento indeterminado ?</span>
@@ -411,7 +409,7 @@ export const ModalConditions = ({
                     <td style={{ borderBottom: '1px solid #009cde', paddingRight: 35 }} align="center">
                       {value?.status === true ? (
 
-                        <Popover content={`OK - ${new Date(value?.date).toLocaleString()}`}>
+                        <Popover content={`OK - ${new Date(value?.date).toLocaleString()}`} placement="right">
                           <Button disabled={value?.users?.includes(userTK) && value?.statusProcesso == docStatusId ? false : true} shape="circle" style={{ border: 'none', height: '30px' }}>
 
                             <CheckCircleOutlined
@@ -427,7 +425,7 @@ export const ModalConditions = ({
                           </Button>
                         </Popover>
                       ) : value?.status === false ? (
-                        <Popover content={`Pendente - ${new Date(value?.date).toLocaleString()}`}>
+                        <Popover content={`Pendente - ${new Date(value?.date).toLocaleString()}`} placement="right">
                           <Button disabled={value?.users?.includes(userTK) && value?.statusProcesso == docStatusId ? false : true} shape="circle" style={{ border: 'none', height: '30px' }}>
                             <CloseCircleOutlined
 
@@ -440,7 +438,7 @@ export const ModalConditions = ({
                           </Button>
                         </Popover>
                       ) : (
-                        <Popover content={`N/A - ${new Date(value?.date).toLocaleString()}`}>
+                        <Popover content={`N/A - ${new Date(value?.date).toLocaleString()}`} placement="right">
                           <Button disabled={value?.users?.includes(userTK) && value?.statusProcesso == docStatusId ? false : true} shape="circle" style={{ border: 'none', height: '30px' }}>
                             <ExclamationCircleOutlined
 

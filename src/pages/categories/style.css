@@ -33,3 +33,12 @@
       opacity: 0;
     }
   }
+
+  .hover-card {
+    transition: box-shadow 0.3s ease; /* Adiciona uma transição suave */
+  }
+  
+  .hover-card:hover {
+    box-shadow: 2px 4px 15px rgba(9, 116, 255, 0.388);
+  }
+  

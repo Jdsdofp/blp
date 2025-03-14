@@ -1,7 +1,7 @@
 import { CloseCircleOutlined, CommentOutlined, DownOutlined, IssuesCloseOutlined, LeftOutlined, Loading3QuartersOutlined, LoadingOutlined, MessageOutlined, ReconciliationOutlined, RightOutlined, UpOutlined } from "@ant-design/icons"
 import { DateField, RefreshButton, Show } from "@refinedev/antd";
 import { useList, useTable } from "@refinedev/core";
-import { List, Card, Modal, Input, Space, Button, Badge, Mentions, Tag, Avatar, message, Form, Popover, Spin, Typography, Popconfirm, BackTop } from "antd";
+import { List, Card, Modal, Input, Space, Button, Badge, Mentions, Tag, Avatar, message, Form, Popover, Spin, Typography, Popconfirm, BackTop, Select } from "antd";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../../authProvider";
@@ -671,14 +671,14 @@ useEffect(()=>{
   const [activeCard, setActiveCard] = useState(null);
 
   return (
-    <Show title={[<><span>{status}</span></>]} canEdit={false} canDelete={false}  headerProps={{ 
+    <Show title={[<><span>{status} </span><Select disabled/></>]} canEdit={false} canDelete={false}  headerProps={{ 
       onBack: ()=>{handleBack()}
     }} headerButtons={
       <>
         <RefreshButton onClick={() => {atualiza(); hendlerStatesFill()}} />
       </>}>
 
-      <Space wrap style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+      <Space wrap style={{ display: "flex", justifyContent: "center",  width: "100%" }}>
         <Button
           shape="circle"
           style={{ border: 0 }}
