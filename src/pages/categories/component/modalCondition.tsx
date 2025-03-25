@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { CheckCircleOutlined, CloseCircleOutlined, ExclamationCircleOutlined, IssuesCloseOutlined, PlusCircleOutlined, UploadOutlined } from "@ant-design/icons";
-import { Check, Close } from "@mui/icons-material";
+import { CheckCircleOutlined, CloseCircleOutlined, CommentOutlined, CustomerServiceOutlined, ExclamationCircleOutlined, IssuesCloseOutlined, PlusCircleOutlined, UploadOutlined } from "@ant-design/icons";
+import { Check, Close, CloseSharp, Delete, Edit, Save } from "@mui/icons-material";
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
-import { Button, Card, Checkbox, DatePicker, Input, List, Modal, Popover, Upload, Space, Spin, Tag, message, Popconfirm, Form, Switch, Badge } from "antd";
+import { Button, Card, Checkbox, DatePicker, Input, List, Modal, Popover, Upload, Space, Spin, Tag, message, Popconfirm, Form, Switch, Badge, FloatButton } from "antd";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import moment from "moment";
 import axios from "axios";
 import { API_URL } from "../../../authProvider";
 import dayjs from "dayjs";
+import { Activity } from "./popActivaty";
 
 const { Search } = Input;
 
@@ -114,6 +115,8 @@ export const ModalConditions = ({
   const [loadFile, setLoadFile] = useState(false);
   const [blockBtn, setBlockBtn] = useState<boolean>()
 
+  const [valueInputOneCond, setValueInputOneCond] = useState<string>('')
+  const [valueInputCond, setValueInputCond] = useState<string>('')
 
 
   useEffect(() => {
@@ -186,6 +189,8 @@ export const ModalConditions = ({
   }, [conditions]);
 
 
+  //debug...
+  //console.log('Valores para DEBUG: ',{ valueInputCond, valueInputOneCond })
 
   return (
 
@@ -346,7 +351,7 @@ export const ModalConditions = ({
       )]}
     > 
       <Card
-        title={['Condicionante ', <IssuesCloseOutlined style={{ color: 'gray' }} />]}
+        title={['Condicionante ', <><IssuesCloseOutlined style={{ color: 'gray' }} /><Button type="link" about="Emite um relatório temporal das atividades das condicionantes desse processo">Atividades</Button></>]}
         size="small"
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
@@ -369,7 +374,67 @@ export const ModalConditions = ({
                 {Object.entries(conditions || {}).map(([key, value]) => (
                   <tr key={key}>
                     <td style={{ borderBottom: '1px solid #009cde' }}>
-                      <p style={{ textTransform: 'capitalize', color: value.status == false && dataOneDoc?.d_situacao == 'Irregular' ? 'red' : null, fontSize: 11 }}>{key} - <Tag color={getColor(value?.statusProcesso)} style={{ fontSize: 8, margin: 0, borderRadius: 20 }}>{value?.statusProcesso}</Tag></p>
+                      <Space>
+
+                        {
+                          key === valueInputCond ? (
+                            <>
+
+                              <Input 
+                                value={valueInputOneCond}
+                                onChange={(e)=>setValueInputOneCond(e.target.value)}  
+                              />
+                            
+                              {/* Botão de editar */}
+                              <Button
+                                shape="circle"
+                                size="small"
+                                style={{ border: '0px' }}
+                                icon={<Save fontSize="inherit" />}
+                                onClick={() => {setValueInputCond(''); setValueInputOneCond('')}}
+                              />
+
+
+                              <Button
+                                shape="circle"
+                                size="small"
+                                style={{ border: '0px' }}
+                                icon={<CloseSharp fontSize="inherit" />}
+                                onClick={() => setValueInputCond('')}
+                              />
+                            </>
+
+                          ) : (
+
+                            <>
+                              <p style={{ textTransform: 'capitalize', color: value.status == false && dataOneDoc?.d_situacao == 'Irregular' ? 'red' : null, fontSize: 11 }}>
+                                {key} - <Tag color={getColor(value?.statusProcesso)} style={{ fontSize: 8, margin: 0, borderRadius: 20 }}>{value?.statusProcesso}</Tag>
+                              </p>
+
+                              <Button
+                                shape="circle"
+                                size="small"
+                                style={{ border: '0px' }}
+                                icon={<Edit fontSize="inherit" />}
+                                onClick={() => {setValueInputOneCond(key); setValueInputCond(key)}}
+                              />
+
+
+                              <Button
+                                shape="circle"
+                                size="small"
+                                style={{ border: '0px' }}
+                                icon={<Delete fontSize="inherit" />}
+                              />
+                            </>
+                          )
+                        }
+
+
+
+
+
+                      </Space>
                     </td>
                     <td style={{ borderBottom: '1px solid #009cde', textAlign: 'center', paddingRight: 60 }}>
                       {value?.dateCreate ? (

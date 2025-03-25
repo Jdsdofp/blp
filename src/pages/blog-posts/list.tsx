@@ -3,7 +3,7 @@
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, LabelList, Legend } from 'recharts'
 import 'leaflet/dist/leaflet.css';
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { ColorModeContext } from '../../contexts/color-mode';
 import axios from 'axios';
 import { API_URL } from '../../authProvider';
@@ -475,6 +475,7 @@ const data = [
 
 export const BlogPostList = () => {
   const { mode, setMode } = useContext(ColorModeContext);
+  const [val, setVal] = useState(0)
   
     // Cores para status
   const colors = {
@@ -498,23 +499,15 @@ export const BlogPostList = () => {
 
   useEffect(() => {
     axios
-      .get(`${API_URL}/document/list-test`, { responseType: 'arraybuffer' }) // Garante que a resposta seja em binário
-      .then((response) => {
-        const bufferData = new Uint8Array(response?.data); // Converte para Uint8Array
-        console.log('Dados brutos recebidos:', bufferData);  // Verifica os dados antes de decodificar
-  
-        try {
-          const decodedData = msgpack.decode(bufferData); // Tenta decodificar os dados
-          console.log('Protocolo: ', decodedData);
-        } catch (err) {
-          console.error('Erro ao decodificar os dados:', err);
-        }
+      .get(`${API_URL}/debit/listar-custos`)
+      .then(response => {
+        const valores = response?.data?.custos?.map((v: any) => Number(v?.dd_valor)) || [];
+        const total = valores.reduce((acc, val) => acc + val, 0);
+        setVal(total);
       })
-      .catch((err) => {
-        console.error('Erro ao obter os dados:', err);
-      });
+      .catch(error => console.log("Erro:", error));
   }, []);
-
+  
 
   return (
       <div style={{ padding: 20 }}>
@@ -533,7 +526,7 @@ export const BlogPostList = () => {
               <div style={{ background: mode === 'dark' ? '#222' : '#fff', padding: 20, borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
                   <h3>Total de Custos</h3>
                   <p style={{ fontSize: 24, fontWeight: 'bold' }}>
-                      {totalCustos.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                      {val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                   </p>
               </div>
           </div>

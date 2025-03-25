@@ -467,6 +467,7 @@ export const ListCondition = () => {
                                         value={valueInputCondition}
                                         onChange={(e) => setValueInputCondition(e.target.value)} // Atualiza o estado com o valor do input
                                     />
+
                                     <Button
                                         size="small"
                                         shape="circle"
@@ -477,6 +478,7 @@ export const ListCondition = () => {
                                             await setValueInputConditionOne('');
                                         }}
                                     />
+                                    
                                     <Button
                                         size="small"
                                         shape="circle"
@@ -486,6 +488,7 @@ export const ListCondition = () => {
                                             setValueInputConditionOne('')
                                         }}
                                     />
+
                                 </>
                             ) : (
                                 <>

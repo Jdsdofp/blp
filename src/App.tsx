@@ -1,4 +1,4 @@
-import { Authenticated, Refine, useDataProvider, useIsAuthenticated, useTitle } from "@refinedev/core";
+import { Authenticated, Refine } from "@refinedev/core";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 import { name } from '../package.json'
 
@@ -17,10 +17,10 @@ import routerBindings, {
   NavigateToResource,
   UnsavedChangesNotifier,
 } from "@refinedev/react-router-v6";
-import { App as AntdApp, ConfigProvider, Image, notification, Typography } from "antd";
-import { BrowserRouter, Outlet, Route, Routes, useNavigate } from "react-router-dom";
+import { App as AntdApp, ConfigProvider, Image, notification } from "antd";
+import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
 import moment from "moment-timezone";
-import { API_URL, authProvider } from "./authProvider";
+import { authProvider } from "./authProvider";
 import { Header } from "./components/header";
 import { ColorModeContextProvider } from "./contexts/color-mode";
 import {
@@ -53,12 +53,12 @@ import { ListCondition } from "./pages/documents/conditinals/list";
 import { CreateCondition } from "./pages/documents/conditinals/create";
 import { CalendarList } from "./pages/calendar/list";
 import { Mapsall } from "./pages/maps/list";
-import { NotificationsProvider, useNotifications } from "./contexts/NotificationsContext";
+import { NotificationsProvider } from "./contexts/NotificationsContext";
 import { useEffect, useState } from "react";
 import { fetchNotifications } from "./config/notificationsUtils";
 import socket from "./config/socket";
-import { HeatMapOutlined } from "@ant-design/icons";
 import { ListTasks } from "./pages/tasks/list";
+import { ConsultDocs } from "./pages/categories/listConsult";
 
 
 type Props = {
@@ -227,6 +227,7 @@ function App() {
                           <Route path="edit/:id" element={<CategoryEdit />} />
                           <Route path="show" element={<DocumentShow />} />
                           <Route path="alldocuments/:id" element={<ShowDocs />}/>
+                          <Route path="consultDocs" element={<ConsultDocs />}/>
                         </Route>
                         
                         <Route path="/mapsall">

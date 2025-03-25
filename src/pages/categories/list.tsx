@@ -18,6 +18,7 @@ import { API_URL } from "../../authProvider";
 import { io } from 'socket.io-client';
 import { useNotifications } from "../../contexts/NotificationsContext";
 import './style.css'
+import { ModalConsult } from "./component/modalFlashConsult";
 
 
 
@@ -95,6 +96,7 @@ export const DocumentList = () => {
   const [isChecked, setIsChecked] = useState<boolean>()
   const [isCheckedNA, setIsCheckedNA] = useState<boolean>()
   const { notifications, loading, fetchNotifications } = useNotifications();
+  const [isVisible, setIsVisible] = useState(false)
 
 
   useEffect(() => {
@@ -406,6 +408,7 @@ export const DocumentList = () => {
             {statusOrder
               .filter(status => statusCount[status])
               .map((status) => (
+                
                 <Tag
                   style={{ cursor: 'pointer', borderRadius: 30 }}
                   color={getColor(status)}
@@ -624,7 +627,13 @@ const totalDocumentos = tableQueryResult?.data?.data?.reduce((total, filial) => 
                 styles={{ body: { background: '#009cde', marginBottom: 10, padding: 2  } }}
                 extra={[
                   <div>
-                    <Button size="small" shape="circle" style={{border: 0}} icon={<FilterOutlined />} />
+                    <Button 
+                      size="small" 
+                      shape="circle" 
+                      style={{border: 0}} 
+                      icon={<FilterOutlined />} 
+                      onClick={()=>{setIsVisible(true)}}
+                    />
                   </div>
                   ]}
             >
@@ -907,6 +916,8 @@ const totalDocumentos = tableQueryResult?.data?.data?.reduce((total, filial) => 
           </Tabs>
         </Form>
       </Modal>
+
+      <ModalConsult isVisible={isVisible} setIsVisible={setIsVisible} />
     </>
   );
 };

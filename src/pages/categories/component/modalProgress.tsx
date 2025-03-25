@@ -1,7 +1,6 @@
-import { Doughnut, Bar } from "react-chartjs-2";
+import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
-import { ClockCircleFilled, CloseCircleOutlined } from "@ant-design/icons";
 import { Spin } from "antd";
 
 // Registrar elementos do Chart.js
