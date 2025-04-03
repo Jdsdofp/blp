@@ -1025,6 +1025,8 @@ useEffect(()=>{
         handleSwitchChange={handleSwitchChange}
         loadProcss={loadProcss}
         setActiveCard={setActiveCard}
+        asas={asas}
+        car={car}
       />
 
       <Modal

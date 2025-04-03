@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { CheckCircleOutlined, CloseCircleOutlined, CommentOutlined, CustomerServiceOutlined, ExclamationCircleOutlined, IssuesCloseOutlined, PlusCircleOutlined, UploadOutlined } from "@ant-design/icons";
+import { CheckCircleOutlined, CloseCircleOutlined, CommentOutlined, CustomerServiceOutlined, ExclamationCircleOutlined, IssuesCloseOutlined, Loading3QuartersOutlined, PlusCircleOutlined, UploadOutlined } from "@ant-design/icons";
 import { Check, Close, CloseSharp, Delete, Edit, Save } from "@mui/icons-material";
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import { Button, Card, Checkbox, DatePicker, Input, List, Modal, Popover, Upload, Space, Spin, Tag, message, Popconfirm, Form, Switch, Badge, FloatButton } from "antd";
@@ -102,7 +102,9 @@ export const ModalConditions = ({
   handleSwitchChange,
   loadProcss,
   d_flag_vitalicio,
-  setActiveCard
+  setActiveCard,
+  asas,
+  car
 }) => {
 
   
@@ -113,8 +115,12 @@ export const ModalConditions = ({
   const hasProtocol = numberProtocol?.d_num_protocolo;
   const [file, setFile] = useState(null);
   const [loadFile, setLoadFile] = useState(false);
-  const [blockBtn, setBlockBtn] = useState<boolean>()
+  const [blockBtn, setBlockBtn] = useState<boolean>();
 
+
+  //bloco destinado a atualização
+  const [loads, setLoads] = useState(false)
+  const [dataUpdateCond, setDataUpdateCond] = useState<string>('')
   const [valueInputOneCond, setValueInputOneCond] = useState<string>('')
   const [valueInputCond, setValueInputCond] = useState<string>('')
 
@@ -191,6 +197,45 @@ export const ModalConditions = ({
 
   //debug...
   //console.log('Valores para DEBUG: ',{ valueInputCond, valueInputOneCond })
+
+  const handlerUpdateCondionsProcess = async (id: number)=>{
+    try {
+      const payload = {
+        dc_condicao_atual: valueInputCond, 
+        dc_condicao_atualizada: valueInputOneCond
+      }
+      
+      console.log('ID: ', {id, payload})
+      setLoads(true)
+      const response = await axios.put(`${API_URL}/document-condition/editar-condicoes-processo/${id}`, payload)
+      setDataUpdateCond(response?.data?.dc_condicao_atualizada)
+
+      await asas()
+      setLoads(false)
+    } catch (error) {
+      console.error('log de error: ', error)
+    
+    }
+  }
+
+  //delete
+  const handlerDeleteCondionsProcess = async (id: number, key: string)=>{
+    try { 
+      console.log('Payload: ', {id, key})
+
+      const payload = {
+        dc_condicao_atual: key
+      }
+
+      const response = await axios.post(`${API_URL}/document-condition/deletar-condicoes-processo/${id}`, payload)
+      } catch (error) {
+
+      console.log('Log de error: ', error)
+    
+    }
+  }
+
+  
 
   return (
 
@@ -379,19 +424,20 @@ export const ModalConditions = ({
                         {
                           key === valueInputCond ? (
                             <>
-
-                              <Input 
+                              <Input
                                 value={valueInputOneCond}
-                                onChange={(e)=>setValueInputOneCond(e.target.value)}  
+                                onChange={(e) => setValueInputOneCond(e.target.value)}
+
                               />
-                            
+
                               {/* Botão de editar */}
                               <Button
                                 shape="circle"
                                 size="small"
                                 style={{ border: '0px' }}
                                 icon={<Save fontSize="inherit" />}
-                                onClick={() => {setValueInputCond(''); setValueInputOneCond('')}}
+                                loading={loads}
+                                onClick={async () => { await setValueInputCond(''); await setValueInputOneCond(''); await handlerUpdateCondionsProcess(isModalIdCondition) }}
                               />
 
 
@@ -416,15 +462,16 @@ export const ModalConditions = ({
                                 size="small"
                                 style={{ border: '0px' }}
                                 icon={<Edit fontSize="inherit" />}
-                                onClick={() => {setValueInputOneCond(key); setValueInputCond(key)}}
+                                onClick={() => { setValueInputOneCond(key); setValueInputCond(key) }}
+                                loading={loads}
                               />
-
 
                               <Button
                                 shape="circle"
                                 size="small"
                                 style={{ border: '0px' }}
                                 icon={<Delete fontSize="inherit" />}
+                                onClick={async()=> await handlerDeleteCondionsProcess(isModalIdCondition, key)}
                               />
                             </>
                           )
