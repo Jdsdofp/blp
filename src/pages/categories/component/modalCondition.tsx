@@ -99,7 +99,9 @@ export const ModalConditions = ({
   handlerDataOneData,
   getColor,
   switchChecked,
+  switchCheckedApl,
   handleSwitchChange,
+  handleSwitchChangeApl,
   loadProcss,
   d_flag_vitalicio,
   setActiveCard,
@@ -221,13 +223,15 @@ export const ModalConditions = ({
   //delete
   const handlerDeleteCondionsProcess = async (id: number, key: string)=>{
     try { 
-      console.log('Payload: ', {id, key})
+      // console.log('Payload: ', {id, key})
 
       const payload = {
         dc_condicao_atual: key
       }
 
       const response = await axios.post(`${API_URL}/document-condition/deletar-condicoes-processo/${id}`, payload)
+      await asas()
+      // console.log('Response: ', response)
       } catch (error) {
 
       console.log('Log de error: ', error)
@@ -366,6 +370,7 @@ export const ModalConditions = ({
                     </>
                   ) : (
                     <>
+
                       {/* Finalizar com arquivo */}
                       <Button
                         loading={loadProcss}
@@ -456,23 +461,29 @@ export const ModalConditions = ({
                               <p style={{ textTransform: 'capitalize', color: value.status == false && dataOneDoc?.d_situacao == 'Irregular' ? 'red' : null, fontSize: 11 }}>
                                 {key} - <Tag color={getColor(value?.statusProcesso)} style={{ fontSize: 8, margin: 0, borderRadius: 20 }}>{value?.statusProcesso}</Tag>
                               </p>
-
-                              <Button
-                                shape="circle"
-                                size="small"
-                                style={{ border: '0px' }}
-                                icon={<Edit fontSize="inherit" />}
-                                onClick={() => { setValueInputOneCond(key); setValueInputCond(key) }}
-                                loading={loads}
-                              />
-
-                              <Button
-                                shape="circle"
-                                size="small"
-                                style={{ border: '0px' }}
-                                icon={<Delete fontSize="inherit" />}
-                                onClick={async()=> await handlerDeleteCondionsProcess(isModalIdCondition, key)}
-                              />
+                              {/* {console.log('lokd ', dataOneDoc?.d_situacao === "Emitido")} */}
+                              { dataOneDoc?.d_situacao === "Emitido" || dataOneDoc?.d_situacao === "Vencido" ? null : (
+                                <>
+                                <Button
+                                  shape="circle"
+                                  size="small"
+                                  style={{ border: '0px' }}
+                                  icon={<Edit fontSize="inherit" />}
+                                  onClick={() => { setValueInputOneCond(key); setValueInputCond(key) }}
+                                  loading={loads}
+                                />
+  
+                                <Button
+                                  shape="circle"
+                                  size="small"
+                                  style={{ border: '0px' }}
+                                  icon={<Delete fontSize="inherit" />}
+                                  onClick={async()=> await handlerDeleteCondionsProcess(isModalIdCondition, key)}
+                                />         
+                                </>
+                              )
+                                
+                              }
                             </>
                           )
                         }
@@ -705,9 +716,24 @@ export const ModalConditions = ({
                   </>
                 ) : null}
                 {Object.entries(conditions || {}).filter(([key, value]) => value?.status === false).length >= 1 ? (
-                  <Popover trigger='click' placement="bottom" content={(<Form.Item><span style={{ fontSize: 11 }}>Irregular? </span> <Switch size="small" checked={switchChecked} onChange={handleSwitchChange} /></Form.Item>)}>
-                    <Button shape="circle" size="small" icon={<MoreVertIcon fontSize="inherit" />} />
-                  </Popover>
+                  <Popover
+                      trigger="click"
+                      placement="bottom"
+                      content={(
+                        <Form.Item>
+                          <div style={{ fontSize: 11, marginBottom: 9 }}>
+                            <span>Irregular? </span>
+                            <Switch size="small" checked={switchChecked} onChange={handleSwitchChange} />
+                          </div>
+                          <div style={{ fontSize: 11 }}>
+                            <span>Aplicavél? </span>
+                            <Switch size="small" checked={switchCheckedApl} onChange={handleSwitchChangeApl} />
+                          </div>
+                        </Form.Item>
+                      )}
+                    >
+                      <Button shape="circle" size="small" icon={<MoreVertIcon fontSize="inherit" />} />
+                    </Popover>             
                 ) : null}
 
               </Space>

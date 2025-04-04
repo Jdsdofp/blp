@@ -6,11 +6,7 @@ import { Popover, Timeline } from "antd"
 export const Activity = ()=>{
     
     return(
-        <Popover
-        // Configuraçao do popver
-        trigger="click"
-        
-        >
+   
             <Timeline
                 // Configuração do Timeline
                 mode="alternate"
@@ -39,6 +35,5 @@ export const Activity = ()=>{
                     },
                   ]}
             />
-        </Popover>
     )
 }

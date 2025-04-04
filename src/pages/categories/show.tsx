@@ -1,11 +1,11 @@
 import { CloseCircleOutlined, CommentOutlined, DownOutlined, IssuesCloseOutlined, LeftOutlined, Loading3QuartersOutlined, LoadingOutlined, MessageOutlined, ReconciliationOutlined, RightOutlined, UpOutlined } from "@ant-design/icons"
-import { DateField, RefreshButton, Show } from "@refinedev/antd";
-import { useList, useTable } from "@refinedev/core";
-import { List, Card, Modal, Input, Space, Button, Badge, Mentions, Tag, Avatar, message, Form, Popover, Spin, Typography, Popconfirm, BackTop, Select } from "antd";
+import { DateField, RefreshButton, Show, useForm } from "@refinedev/antd";
+import { useInvalidate, useList, useTable } from "@refinedev/core";
+import { List, Card, Modal, Input, Space, Button, Badge, Mentions, Tag, Avatar, message, Form, Popover, Spin, Typography, Popconfirm, BackTop, Select, FloatButton } from "antd";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../../authProvider";
-import { DeleteForever, DeleteOutline, Edit, ReplyOutlined, Send, } from "@mui/icons-material";
+import { CreateNewFolder, DeleteForever, DeleteOutline, Edit, ReplyOutlined, Send, } from "@mui/icons-material";
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -21,6 +21,8 @@ import DrawerEdit from "./component/drawerEdit";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
 import '../categories/style.css'
+import { ModalNewDocs } from "./component/modalNewDoc";
+import { IDocument } from "./list";
 dayjs.extend(relativeTime);
 dayjs.locale('pt-br');
 
@@ -80,7 +82,7 @@ export const DocumentShow = () => {
   const [conditionUsers, setConditionUsers] = useState<number[]>([]);
 
 
-  const [form] = Form.useForm();
+  // const [form] = Form.useForm();
 
   const { data, isInitialLoading, isLoading, refetch } = useList({
     resource: 'document',
@@ -130,7 +132,9 @@ export const DocumentShow = () => {
   const [numberProtocol, setNumberProtocol] = useState<number>()
   const [dataOneDoc, setDataOneDoc] = useState({})
   const [switchChecked, setSwitchChecked] = useState<boolean>(false);
+  const [switchCheckedApl, setSwitchCheckedApl] = useState<boolean>(false);
   const [loadProcss, setLoadProcss] = useState(false);
+
   
   
 
@@ -163,6 +167,160 @@ export const DocumentShow = () => {
   const [openModalEdit, setOpenModalEdit] = useState<boolean>(false)
   const [dataModalEdit, setDataModalEdit] = useState<Object>({})
 
+  //MODEL NEW DOC
+    //States
+    const [isModalNewDoc, setIsModalNewDoc] = useState(false)
+    const [subList, setSubList] = useState(false)
+    const [islistModalConditions, setIsListModalConditions] = useState([])
+    const [tabCond, setTabCond] = useState(true)
+    const [isChecked, setIsChecked] = useState<boolean>()
+    const [conditionsStatus, setConditionsStatus] = useState<{[key: string]: boolean}>({})
+    const [isCheckedNA, setIsCheckedNA] = useState<boolean>()
+    const [islistModal, setIsListModal] = useState([])
+    const [idCondition, setIdCondition] = useState<any>()
+
+
+    //Fucntions
+    const { data: listTypeDocument } = useList({ resource: 'type-document', meta: { endpoint: 'listar-tipo-documentos' }, liveMode: 'auto',  });
+    const { data: condtionsResult } = useList({ resource: 'condition', meta: { endpoint: 'listar-condicionantes' } });
+    
+    const invalid = useInvalidate()
+    const {formProps, form, saveButtonProps, formLoading} = useForm<IDocument>({
+      resource: 'documentCreate', 
+      action: 'create',
+      redirect: false,
+      successNotification(data) {
+        form.resetFields(['d_data_pedido', 'd_data_emissao', 'd_data_vencimento', 'd_tipo_doc_id', 'd_orgao_exp', 'd_anexo', 'd_num_protocolo', 'd_sitaucao', 'criado_em']);
+        setIsListModalConditions([]);
+        setSubList(false);
+        return{
+            message:  `${data?.data?.message}`,
+            type: 'success'
+        }
+    },
+      errorNotification(error, values, resource) {
+        return{
+          type: 'error',
+          message: error?.response.data.error
+        }
+      },
+    })
+
+      const listaTipoDocumentos = listTypeDocument?.data.map((tpd) => ({
+        label: (
+          <span>
+            {!tpd?.td_requer_condicao && <IssuesCloseOutlined style={{color: 'red', fontSize: 13}} /> }{' '}
+            {tpd.td_desc}
+          </span>
+        ),
+        value: tpd.td_id,
+        ...tpd
+      }))
+
+      const listarCondicionantes = condtionsResult?.data.map((cond) => ({
+        label: cond.c_tipo,
+        value: cond.c_id,
+        ...cond
+      }))
+
+      const handleCondicoes = (value: any, option: any) => {
+        const conditions = option.c_condicao;
+        setIdCondition(value)
+        
+        // Inicializa o status das condições como 'false' (unchecked) e data como null
+        const initialStatus = conditions.reduce((acc: any, cond: string) => {
+          acc[cond] = { status: false, dateCreate: new Date().toISOString().slice(0, 10), date: null, users: [userTK], statusProcesso: 'Não iniciado' };
+          return acc;
+        }, {});
+      
+      
+        // Limpa o estado anterior e atualiza o campo d_condicoes no formulário
+        setConditionsStatus({});
+        form.setFieldsValue({ d_condicoes: '' });
+      
+        // Se houver novas condições, define o novo estado
+        if (conditions.length > 0) {
+          setConditionsStatus(initialStatus);
+          form.setFieldsValue({ d_condicoes: initialStatus });
+        } else {
+          setIsListModalConditions([]);
+        }
+      
+        // Atualiza a lista modal com as novas condições ou esvazia se não houver
+        setIsListModalConditions(conditions.length ? conditions : []);
+      };
+
+      const hendleCondicionante = (value: any, option: any) => {
+        setTabCond(option.td_requer_condicao)
+      }
+
+      const verifyConditionsSys = async (id) => {
+        try {
+          // Altere para axios.get se a rota suportar o método GET em vez de POST
+          const response = await axios.get(`${API_URL}/condition/listar-condicionante/${id}`);
+      
+          
+          // Processar as condições retornadas (caso a resposta seja adequada)
+          if (response.data && response.data.conditions) {
+            const conditions = response.data.conditions; // Exemplo de como acessar as condições
+      
+            return conditions;
+          } else {
+            console.error("Nenhuma condição encontrada");
+            return [];
+          }
+        } catch (error) {
+          console.error("Erro ao obter as condições:", error);
+          return [];
+        }
+      };
+
+
+      const hedleSubList = () => {
+        if (!subList) {
+          setSubList(true)
+        } else {
+          setSubList(false)
+        }
+      }
+
+      const handleConditionCheck = (condition: string) => {
+        setConditionsStatus((prevState) => {
+          // Cria uma nova data
+          const currentDate = new Date().toISOString().slice(0, 10);
+      
+          // Atualiza o status da condição com o objeto desejado
+          const updatedStatus = {
+            ...prevState,
+            [condition]: {
+              status: !prevState[condition]?.status, // Alterna entre true e false
+              date: !prevState[condition]?.status ? currentDate : null, // Define a data se estiver sendo marcada como true
+              users: [userTK]
+            },
+          };
+      
+          // Atualiza o campo d_condicoes no formulário com o formato adequado
+          form.setFieldsValue({ d_condicoes: updatedStatus });
+      
+          return updatedStatus;
+        });
+      };
+
+      const hendleModal = (record: any) => {
+        if (record) {
+          setIsModalNewDoc(true);
+          setIsListModal(record);
+      
+          form.setFieldsValue({
+            d_filial_id: record,
+          });
+      
+        } else {
+          setIsListModal([]);
+        }
+      };
+
+      
   const handleSendComment = async () => {
     try {
       if (commentValue == '') return messageApi.warning('Campo comentario vazio! ⚠')
@@ -562,6 +720,50 @@ export const DocumentShow = () => {
   };
 
 
+
+
+//alterando status aplicavel
+const handlerUpdateStateDocAplic = async (d_id: number, checked: any) => {
+
+  try {
+    const condiciones = result?.data?.dc_condicoes;
+
+    const statusProcessosFalse = Object.values(condiciones)
+      .filter((item) => item.status === false) 
+      .map((item) => item.statusProcesso);
+
+    const payload = {
+      d_situacao: checked ? 'Não Aplicavél' : statusProcessosFalse[0]
+    }
+
+    const response = await axios.put(`${API_URL}/document/atualiza-status-aplicavel/${d_id}`, payload);
+    await asas()
+    console.log(response)
+    messageApi.success(response?.data?.message)
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+
+
+useEffect(() => {
+  if (dataOneDoc?.d_situacao === 'Não Aplicavél') {
+    setSwitchCheckedApl(true);
+  } else {
+    setSwitchCheckedApl(false);
+  }
+}, [dataOneDoc?.d_situacao]);
+
+const handleSwitchChangeApl = (checked) => {
+  setSwitchCheckedApl(checked);
+  handlerUpdateStateDocAplic(dataOneDoc?.d_id, checked);
+};
+
+
+
+
+
   const listDebits = async (d_id: number) => {
     try {
       setLoadingDataDebit(true)
@@ -675,6 +877,12 @@ useEffect(()=>{
       onBack: ()=>{handleBack()}
     }} headerButtons={
       <>
+        <Button 
+          shape="circle"
+          icon={
+          <CreateNewFolder fontSize="inherit" color="warning" />
+          }
+          onClick={() => hendleModal(filialId)} />
         <RefreshButton onClick={() => {atualiza(); hendlerStatesFill()}} />
       </>}>
 
@@ -904,8 +1112,11 @@ useEffect(()=>{
                   </Popover>
                   
                 </Space>
-
-                {item?.tagStatusConds && (<Badge.Ribbon text={item?.tagStatusConds} placement="end" style={{ marginTop: "-100px", marginRight: "-10px" }} color={item?.tagStatusConds == 'Pendente' ? 'red' : ""} />)}
+                
+                {item?.d_situacao == 'Não Aplicavél' ?  null  : (
+                  item?.tagStatusConds && (<Badge.Ribbon text={item?.tagStatusConds} placement="end" style={{ marginTop: "-100px", marginRight: "-10px" }} color={item?.tagStatusConds == 'Pendente' ? 'red' : ""} />)
+                )}
+                
                 
                 </>
               ]}
@@ -1022,7 +1233,9 @@ useEffect(()=>{
         handlerDataOneData={handlerDataOneData}
         getColor={getColor}
         switchChecked={switchChecked}
+        switchCheckedApl={switchCheckedApl}
         handleSwitchChange={handleSwitchChange}
+        handleSwitchChangeApl={handleSwitchChangeApl}
         loadProcss={loadProcss}
         setActiveCard={setActiveCard}
         asas={asas}
@@ -1333,7 +1546,35 @@ useEffect(()=>{
         data={dataModalEdit}
       />
       {contextHolder}
-
+      
+    
+          <ModalNewDocs
+                isModal={isModalNewDoc}
+                form={form}
+                setIsModal={setIsModalNewDoc}
+                setSubList={setSubList}
+                setIsListModalConditions={setIsListModalConditions}
+                setTabCond={setTabCond}
+                setIsChecked={setIsChecked}
+                saveButtonProps={saveButtonProps}
+                conditionsStatus={conditionsStatus}
+                isChecked={isChecked}
+                isCheckedNA={isCheckedNA}
+                setIsCheckedNA={setIsCheckedNA}
+                formProps={formProps}
+                formLoading={formLoading}
+                islistModal={islistModal}
+                listaTipoDocumentos={listaTipoDocumentos}
+                tabCond={tabCond}
+                hendleCondicionante={hendleCondicionante}
+                listarCondicionantes={listarCondicionantes}
+                handleCondicoes={handleCondicoes}
+                verifyConditionsSys={verifyConditionsSys}
+                hedleSubList={hedleSubList}
+                islistModalConditions={islistModalConditions}
+                subList={subList}
+                handleConditionCheck={handleConditionCheck}
+          />
     </Show>
   );
 };
