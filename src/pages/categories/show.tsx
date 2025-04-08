@@ -1507,6 +1507,7 @@ useEffect(()=>{
         listDebit={listDebit}
         loadingDataDebit={loadingDataDebit}
         refetch={refetch}
+        atualiza={atualiza}
       />
 
 
