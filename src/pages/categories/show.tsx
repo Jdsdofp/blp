@@ -1150,7 +1150,7 @@ useEffect(()=>{
                 <p style={{ padding: 0, margin: 0 }}><span style={{ fontWeight: 'bold' }}>Protocolo:</span> {item?.d_num_protocolo == '' ? null : (<Typography.Text copyable style={{ fontSize: 11 }}>{item?.d_num_protocolo}</Typography.Text>)}</p>
                 <p style={{ padding: 0, margin: 0 }}><span style={{ fontWeight: 'bold' }}>Data Emissão:</span> {item?.d_data_emissao == '1970-01-01' ? null : (<DateField style={{ fontSize: '10px' }} value={item?.d_data_emissao} />)}</p>
                 <p style={{ padding: 0, margin: 0 }}><span style={{ fontWeight: 'bold' }}>Data Vencimento:</span> {item?.d_flag_vitalicio ? (<span style={{ fontSize: 10 }}>indeterminado🔄</span>) : item?.d_data_vencimento == '1970-01-01' ? null : (<DateField style={{ fontSize: '10px' }} value={item?.d_data_vencimento} />)}</p>
-                <span><span style={{ fontWeight: 'bolder' }}>Valor Agregado: </span> R$ {item?.debitos}</span>
+                <span><span style={{ fontWeight: 'bolder' }}>Valor Agregado: </span> R$ {item?.debitos.toFixed(2)}</span>
               </p>
 
 

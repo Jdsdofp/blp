@@ -5,10 +5,14 @@ import { useEffect, useState } from "react";
 import { DateField, Edit } from "@refinedev/antd";
 import { Delete } from "@mui/icons-material";
 import { EditFilled } from "@ant-design/icons";
+import { Await } from "react-router-dom";
+import dayjs from "dayjs";
 
 export const ModalCash = ({ open, close, dataOneDoc, listDebits, listDebit, loadingDataDebit, refetch, atualiza }) => {
   const [dataResult, setDataResult] = useState([])
   const [ messageApi, contextHolder ] = message.useMessage();
+
+  const [formData, setFormData] = useState('')
 
   const [form] = Form.useForm()
 
@@ -105,23 +109,44 @@ const totalGeral = listDebit?.reduce((acc, d) => acc + parseFloat(d.dd_valor || 
     }
   }
 
+  
+
+  useEffect(()=>{
+    if(formData){
+      form.setFieldValue("d_tipo_doc_id", formData?.dd_tipo);
+      form.setFieldValue("dd_descricao", formData?.dd_descricao);
+      form.setFieldValue("d_num_ref", formData?.d_num_ref);
+      const formattedValue = formatCurrency(formData?.dd_valor);
+      form.setFieldValue("dd_valor", formattedValue);
+      form.setFieldValue("dd_data_entrada", dayjs(formData?.dd_data_entrada));
+      form.setFieldValue("dd_data_vencimento", dayjs(formData?.dd_data_vencimento));
+
+    }
+  },[formData])
+
 
   return (
     <Modal 
         open={open} 
         onCancel={close} 
-        okButtonProps={{ onClick: async () => { 
-          await handlerCreateBebit(dataOneDoc?.d_id); 
-          await listDebits(dataOneDoc?.d_condicionante_id) 
-          } }} title={[`${dataOneDoc?.tipo_documentos?.td_desc} - `, dataOneDoc?.filiais ? `[ ${dataOneDoc?.filiais?.f_codigo} - ${dataOneDoc?.filiais?.f_nome} ]` : (<><Spin /></>)]}
+        okText={formData ? "Salvar" : "OK"}
+        okButtonProps={{ onClick: async () => {
+          if(formData){
+            console.log('Enviar Edit')
+          } else {
+            await handlerCreateBebit(dataOneDoc?.d_id); 
+            await listDebits(dataOneDoc?.d_condicionante_id) 
+          }
+          } }} 
+          title={[`${dataOneDoc?.tipo_documentos?.td_desc} - `, dataOneDoc?.filiais ? `[ ${dataOneDoc?.filiais?.f_codigo} - ${dataOneDoc?.filiais?.f_nome} ]` : (<><Spin /></>)]}
           width="40vw"
-        style={{ maxWidth: '1100px', top: 20 }}
+          style={{ maxWidth: '1100px', top: 20 }}
     >
 
       <Form layout="vertical" form={form}>
 
         <Form.Item label="Tipo" name="d_tipo_doc_id">
-          <Select options={[{ label: 'Taxa', value: 'Taxa' }, { label: 'Serviço', value: 'Serviço' }]} />
+          <Select options={[{ label: 'Taxa', value:  'Taxa' }, { label: 'Serviço', value: 'Serviço' }]} />
         </Form.Item>
 
         <Row gutter={16}>
@@ -221,7 +246,7 @@ const totalGeral = listDebit?.reduce((acc, d) => acc + parseFloat(d.dd_valor || 
               <Button shape="circle" size="small" icon={<Delete fontSize="inherit" />} onClick={async ()=>{await handlerDeleteDebit(dataResult?.dd_id); await listDebits(dataOneDoc?.d_condicionante_id)  }} />
               
               {/* EDIÇÃO */}
-              <Button shape="circle" size="small" icon={<EditFilled size={3} />} onClick={()=>console.log('Editar ', dataResult?.dd_id)} />
+              <Button shape="circle" size="small" icon={<EditFilled size={3} />} onClick={()=>setFormData(dataResult)} />
 
           </div>
           )} 
