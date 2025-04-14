@@ -8,7 +8,7 @@ import { EditFilled } from "@ant-design/icons";
 import { Await } from "react-router-dom";
 import dayjs from "dayjs";
 
-export const ModalCash = ({ open, close, dataOneDoc, listDebits, listDebit, loadingDataDebit, refetch, atualiza }) => {
+export const ModalCash = ({ setIsModalCash, open, close, dataOneDoc, listDebits, listDebit, loadingDataDebit, refetch, atualiza }) => {
   const [dataResult, setDataResult] = useState([])
   const [ messageApi, contextHolder ] = message.useMessage();
 
@@ -29,7 +29,7 @@ export const ModalCash = ({ open, close, dataOneDoc, listDebits, listDebit, load
         ?.replace(/[R$\s.]/g, '') // Remove "R$", espaços e pontos de milhar
         ?.replace(',', '.'); // Substitui vírgula decimal por ponto
       
-      console.log('Valor M: ', values)
+      // console.log('Valor M: ', values)
 
       const payload = {
         dd_descricao: values?.dd_descricao,
@@ -109,30 +109,71 @@ const totalGeral = listDebit?.reduce((acc, d) => acc + parseFloat(d.dd_valor || 
     }
   }
 
-  
 
-  useEffect(()=>{
-    if(formData){
-      form.setFieldValue("d_tipo_doc_id", formData?.dd_tipo);
-      form.setFieldValue("dd_descricao", formData?.dd_descricao);
-      form.setFieldValue("d_num_ref", formData?.d_num_ref);
-      const formattedValue = formatCurrency(formData?.dd_valor);
+  const handlerEditar = async (record) =>{
+
+    if(record){
+      form.setFieldValue("d_tipo_doc_id", record?.dd_tipo);
+      form.setFieldValue("dd_descricao", record?.dd_descricao);
+      form.setFieldValue("d_num_ref", record?.d_num_ref);
+      const formattedValue = formatCurrency(record?.dd_valor);
       form.setFieldValue("dd_valor", formattedValue);
-      form.setFieldValue("dd_data_entrada", dayjs(formData?.dd_data_entrada));
-      form.setFieldValue("dd_data_vencimento", dayjs(formData?.dd_data_vencimento));
-
+      form.setFieldValue("dd_data_entrada", dayjs(record?.dd_data_entrada));
+      form.setFieldValue("dd_data_vencimento", dayjs(record?.dd_data_vencimento));
+      setFormData(record?.dd_id)
     }
-  },[formData])
+  }
+
+  const handlerEditCusto = async (record) =>{
+    try {
+        // Tratamento do valor antes de enviar
+        const valorFormatado = form.getFieldValue("dd_valor")
+        ?.replace(/[R$\s.]/g, '') // Remove "R$", espaços e pontos de milhar
+        ?.replace(',', '.'); // Substitui vírgula decimal por ponto
+      
+        const payload = {
+        dd_descricao: form.getFieldValue("dd_descricao"), 
+        dd_valor: valorFormatado, 
+        dd_data_entrada: form.getFieldValue("dd_data_entrada"), 
+        dd_data_vencimento: form.getFieldValue("dd_data_vencimento"),
+        dd_tipo: form.getFieldValue("d_tipo_doc_id"),
+        d_num_ref: form.getFieldValue("d_num_ref")
+      }
+
+
+      const response = await axios.put(`${API_URL}/debit/editar-custo/${record}`, payload)
+
+      console.log('Payload: ', payload)
+      form.resetFields();
+      setFormData('')
+      await refetch()
+      messageApi.success(response?.data?.message)
+    } catch (error) {
+      console.log('Log de error: ', error)
+    }
+  }
+  
 
 
   return (
     <Modal 
         open={open} 
-        onCancel={close} 
-        okText={formData ? "Salvar" : "OK"}
+        onCancel={close}
+        cancelText={formData ? 'Limpar' : 'Cancelar'}
+        cancelButtonProps={{onClick: ()=>{
+          if(formData){
+            setFormData(''); form.resetFields()
+          } else {
+            setIsModalCash(false)
+          }
+        
+        }}}
+
+        okText={formData ? "Salvar" : "Cadastrar"}
         okButtonProps={{ onClick: async () => {
           if(formData){
-            console.log('Enviar Edit')
+            await handlerEditCusto(formData?.dd_id);
+            await listDebits(dataOneDoc?.d_condicionante_id)
           } else {
             await handlerCreateBebit(dataOneDoc?.d_id); 
             await listDebits(dataOneDoc?.d_condicionante_id) 
@@ -246,7 +287,7 @@ const totalGeral = listDebit?.reduce((acc, d) => acc + parseFloat(d.dd_valor || 
               <Button shape="circle" size="small" icon={<Delete fontSize="inherit" />} onClick={async ()=>{await handlerDeleteDebit(dataResult?.dd_id); await listDebits(dataOneDoc?.d_condicionante_id)  }} />
               
               {/* EDIÇÃO */}
-              <Button shape="circle" size="small" icon={<EditFilled size={3} />} onClick={()=>setFormData(dataResult)} />
+              <Button shape="circle" size="small" icon={<EditFilled size={3} />} onClick={async ()=>{await handlerEditar(dataResult); await setFormData(dataResult)}} />
 
           </div>
           )} 

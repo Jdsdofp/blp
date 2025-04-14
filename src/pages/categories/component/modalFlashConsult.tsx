@@ -4,6 +4,8 @@ import { ExpandOutlined, CompressOutlined, CloseOutlined } from "@ant-design/ico
 import { ConsultDocs } from "../listConsult";
 import { ColorModeContext } from "../../../contexts/color-mode";
 import '../style.css';
+import GridTable, { AGGridExample, GridFiliais } from "./GridTable";
+import GridExample from "./GridTable";
 
 type Props = {
   isVisible: boolean;
@@ -45,7 +47,7 @@ export const ModalConsult = ({ isVisible, setIsVisible }: Props) => {
         footer={null}
         width={600}
       >
-        <p>Conteúdo do modal...</p>
+       <GridExample />
       </Modal>
 
       {/* Tela Cheia */}
@@ -59,7 +61,7 @@ export const ModalConsult = ({ isVisible, setIsVisible }: Props) => {
             </div>
           </div>
           <div style={{ ...contentStyle, backgroundColor }}>
-            <ConsultDocs />
+          <GridExample />
           </div>
         </div>
       )}

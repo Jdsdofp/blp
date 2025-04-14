@@ -41,3 +41,20 @@
   .hover-card:hover {
     box-shadow: 2px 4px 15px rgba(9, 116, 255, 0.388);
   }
+
+
+  .ag-theme-alpine {
+    --ag-header-background-color: #f8f9fa;
+    --ag-odd-row-background-color: #f8f9fa;
+    font-family: 'Arial';
+  }
+
+  .ag-group-cell {
+    font-weight: bold;
+    color: #2c3e50;
+  }
+
+  .ag-group-expanded {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+  }

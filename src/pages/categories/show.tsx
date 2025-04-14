@@ -1500,6 +1500,7 @@ useEffect(()=>{
       </Modal>
 
       <ModalCash
+        setIsModalCash={setIsModalCash}
         open={isModalCash}
         close={() => {setIsModalCash(false); setActiveCard(null)}}
         dataOneDoc={dataOneDoc}
